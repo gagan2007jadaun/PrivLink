@@ -1,8 +1,43 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
+import { useTheme } from 'next-themes';
 
 export default function MessageInput() {
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [message, setMessage] = useState("");
+    const pickerRef = useRef<HTMLDivElement>(null);
+    const { theme } = useTheme();
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+                setShowEmojiPicker(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const onEmojiClick = (emojiData: any) => {
+        setMessage((prev) => prev + emojiData.emoji);
+    };
+
     return (
-        <div className="p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="relative p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
+            {showEmojiPicker && (
+                <div className="absolute bottom-full left-4 mb-2 z-50 shadow-2xl rounded-2xl" ref={pickerRef}>
+                    <EmojiPicker
+                        theme={theme === 'dark' ? Theme.DARK : Theme.LIGHT}
+                        emojiStyle={EmojiStyle.APPLE}
+                        onEmojiClick={onEmojiClick}
+                        width={350}
+                        height={450}
+                        searchDisabled={false}
+                        skinTonesDisabled={false}
+                    />
+                </div>
+            )}
+
             <div className="flex items-end gap-2 rounded-2xl bg-zinc-100 p-2 ring-1 ring-zinc-200 dark:bg-zinc-800/50 dark:ring-zinc-800 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white dark:focus-within:bg-zinc-800">
 
                 {/* Attachment Button */}
@@ -18,6 +53,8 @@ export default function MessageInput() {
                 <div className="min-h-[44px] flex-1 py-2.5">
                     <input
                         type="text"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type a message..."
                         className="w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100"
                     />
@@ -25,7 +62,10 @@ export default function MessageInput() {
 
                 {/* Action Buttons */}
                 <div className="flex shrink-0 items-center gap-1 pb-1 pr-1">
-                    <button className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700">
+                    <button
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${showEmojiPicker ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10' : 'text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700'}`}
+                    >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
