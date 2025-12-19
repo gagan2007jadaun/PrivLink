@@ -4,6 +4,8 @@ export interface Message {
     timestamp: string;
     isMe: boolean;
     image?: string;
+    mediaUrl?: string; // For audio/video
+    mediaType?: 'audio' | 'video';
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
 }

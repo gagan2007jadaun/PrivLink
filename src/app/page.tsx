@@ -1,4 +1,3 @@
-
 "use client";
 
 import Sidebar from "@/components/Sidebar";
@@ -13,14 +12,16 @@ export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Initialize chats state from mock data
+  const [chats, setChats] = useState<Chat[]>(mockChats);
   // Initialize active chat with the first one
   const [activeChatId, setActiveChatId] = useState(mockChats[0].id);
   const [messages, setMessages] = useState<Message[]>([]);
 
   // Get current chat details
   const activeChat = useMemo(() =>
-    mockChats.find(c => c.id === activeChatId) || mockChats[0],
-    [activeChatId]);
+    chats.find(c => c.id === activeChatId) || chats[0],
+    [activeChatId, chats]);
 
   // Load messages when active chat changes
   useEffect(() => {
@@ -52,13 +53,40 @@ export default function Home() {
     // In a real app, you'd also update the backend/store here
   };
 
+  const handleCreateChat = (data: { type: string; name: string; description: string }) => {
+    const newChat: Chat = {
+      id: Date.now().toString(),
+      name: data.name,
+      lastMessage: `Welcome to ${data.name}!`,
+      time: 'Just now',
+      unreadCount: 0,
+      isOnline: true,
+      avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=random`,
+      // @ts-ignore - straightforward for mock purposes
+      type: data.type,
+    };
+
+    setChats(prev => [newChat, ...prev]);
+    setActiveChatId(newChat.id);
+
+    // Initialize empty messages for the new chat
+    mockMessages[newChat.id] = [{
+      id: 'welcome',
+      content: `This is the start of your new ${data.type}: ${data.name}. ${data.description ? `\n\n${data.description}` : ''}`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: false,
+    }];
+    setMessages(mockMessages[newChat.id]);
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans">
       {/* Left Sidebar */}
       <Sidebar
-        chats={mockChats}
+        chats={chats}
         activeChatId={activeChatId}
         onSelectChat={setActiveChatId}
+        onCreateChat={handleCreateChat}
       />
 
       {/* Main Chat Area */}
@@ -81,17 +109,23 @@ export default function Home() {
               </span>
             </div>
 
-            {messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                content={msg.content}
-                timestamp={msg.timestamp}
-                isMe={msg.isMe}
-                image={msg.image}
-                reactions={msg.reactions}
-                isConsecutive={msg.isConsecutive}
-              />
-            ))}
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-zinc-500 mt-20">
+                <p>No messages yet.</p>
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <MessageBubble
+                  key={msg.id}
+                  content={msg.content}
+                  timestamp={msg.timestamp}
+                  isMe={msg.isMe}
+                  image={msg.image}
+                  reactions={msg.reactions}
+                  isConsecutive={msg.isConsecutive}
+                />
+              ))
+            )}
             <div ref={messagesEndRef} />
           </div>
         </div>
@@ -105,4 +139,3 @@ export default function Home() {
     </div >
   );
 }
-

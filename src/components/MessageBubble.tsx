@@ -5,6 +5,8 @@ interface MessageBubbleProps {
     timestamp: string;
     isMe?: boolean;
     image?: string;
+    mediaUrl?: string; // For audio/video
+    mediaType?: 'audio' | 'video';
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
 }
@@ -14,6 +16,8 @@ export default function MessageBubble({
     timestamp,
     isMe = false,
     image,
+    mediaUrl,
+    mediaType,
     reactions = [],
     isConsecutive = false,
 }: MessageBubbleProps) {
@@ -28,7 +32,7 @@ export default function MessageBubble({
                             ? 'rounded-2xl rounded-tr-md bg-indigo-600 text-white selection:bg-indigo-800 selection:text-indigo-100'
                             : 'rounded-2xl rounded-tl-md bg-white text-zinc-900 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700/50'
                         }
-          ${image ? 'p-1' : ''}
+          ${(image || mediaUrl) ? 'p-1' : ''}
           `}
                 >
                     {image && (
@@ -37,8 +41,20 @@ export default function MessageBubble({
                         </div>
                     )}
 
+                    {mediaUrl && mediaType === 'video' && (
+                        <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
+                            <video src={mediaUrl} controls className="h-full w-full object-cover" />
+                        </div>
+                    )}
+
+                    {mediaUrl && mediaType === 'audio' && (
+                        <div className={`mb-2 w-full min-w-[200px] ${isMe ? 'text-white' : 'text-zinc-900'}`}>
+                            <audio src={mediaUrl} controls className="w-full" />
+                        </div>
+                    )}
+
                     {content && (
-                        <p className={`leading-relaxed ${image ? 'px-2 pb-2' : ''}`}>{content}</p>
+                        <p className={`leading-relaxed ${(image || mediaUrl) ? 'px-2 pb-2' : ''}`}>{content}</p>
                     )}
 
                     {/* Timestamp - Positioned absolutely or inline? Inline is safer for flex */}

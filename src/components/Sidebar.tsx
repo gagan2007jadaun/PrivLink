@@ -1,15 +1,20 @@
 import React from 'react';
 import Link from 'next/link';
+import { useState } from 'react';
 import ChatListItem from './ChatListItem';
+import CreateChatModal from './CreateChatModal';
 import { Chat } from '@/lib/data';
 
 interface SidebarProps {
     chats: Chat[];
     activeChatId: string;
     onSelectChat: (chatId: string) => void;
+    onCreateChat?: (data: { type: string; name: string; description: string }) => void;
 }
 
-export default function Sidebar({ chats, activeChatId, onSelectChat }: SidebarProps) {
+export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat }: SidebarProps) {
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
     return (
         <aside className="hidden h-full w-80 flex-col border-r border-zinc-200 bg-white/50 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50 md:flex">
             {/* Header */}
@@ -18,7 +23,10 @@ export default function Sidebar({ chats, activeChatId, onSelectChat }: SidebarPr
                     <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
                         PrivLink
                     </h1>
-                    <button className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-indigo-600 dark:hover:bg-zinc-800">
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-indigo-600 dark:hover:bg-zinc-800"
+                    >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
@@ -81,13 +89,25 @@ export default function Sidebar({ chats, activeChatId, onSelectChat }: SidebarPr
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </Link>
-                <Link href="/" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-700 active:scale-[0.98]">
+                <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-700 active:scale-[0.98]"
+                >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                     Start New Chat
-                </Link>
+                </button>
             </div>
+
+            <CreateChatModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onCreate={(data) => {
+                    onCreateChat?.(data);
+                    setIsCreateModalOpen(false);
+                }}
+            />
         </aside>
     );
 }
