@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { fontOptions } from "@/lib/fonts";
+import { mockChats } from "@/lib/data";
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
@@ -23,8 +24,12 @@ export default function Settings() {
 
     return (
         <div className="flex h-screen w-full overflow-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans">
-            {/* Resuable Sidebar */}
-            <Sidebar />
+            {/* Resuable Sidebar with mock functionality for settings page */}
+            <Sidebar
+                chats={mockChats}
+                activeChatId=""
+                onSelectChat={() => { }}
+            />
 
             {/* Settings Content */}
             <main className="flex flex-1 flex-col min-w-0 bg-white/50 dark:bg-zinc-900/50">
@@ -88,8 +93,8 @@ export default function Settings() {
                                             key={font.variable}
                                             onClick={() => setFontVariable(font.variable)}
                                             className={`rounded-xl border px-4 py-3 text-sm font-medium transition-all text-left flex items-center justify-between ${fontVariable === font.variable
-                                                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-400'
-                                                    : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                                                ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-400'
+                                                : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:bg-zinc-800'
                                                 }`}
                                             style={{ fontFamily: `var(${font.variable})` }}
                                         >

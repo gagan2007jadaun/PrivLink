@@ -1,15 +1,22 @@
 import React from 'react';
 import Link from 'next/link';
 import ChatListItem from './ChatListItem';
+import { Chat } from '@/lib/data';
 
-export default function Sidebar() {
+interface SidebarProps {
+    chats: Chat[];
+    activeChatId: string;
+    onSelectChat: (chatId: string) => void;
+}
+
+export default function Sidebar({ chats, activeChatId, onSelectChat }: SidebarProps) {
     return (
         <aside className="hidden h-full w-80 flex-col border-r border-zinc-200 bg-white/50 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50 md:flex">
             {/* Header */}
             <div className="flex flex-col gap-4 p-4 pb-2">
                 <div className="flex items-center justify-between px-1">
                     <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                        Messages
+                        PrivLink
                     </h1>
                     <button className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-indigo-600 dark:hover:bg-zinc-800">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -50,46 +57,19 @@ export default function Sidebar() {
             {/* Chat List */}
             <div className="flex-1 overflow-y-auto px-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800">
                 <div className="space-y-1 py-2">
-                    <ChatListItem
-                        name="Sarah Wilson"
-                        lastMessage="That looks amazing! ✨"
-                        time="2m"
-                        unreadCount={2}
-                        isOnline={true}
-                        isActive={true}
-                    />
-                    <ChatListItem
-                        name="Design Team"
-                        lastMessage="Alex: Updated the figma file"
-                        time="12m"
-                        unreadCount={5}
-                    />
-                    <ChatListItem
-                        name="John Cooper"
-                        lastMessage="Can we schedule a call?"
-                        time="1h"
-                        isOnline={true}
-                    />
-                    <ChatListItem
-                        name="Marketing Group"
-                        lastMessage="You: Sent the report"
-                        time="3h"
-                    />
-                    <ChatListItem
-                        name="David Chen"
-                        lastMessage="Thanks for the help!"
-                        time="Yesterday"
-                    />
-                    <ChatListItem
-                        name="Emma Davis"
-                        lastMessage="See you tomorrow 👋"
-                        time="Yesterday"
-                    />
-                    <ChatListItem
-                        name="Project Alpha"
-                        lastMessage="Meeting confirmed for 10am"
-                        time="2d ago"
-                    />
+                    {chats.map((chat) => (
+                        <div key={chat.id} onClick={() => onSelectChat(chat.id)}>
+                            <ChatListItem
+                                name={chat.name}
+                                lastMessage={chat.lastMessage}
+                                time={chat.time}
+                                unreadCount={chat.unreadCount}
+                                isOnline={chat.isOnline}
+                                isActive={chat.id === activeChatId}
+                                avatarUrl={chat.avatarUrl}
+                            />
+                        </div>
+                    ))}
                 </div>
             </div>
 

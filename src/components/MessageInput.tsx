@@ -2,7 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
 
-export default function MessageInput() {
+interface MessageInputProps {
+    onSendMessage?: (content: string) => void;
+}
+
+export default function MessageInput({ onSendMessage }: MessageInputProps) {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [message, setMessage] = useState("");
     const pickerRef = useRef<HTMLDivElement>(null);
@@ -20,6 +24,20 @@ export default function MessageInput() {
 
     const onEmojiClick = (emojiData: any) => {
         setMessage((prev) => prev + emojiData.emoji);
+    };
+
+    const handleSend = () => {
+        if (message.trim() && onSendMessage) {
+            onSendMessage(message);
+            setMessage("");
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
     };
 
     return (
@@ -55,6 +73,7 @@ export default function MessageInput() {
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
                         className="w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100"
                     />
@@ -76,7 +95,10 @@ export default function MessageInput() {
                         </svg>
                     </button>
                     <div className="pl-1">
-                        <button className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 hover:bg-indigo-700 active:scale-95">
+                        <button
+                            onClick={handleSend}
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 hover:bg-indigo-700 active:scale-95"
+                        >
                             <svg className="h-5 w-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                             </svg>

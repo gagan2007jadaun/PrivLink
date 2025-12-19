@@ -2,26 +2,41 @@ import React from 'react';
 
 interface ChatHeaderProps {
     onToggleRightPanel: () => void;
+    name: string;
+    avatarUrl?: string; // Not used in design yet but good to have
+    isOnline?: boolean;
 }
 
-export default function ChatHeader({ onToggleRightPanel }: ChatHeaderProps) {
+export default function ChatHeader({ onToggleRightPanel, name, avatarUrl, isOnline }: ChatHeaderProps) {
     return (
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 bg-white/50 px-6 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50">
             <div className="flex items-center gap-4">
                 <div className="relative">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-sm font-bold text-white shadow-md ring-2 ring-white dark:ring-zinc-900">
-                        SW
+                        {avatarUrl ? (
+                            <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover" />
+                        ) : (
+                            name.slice(0, 2).toUpperCase()
+                        )}
                     </div>
-                    <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
+                    {isOnline && (
+                        <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
+                    )}
                 </div>
                 <div className="flex flex-col">
-                    <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Sarah Wilson</h2>
+                    <h2 className="text-sm font-bold text-zinc-900 dark:text-white">{name}</h2>
                     <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                        <span className="relative flex h-2 w-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                        </span>
-                        Active now
+                        {isOnline ? (
+                            <>
+                                <span className="relative flex h-2 w-2">
+                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                                </span>
+                                Active now
+                            </>
+                        ) : (
+                            <span className="text-zinc-500">Offline</span>
+                        )}
                     </span>
                 </div>
             </div>
