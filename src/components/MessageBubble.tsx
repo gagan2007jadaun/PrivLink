@@ -10,6 +10,8 @@ interface MessageBubbleProps {
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
     status?: 'sent' | 'delivered' | 'read';
+    heatScore?: number;
+    confidenceScore?: number;
 }
 
 export default function MessageBubble({
@@ -22,6 +24,8 @@ export default function MessageBubble({
     reactions = [],
     isConsecutive = false,
     status = 'sent',
+    heatScore = 0,
+    confidenceScore,
 }: MessageBubbleProps) {
     return (
         <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
@@ -35,6 +39,7 @@ export default function MessageBubble({
                             : 'rounded-2xl rounded-tl-md bg-white text-zinc-900 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700/50'
                         }
           ${(image || mediaUrl) ? 'p-1' : ''}
+          ${confidenceScore !== undefined ? (confidenceScore < 70 ? 'border-b-[3px] border-dotted border-white/40' : 'border-b-[3px] border-solid border-white/20') : ''}
           `}
                 >
                     {image && (
@@ -60,8 +65,10 @@ export default function MessageBubble({
                     )}
 
                     {/* Timestamp & Status */}
-                    <div className={`mt-1 flex items-center justify-end gap-1.5 text-[10px] sm:text-[11px] font-medium opacity-70 ${isMe ? 'text-indigo-100' : 'text-zinc-400'}`}>
-                        {timestamp}
+                    <div className={`mt-1 flex items-center justify-end gap-1.5`}>
+                        <span className={`text-[10px] opacity-45 ${isMe ? 'text-indigo-100' : 'text-zinc-400 dark:text-zinc-500'}`}>
+                            {timestamp}
+                        </span>
                         {isMe && (
                             <div className="flex items-center" title={status}>
                                 {status === 'sent' && (
@@ -100,9 +107,15 @@ export default function MessageBubble({
                         {reactions.map((r, i) => (
                             <div key={i} className="flex items-center gap-1 rounded-full border border-white bg-zinc-50 px-1.5 py-0.5 text-[10px] shadow-sm dark:border-zinc-900 dark:bg-zinc-800">
                                 <span>{r.emoji}</span>
-                                <span className="font-semibold text-zinc-600 dark:text-zinc-400">{r.count}</span>
+                                <span className="text-xs text-zinc-500 dark:text-zinc-400">{r.count}</span>
                             </div>
                         ))}
+                        {/* Heatmap Indicator */}
+                        {heatScore > 50 && (
+                            <div className="absolute -top-2 -right-2 flex items-center justify-center rounded-full bg-orange-100 p-1 shadow-sm ring-1 ring-white dark:bg-zinc-800 dark:ring-zinc-900" title="High Interest Message">
+                                <span className="text-xs">🔥</span>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

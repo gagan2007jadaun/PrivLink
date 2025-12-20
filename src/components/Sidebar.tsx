@@ -40,6 +40,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input
+                        suppressHydrationWarning
                         type="text"
                         placeholder="Search messages..."
                         className="w-full rounded-xl border-none bg-zinc-100 py-2 pl-9 pr-4 text-sm font-medium text-zinc-900 transition-all placeholder:text-zinc-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:bg-zinc-800 md:text-sm"

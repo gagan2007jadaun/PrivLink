@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
+import { useTypingMetrics } from '@/hooks/useTypingMetrics';
 
 interface MessageInputProps {
-    onSendMessage?: (content: string, media?: { type: 'audio' | 'video', url: string }) => void;
+    onSendMessage?: (content: string, media?: { type: 'audio' | 'video', url: string }, confidenceScore?: number) => void;
 }
 
 export default function MessageInput({ onSendMessage }: MessageInputProps) {
@@ -19,6 +20,9 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
     const [timer, setTimer] = useState(0);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const chunksRef = useRef<BlobPart[]>([]);
+
+    // Typing Metrics Hook
+    const metrics = useTypingMetrics(message);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -104,20 +108,33 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
 
     const handleSend = () => {
         if (message.trim() && onSendMessage) {
-            onSendMessage(message);
+            onSendMessage(message, undefined, metrics.confidenceScore);
             setMessage("");
+            metrics.resetMetrics();
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        metrics.handleKeyDown(e);
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSend();
         }
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setMessage(e.target.value);
+        metrics.handleChange(e.target.value);
+    };
+
     return (
         <div className="relative p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
+            {/* Unsent Intent Indicator */}
+            {metrics.isUnsentIntent && (
+                <div className="absolute -top-6 left-6 text-xs italic text-zinc-400 animate-pulse bg-white/80 px-2 py-1 rounded-md shadow-sm dark:bg-zinc-800/80">
+                    You almost said something here...
+                </div>
+            )}
             {showEmojiPicker && (
                 <div className="absolute bottom-full left-4 mb-2 z-50 shadow-2xl rounded-2xl" ref={pickerRef}>
                     <EmojiPicker
@@ -169,7 +186,7 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
                     <input
                         type="text"
                         value={message}
-                        onChange={(e) => setMessage(e.target.value)}
+                        onChange={handleChange}
                         onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
                         className="w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100"

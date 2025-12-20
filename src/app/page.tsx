@@ -5,10 +5,51 @@ import ChatHeader from "@/components/ChatHeader";
 import MessageBubble from "@/components/MessageBubble";
 import MessageInput from "@/components/MessageInput";
 import RightPanel from "@/components/RightPanel";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { mockChats, mockMessages, Message, Chat } from "@/lib/data";
 
 import { useSettingsStore } from "@/store/useSettingsStore";
+
+// Hook: Track User Attention
+function useAttention() {
+  const [isAttentionActive, setIsAttentionActive] = useState(false);
+  const lastActivityRef = useRef(Date.now());
+  const attentionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleActivity = () => {
+      lastActivityRef.current = Date.now();
+      if (!isAttentionActive && document.hasFocus()) {
+        setIsAttentionActive(true);
+      }
+
+      // Reset "Idle" timer
+      if (attentionTimeoutRef.current) clearTimeout(attentionTimeoutRef.current);
+      attentionTimeoutRef.current = setTimeout(() => {
+        setIsAttentionActive(false);
+      }, 2000); // 2 seconds idle = No attention
+    };
+
+    const handleFocus = () => handleActivity();
+    const handleBlur = () => setIsAttentionActive(false);
+
+    window.addEventListener("mousemove", handleActivity);
+    window.addEventListener("scroll", handleActivity);
+    window.addEventListener("keydown", handleActivity);
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      window.removeEventListener("mousemove", handleActivity);
+      window.removeEventListener("scroll", handleActivity);
+      window.removeEventListener("keydown", handleActivity);
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, [isAttentionActive]);
+
+  return isAttentionActive;
+}
 
 export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
@@ -18,13 +59,110 @@ export default function Home() {
   const [activeChatId, setActiveChatId] = useState(mockChats[0].id);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
+  const [isScrolledHeader, setIsScrolledHeader] = useState(false); // Header calm-down state
   const { silentRead } = useSettingsStore();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Attention Tracking
+  const hasAttention = useAttention();
+
   // Screenshot heuristic state
   const lastBlurTime = useRef<number>(0);
+
+  // Selective Read Logic
+  const readUpto = useCallback((messageId: string) => {
+    // Requirements for "Read":
+    // 1. App must be focused & user active (hasAttention)
+    // 2. Global "Silent Read" must be OFF
+    // 3. One-way "Ghost Mode" must be OFF
+
+    // Find current chat to check per-chat settings
+    const currentChat = chats.find(c => c.id === activeChatId);
+    if (!hasAttention || silentRead || currentChat?.isSilentRead) return;
+
+    setChats(prev => prev.map(c => {
+      if (c.id === activeChatId && (c.unreadCount || 0) > 0) {
+        // Simple Mock: If we see the *last* message, clear unread count.
+        // In real app, we'd check index > readIndex.
+        const isLastMessage = messages.length > 0 && messages[messages.length - 1].id === messageId;
+        if (isLastMessage) {
+          return { ...c, unreadCount: 0 };
+        }
+      }
+      return c;
+    }));
+  }, [activeChatId, hasAttention, messages, silentRead]);
+
+  // Use IntersectionObserver to call readUpto for *visible* messages AND track Heatmap
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+
+    const entryTimes = new Map<string, number>();
+
+    const observer = new IntersectionObserver((entries) => {
+      const now = Date.now();
+      entries.forEach(entry => {
+        const messageId = entry.target.getAttribute("data-message-id");
+        if (!messageId) return;
+
+        if (entry.isIntersecting) {
+          // READ LOGIC
+          if (hasAttention) readUpto(messageId);
+
+          // HEATMAP START
+          if (!entryTimes.has(messageId)) {
+            entryTimes.set(messageId, now);
+          }
+        } else {
+          // HEATMAP END
+          const startTime = entryTimes.get(messageId);
+          if (startTime) {
+            const duration = now - startTime;
+            entryTimes.delete(messageId);
+
+            // Calculate Heat Score
+            setMessages(prev => prev.map(msg => {
+              if (msg.id === messageId) {
+                // Formula: Heat = Duration (ms) / Length (chars) * Factor
+                // Example: 2000ms / 20 chars = 100 heat. 
+                // Threshold ~ 50.
+                const length = msg.content?.length || 10;
+                const score = Math.min(100, Math.floor((duration / length) * 0.5)); // Arbitrary factor
+
+                // Only update if significantly hotter or new
+                if (score > (msg.heatScore || 0)) {
+                  return { ...msg, heatScore: score };
+                }
+              }
+              return msg;
+            }));
+          }
+        }
+      });
+    }, { root: scrollContainerRef.current, threshold: 0.8 });
+
+    // Note: We need to actually observe elements. Since we render messages in a map, 
+    // we'll need to make sure we query them. 
+    // For this iteration, we assume the MessageBubble container has data-message-id
+    // We will add this observation logic in a separate effect or after render in a real app,
+    // but for this file structure, we might need to select them manually:
+    const userMessages = document.querySelectorAll("[data-message-id]");
+    userMessages.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [readUpto, hasAttention, messages]); // Re-run when messages change to observe new ones
+
+  // Auto-scroll logic also triggers read if attention is present
+  useEffect(() => {
+    if (isScrolledBottom) {
+      scrollToBottom();
+      if (messages.length > 0) {
+        readUpto(messages[messages.length - 1].id);
+      }
+    }
+  }, [messages, isScrolledBottom, readUpto]);
 
   useEffect(() => {
     // Screenshot Detection Heuristics
@@ -84,6 +222,9 @@ export default function Home() {
     const container = scrollContainerRef.current;
     if (container) {
       const { scrollTop, scrollHeight, clientHeight } = container;
+      // Check if scrolled based on threshold for Header Micro-Motion
+      setIsScrolledHeader(scrollTop > 40);
+
       // Check if scrolled to bottom with a small tolerance (e.g. 20px)
       const isBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 20;
       setIsScrolledBottom(isBottom);
@@ -110,20 +251,67 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // Smarter Auto-Scroll Logic
+  const prevMessagesLength = useRef(messages.length);
 
-  const handleSendMessage = (content: string) => {
+  useEffect(() => {
+    // Only handle auto-scroll if new messages are added
+    if (messages.length > prevMessagesLength.current) {
+      const lastMessage = messages[messages.length - 1];
+
+      // If I sent it, or if I was already at the bottom, scroll down
+      if (lastMessage.isMe || isScrolledBottom) {
+        scrollToBottom();
+      }
+    }
+    prevMessagesLength.current = messages.length;
+  }, [messages, isScrolledBottom]);
+
+  // Handle chat selection with "Biometric Lock"
+  const handleChatSelect = (chatId: string) => {
+    const chat = chats.find(c => c.id === chatId);
+    if (chat?.isLocked) {
+      // Mock Biometric Auth
+      const isAuthenticated = window.confirm(`🔐 "Biometric Scan" Required\n\nClick OK to simulate successful FaceID/TouchID.`);
+      if (!isAuthenticated) return;
+    }
+    setActiveChatId(chatId);
+    setShowRightPanel(true); // Ensure panel opens on mobile/tablet logic if applicable
+  };
+
+  const handleSendMessage = (content: string, media?: { type: 'audio' | 'video', url: string }, confidenceScore?: number) => {
+    const type = media ? media.type : 'text';
+    const mediaUrl = media ? media.url : undefined;
+
     const newMessage: Message = {
       id: Date.now().toString(),
-      content,
+      content: type === 'text' ? content : undefined,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: true,
+      image: undefined, // MessageInput doesn't handle images yet in this signature, but if it did...
+      // actually MessageInput might send images via media? 
+      // The previous definition had image? 
+      // Let's assume for now media is audio/video. 
+      // If image upload is added back, we need to handle it.
+      // But looking at MessageInput, it only has audio/video recording logic for now in the `media` arg?
+      // Wait, MessageInput has file input ref but the `onChange` was empty in the previous view. 
+      // I'll stick to audio/video for `media` and 'text' for content.
+      mediaUrl: mediaUrl,
+      mediaType: media ? media.type : undefined,
       isConsecutive: messages.length > 0 && messages[messages.length - 1].isMe,
       status: 'sent',
+      confidenceScore: confidenceScore, // Store the calculated confidence score
     };
     setMessages((prev) => [...prev, newMessage]);
+
+    // Simulate "Drift" reduction on interaction
+    if (activeChat.driftLevel === 'high') {
+      const updatedChats = chats.map(c =>
+        c.id === activeChatId ? { ...c, driftLevel: 'medium' as const } : c
+      );
+      // In a real app, we'd update the store/state properly
+      // setChats(updatedChats);
+    }
 
     // Simulate backend "Delivered" event (Receiver Socket Connected)
     setTimeout(() => {
@@ -133,7 +321,12 @@ export default function Home() {
 
       // Simulate "Read" event (Chat Open + Bottom Scroll + Delay)
       // Adaptive Delay: Use contact's average read time for natural feel
-      const baseDelay = activeChat.avgReadTime || 2000;
+      // OR use Relationship Mode presets
+      let baseDelay = activeChat.avgReadTime || 2000;
+
+      if (activeChat.relationshipMode === 'work') baseDelay = 500; // Instant
+      if (activeChat.relationshipMode === 'casual') baseDelay = 20000; // Slow
+
       // Add variance: +/- 20%
       const variance = baseDelay * 0.2;
       const adaptiveDelay = baseDelay + (Math.random() * variance * 2 - variance);
@@ -179,17 +372,35 @@ export default function Home() {
       <Sidebar
         chats={chats}
         activeChatId={activeChatId}
-        onSelectChat={setActiveChatId}
+        onSelectChat={handleChatSelect}
         onCreateChat={handleCreateChat}
       />
 
       {/* Main Chat Area */}
-      <main className="flex flex-1 flex-col min-w-0 bg-white/50 dark:bg-zinc-900/50 relative">
+      {/* Background Drift Logic: 
+          Warm (#9AA57A tint) -> Low Drift
+          Neutral (Grey) -> Medium Drift
+          Cold (#8A7F7F tint) -> High Drift
+      */}
+      <main
+        className="flex flex-1 flex-col min-w-0 relative transition-colors duration-[120000ms] ease-linear"
+        style={{
+          backgroundColor:
+            activeChat.driftLevel === 'high' ? '#F4F4F5' : // Cold (using zinc-100ish for now, tint via overlay maybe better but request says bg color)
+              activeChat.driftLevel === 'medium' ? '#FAFAFA' : // Neutral
+                '#FEFCF5' // Warm tint (custom)
+        }}
+      >
+        {/* Memory Drift Overlay for finer tint control if needed, but using direct bg for now as per "transition background-color" request */}
+
         <ChatHeader
           onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
           name={activeChat.name}
           avatarUrl={activeChat.avatarUrl}
           isOnline={activeChat.isOnline}
+          driftLevel={activeChat.driftLevel}
+          interestScore={activeChat.interestScore}
+          isScrolled={isScrolledHeader}
         />
 
         {/* Messages Container */}
@@ -213,16 +424,22 @@ export default function Home() {
               </div>
             ) : (
               messages.map((msg) => (
-                <MessageBubble
+                <div
                   key={msg.id}
-                  content={msg.content}
-                  timestamp={msg.timestamp}
-                  isMe={msg.isMe}
-                  image={msg.image}
-                  reactions={msg.reactions}
-                  isConsecutive={msg.isConsecutive}
-                  status={msg.status}
-                />
+                  data-message-id={msg.id}
+                  className={`flex w-full ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
+                >
+                  <MessageBubble
+                    content={msg.content}
+                    timestamp={msg.timestamp}
+                    isMe={msg.isMe}
+                    image={msg.image}
+                    reactions={msg.reactions}
+                    isConsecutive={msg.isConsecutive}
+                    status={msg.status}
+                    heatScore={msg.heatScore}
+                  />
+                </div>
               ))
             )}
             <div ref={messagesEndRef} />

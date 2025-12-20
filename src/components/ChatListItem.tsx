@@ -8,6 +8,7 @@ interface ChatListItemProps {
   unreadCount?: number;
   avatarUrl?: string; // Optional for now, can use placeholders or initials
   isOnline?: boolean;
+  isLocked?: boolean;
 }
 
 export default function ChatListItem({
@@ -18,22 +19,31 @@ export default function ChatListItem({
   unreadCount = 0,
   avatarUrl,
   isOnline = false,
+  isLocked = false, // Default value for isLocked
 }: ChatListItemProps) {
   return (
     <div
       className={`group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-all duration-200 
       ${isActive ? 'bg-indigo-50 dark:bg-zinc-800/50' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
     >
-      <div className="relative shrink-0">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-sm font-medium text-white shadow-xl shadow-indigo-500/10 ring-2 ring-white dark:ring-zinc-900">
-           {avatarUrl ? (
-               <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover" />
-           ) : (
-               name.slice(0, 2).toUpperCase()
-           )}
+      {/* Avatar */}
+      <div className="relative h-12 w-12 flex-shrink-0">
+        <div className={`h-full w-full rounded-full p-0.5 ${isActive ? 'bg-indigo-500' : 'bg-transparent'}`}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover bg-white" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 font-bold text-lg text-indigo-500">
+              {name.substring(0, 2).toUpperCase()}
+            </div>
+          )}
         </div>
-        {isOnline && (
-          <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
+        {isLocked && (
+          <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 border-2 border-white dark:border-zinc-950 text-[10px]" title="Locked">
+            🔐
+          </div>
+        )}
+        {isOnline && !isLocked && (
+          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-950" />
         )}
       </div>
 

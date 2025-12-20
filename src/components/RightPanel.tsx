@@ -6,17 +6,28 @@ interface RightPanelProps {
 }
 
 export default function RightPanel({ chat }: RightPanelProps) {
+    const [isPulsing, setIsPulsing] = React.useState(false);
+
     if (!chat) return null;
 
-    // Calculate color based on score
-    const getScoreColor = (score: number) => {
-        if (score >= 80) return 'text-emerald-500';
-        if (score >= 50) return 'text-amber-500';
-        return 'text-red-500';
+    const score = chat.interestScore || 100;
+
+    // Pulse animation on score change
+    React.useEffect(() => {
+        setIsPulsing(true);
+        const timer = setTimeout(() => setIsPulsing(false), 300);
+        return () => clearTimeout(timer);
+    }, [score]);
+
+    // Calculate color based on score using tokens is tricky with Tailwind classes if we want exact vars
+    // But we can use style prop or custom classes. Let's use style prop for the tokens to be specific.
+    const getScoreColorStyle = (score: number) => {
+        if (score >= 80) return 'var(--interest-high)';
+        if (score >= 50) return 'var(--interest-mid)';
+        return 'var(--interest-low)';
     };
 
-    const score = chat.trustScore || 100;
-    const scoreColor = getScoreColor(score);
+    const scoreColorStyle = getScoreColorStyle(score);
 
     return (
         <aside className="hidden h-full w-72 flex-col border-l border-zinc-200 bg-white/50 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50 xl:flex">
@@ -43,14 +54,20 @@ export default function RightPanel({ chat }: RightPanelProps) {
                     <h2 className="text-lg font-bold text-zinc-900 dark:text-white text-center">{chat.name}</h2>
                     <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">@username</p>
 
-                    {/* Trust Score Badge */}
+                    {/* Interest Score Badge */}
                     <div className="mt-4 flex flex-col items-center gap-1 rounded-2xl bg-zinc-50 px-4 py-3 dark:bg-zinc-800/50">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Trust Score</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Interest Score</span>
                         <div className="flex items-baseline gap-1">
-                            <span className={`text-2xl font-bold ${scoreColor}`}>
+                            <span
+                                className={`text-2xl font-bold transition-all duration-300 ease-out`}
+                                style={{
+                                    color: scoreColorStyle,
+                                    transform: isPulsing ? 'scale(1.03)' : 'scale(1)'
+                                }}
+                            >
                                 {score}
                             </span>
-                            <span className="text-sm font-medium text-zinc-400">/100</span>
+                            <span className="text-xs font-medium text-zinc-400 opacity-[0.35]">/100</span>
                         </div>
                     </div>
 
@@ -133,6 +150,45 @@ export default function RightPanel({ chat }: RightPanelProps) {
                                     https://www.figma.com/file/xyz...
                                 </a>
                                 <p className="text-xs text-zinc-500">Figma - Project Files</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Relationship Settings (New) */}
+                    <div className="mt-6 border-t border-zinc-100 pt-6 dark:border-zinc-800">
+                        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-zinc-400">Relationship Settings</h3>
+
+                        {/* One-way Silent Mode */}
+                        <div className="mb-4 flex items-center justify-between">
+                            <div>
+                                <div className="font-medium text-zinc-900 dark:text-white">Ghost Mode</div>
+                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Read without receipts</div>
+                            </div>
+                            <button
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${chat.isSilentRead ? 'bg-indigo-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                                // Mock Toggle Logic (In real app, update store/backend)
+                                onClick={() => alert("Ghost Mode toggled (Mock)")}
+                            >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${chat.isSilentRead ? 'translate-x-6' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+
+                        {/* Relationship Mode */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Relationship Mode</label>
+                            <div className="flex rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
+                                {['work', 'personal', 'casual'].map((mode) => (
+                                    <button
+                                        key={mode}
+                                        onClick={() => alert(`Set mode to ${mode} (Mock)`)}
+                                        className={`flex-1 rounded-lg py-1.5 text-xs font-medium capitalize transition-all ${(chat.relationshipMode || 'personal') === mode
+                                            ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
+                                            : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                                            }`}
+                                    >
+                                        {mode}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>
