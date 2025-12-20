@@ -8,6 +8,9 @@ export interface Message {
     mediaType?: 'audio' | 'video';
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
+    status?: 'sent' | 'delivered' | 'read';
+    deliveredAt?: string;
+    readAt?: string;
 }
 
 export interface Chat {

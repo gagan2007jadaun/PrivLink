@@ -25,13 +25,18 @@ export default function Home() {
     chats.find(c => c.id === activeChatId) || chats[0],
     [activeChatId, chats]);
 
-  // Mark chat as seen
+  // Mark chat as seen with delay
   const markAsSeen = (chatId: string) => {
-    setChats(prev => prev.map(chat =>
-      chat.id === chatId && (chat.unreadCount || 0) > 0
-        ? { ...chat, unreadCount: 0 }
-        : chat
-    ));
+    // Human-like delay logic
+    const delay = Math.floor(Math.random() * 2500) + 1500;
+
+    setTimeout(() => {
+      setChats(prev => prev.map(chat =>
+        chat.id === chatId && (chat.unreadCount || 0) > 0
+          ? { ...chat, unreadCount: 0 }
+          : chat
+      ));
+    }, delay);
   };
 
   const handleScroll = () => {
@@ -75,10 +80,26 @@ export default function Home() {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: true,
       isConsecutive: messages.length > 0 && messages[messages.length - 1].isMe,
+      status: 'sent',
     };
     setMessages((prev) => [...prev, newMessage]);
 
-    // In a real app, you'd also update the backend/store here
+    // Simulate backend "Delivered" event (Receiver Socket Connected)
+    setTimeout(() => {
+      setMessages(prev => prev.map(m =>
+        m.id === newMessage.id ? { ...m, status: 'delivered', deliveredAt: new Date().toISOString() } : m
+      ));
+
+      // Simulate "Read" event (Chat Open + Bottom Scroll + Delay)
+      // Since we can't control the other user, we simulate it automatically for demo
+      const readDelay = Math.floor(Math.random() * 2500) + 1500;
+      setTimeout(() => {
+        setMessages(prev => prev.map(m =>
+          m.id === newMessage.id ? { ...m, status: 'read', readAt: new Date().toISOString() } : m
+        ));
+      }, readDelay);
+
+    }, 1500);
   };
 
   const handleCreateChat = (data: { type: string; name: string; description: string }) => {
@@ -155,6 +176,7 @@ export default function Home() {
                   image={msg.image}
                   reactions={msg.reactions}
                   isConsecutive={msg.isConsecutive}
+                  status={msg.status}
                 />
               ))
             )}

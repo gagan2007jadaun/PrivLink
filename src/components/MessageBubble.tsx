@@ -9,6 +9,7 @@ interface MessageBubbleProps {
     mediaType?: 'audio' | 'video';
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
+    status?: 'sent' | 'delivered' | 'read';
 }
 
 export default function MessageBubble({
@@ -20,6 +21,7 @@ export default function MessageBubble({
     mediaType,
     reactions = [],
     isConsecutive = false,
+    status = 'sent',
 }: MessageBubbleProps) {
     return (
         <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
@@ -57,14 +59,37 @@ export default function MessageBubble({
                         <p className={`leading-relaxed ${(image || mediaUrl) ? 'px-2 pb-2' : ''}`}>{content}</p>
                     )}
 
-                    {/* Timestamp - Positioned absolutely or inline? Inline is safer for flex */}
+                    {/* Timestamp & Status */}
                     <div className={`mt-1 flex items-center justify-end gap-1.5 text-[10px] sm:text-[11px] font-medium opacity-70 ${isMe ? 'text-indigo-100' : 'text-zinc-400'}`}>
                         {timestamp}
                         {isMe && (
-                            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                                <path d="M21 7l-1.41-1.41L9 16.17 4.83 12l-1.42 1.41L9 19 21 7z" fillOpacity="0.5" transform="translate(4,0)" />
-                            </svg>
+                            <div className="flex items-center" title={status}>
+                                {status === 'sent' && (
+                                    <svg viewBox="0 0 16 15" width="16" height="15" className="text-indigo-200/70">
+                                        <path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L4.566 14.377l-3.609-3.419a.364.364 0 0 0-.513.008l-.5.509a.364.364 0 0 0 .009.513l4.316 4.088a.36.36 0 0 0 .506-.01L15.074 3.827a.365.365 0 0 0-.063-.51z" />
+                                    </svg>
+                                )}
+                                {status === 'delivered' && (
+                                    <div className="flex -space-x-1">
+                                        <svg viewBox="0 0 16 15" width="16" height="15" className="text-indigo-200/70">
+                                            <path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L4.566 14.377l-3.609-3.419a.364.364 0 0 0-.513.008l-.5.509a.364.364 0 0 0 .009.513l4.316 4.088a.36.36 0 0 0 .506-.01L15.074 3.827a.365.365 0 0 0-.063-.51z" />
+                                        </svg>
+                                        <svg viewBox="0 0 16 15" width="16" height="15" className="text-indigo-200/70 relative -left-[7px]">
+                                            <path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L4.566 14.377l-3.609-3.419a.364.364 0 0 0-.513.008l-.5.509a.364.364 0 0 0 .009.513l4.316 4.088a.36.36 0 0 0 .506-.01L15.074 3.827a.365.365 0 0 0-.063-.51z" />
+                                        </svg>
+                                    </div>
+                                )}
+                                {status === 'read' && (
+                                    <div className="flex -space-x-1">
+                                        <svg viewBox="0 0 16 15" width="16" height="15" className="text-blue-300">
+                                            <path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L4.566 14.377l-3.609-3.419a.364.364 0 0 0-.513.008l-.5.509a.364.364 0 0 0 .009.513l4.316 4.088a.36.36 0 0 0 .506-.01L15.074 3.827a.365.365 0 0 0-.063-.51z" />
+                                        </svg>
+                                        <svg viewBox="0 0 16 15" width="16" height="15" className="text-blue-300 relative -left-[7px]">
+                                            <path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L4.566 14.377l-3.609-3.419a.364.364 0 0 0-.513.008l-.5.509a.364.364 0 0 0 .009.513l4.316 4.088a.36.36 0 0 0 .506-.01L15.074 3.827a.365.365 0 0 0-.063-.51z" />
+                                        </svg>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
