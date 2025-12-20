@@ -132,13 +132,17 @@ export default function Home() {
       ));
 
       // Simulate "Read" event (Chat Open + Bottom Scroll + Delay)
-      // Since we can't control the other user, we simulate it automatically for demo
-      const readDelay = Math.floor(Math.random() * 2500) + 1500;
+      // Adaptive Delay: Use contact's average read time for natural feel
+      const baseDelay = activeChat.avgReadTime || 2000;
+      // Add variance: +/- 20%
+      const variance = baseDelay * 0.2;
+      const adaptiveDelay = baseDelay + (Math.random() * variance * 2 - variance);
+
       setTimeout(() => {
         setMessages(prev => prev.map(m =>
           m.id === newMessage.id ? { ...m, status: 'read', readAt: new Date().toISOString() } : m
         ));
-      }, readDelay);
+      }, adaptiveDelay);
 
     }, 1500);
   };

@@ -22,6 +22,7 @@ export interface Chat {
     unreadCount?: number;
     isOnline?: boolean;
     trustScore?: number; // 0-100
+    avgReadTime?: number; // ms
 }
 
 export const mockChats: Chat[] = [
@@ -33,6 +34,7 @@ export const mockChats: Chat[] = [
         unreadCount: 2,
         isOnline: true,
         trustScore: 95,
+        avgReadTime: 2000,
     },
     {
         id: "2",
@@ -41,6 +43,7 @@ export const mockChats: Chat[] = [
         time: "12m",
         unreadCount: 5,
         trustScore: 88,
+        avgReadTime: 5000,
     },
     {
         id: "3",
@@ -49,6 +52,7 @@ export const mockChats: Chat[] = [
         time: "1h",
         isOnline: true,
         trustScore: 42,
+        avgReadTime: 8000,
     },
     {
         id: "4",
