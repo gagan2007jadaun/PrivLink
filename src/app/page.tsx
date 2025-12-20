@@ -10,18 +10,46 @@ import { mockChats, mockMessages, Message, Chat } from "@/lib/data";
 
 export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize chats state from mock data
+  // Initialize state
   const [chats, setChats] = useState<Chat[]>(mockChats);
-  // Initialize active chat with the first one
   const [activeChatId, setActiveChatId] = useState(mockChats[0].id);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isScrolledBottom, setIsScrolledBottom] = useState(true);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Get current chat details
   const activeChat = useMemo(() =>
     chats.find(c => c.id === activeChatId) || chats[0],
     [activeChatId, chats]);
+
+  // Mark chat as seen
+  const markAsSeen = (chatId: string) => {
+    setChats(prev => prev.map(chat =>
+      chat.id === chatId && (chat.unreadCount || 0) > 0
+        ? { ...chat, unreadCount: 0 }
+        : chat
+    ));
+  };
+
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // Check if scrolled to bottom with a small tolerance (e.g. 20px)
+      const isBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 20;
+      setIsScrolledBottom(isBottom);
+    }
+  };
+
+  // Check if we should mark as seen when scroll position or active chat changes
+  useEffect(() => {
+    if (activeChatId && isScrolledBottom) {
+      markAsSeen(activeChatId);
+    }
+  }, [activeChatId, isScrolledBottom]);
 
   // Load messages when active chat changes
   useEffect(() => {
@@ -99,7 +127,11 @@ export default function Home() {
         />
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800">
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800"
+        >
           <div className="mx-auto max-w-3xl space-y-6">
 
             {/* Date Divider */}

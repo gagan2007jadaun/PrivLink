@@ -24,6 +24,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                         PrivLink
                     </h1>
                     <button
+                        suppressHydrationWarning
                         onClick={() => setIsCreateModalOpen(true)}
                         className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-indigo-600 dark:hover:bg-zinc-800"
                     >
