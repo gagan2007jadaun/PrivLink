@@ -1,6 +1,23 @@
 import React from 'react';
+import { Chat } from '@/lib/data';
 
-export default function RightPanel() {
+interface RightPanelProps {
+    chat?: Chat;
+}
+
+export default function RightPanel({ chat }: RightPanelProps) {
+    if (!chat) return null;
+
+    // Calculate color based on score
+    const getScoreColor = (score: number) => {
+        if (score >= 80) return 'text-emerald-500';
+        if (score >= 50) return 'text-amber-500';
+        return 'text-red-500';
+    };
+
+    const score = chat.trustScore || 100;
+    const scoreColor = getScoreColor(score);
+
     return (
         <aside className="hidden h-full w-72 flex-col border-l border-zinc-200 bg-white/50 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50 xl:flex">
 
@@ -11,14 +28,31 @@ export default function RightPanel() {
                 <div className="flex flex-col items-center">
                     <div className="relative mb-4">
                         <div className="h-24 w-24 rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 p-0.5 ring-4 ring-white dark:ring-zinc-900">
-                            <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 font-bold text-2xl text-indigo-500">
-                                SW
-                            </div>
+                            {chat.avatarUrl ? (
+                                <img src={chat.avatarUrl} alt={chat.name} className="h-full w-full rounded-full object-cover bg-white" />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 font-bold text-2xl text-indigo-500">
+                                    {chat.name.substring(0, 2).toUpperCase()}
+                                </div>
+                            )}
                         </div>
-                        <span className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-emerald-500 ring-4 ring-white dark:ring-zinc-900" />
+                        {chat.isOnline && (
+                            <span className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-emerald-500 ring-4 ring-white dark:ring-zinc-900" />
+                        )}
                     </div>
-                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Sarah Wilson</h2>
-                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">@sarahw_design</p>
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white text-center">{chat.name}</h2>
+                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">@username</p>
+
+                    {/* Trust Score Badge */}
+                    <div className="mt-4 flex flex-col items-center gap-1 rounded-2xl bg-zinc-50 px-4 py-3 dark:bg-zinc-800/50">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Trust Score</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className={`text-2xl font-bold ${scoreColor}`}>
+                                {score}
+                            </span>
+                            <span className="text-sm font-medium text-zinc-400">/100</span>
+                        </div>
+                    </div>
 
                     <div className="mt-6 flex w-full gap-2">
                         <button className="flex-1 rounded-xl bg-zinc-100 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700">

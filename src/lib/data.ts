@@ -21,6 +21,7 @@ export interface Chat {
     time: string;
     unreadCount?: number;
     isOnline?: boolean;
+    trustScore?: number; // 0-100
 }
 
 export const mockChats: Chat[] = [
@@ -31,6 +32,7 @@ export const mockChats: Chat[] = [
         time: "2m",
         unreadCount: 2,
         isOnline: true,
+        trustScore: 95,
     },
     {
         id: "2",
@@ -38,6 +40,7 @@ export const mockChats: Chat[] = [
         lastMessage: "Alex: Updated the figma file",
         time: "12m",
         unreadCount: 5,
+        trustScore: 88,
     },
     {
         id: "3",
@@ -45,6 +48,7 @@ export const mockChats: Chat[] = [
         lastMessage: "Can we schedule a call?",
         time: "1h",
         isOnline: true,
+        trustScore: 42,
     },
     {
         id: "4",

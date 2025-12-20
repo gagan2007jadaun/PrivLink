@@ -8,6 +8,8 @@ import RightPanel from "@/components/RightPanel";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { mockChats, mockMessages, Message, Chat } from "@/lib/data";
 
+import { useSettingsStore } from "@/store/useSettingsStore";
+
 export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
 
@@ -16,9 +18,45 @@ export default function Home() {
   const [activeChatId, setActiveChatId] = useState(mockChats[0].id);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
+  const { silentRead } = useSettingsStore();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Screenshot heuristic state
+  const lastBlurTime = useRef<number>(0);
+
+  useEffect(() => {
+    // Screenshot Detection Heuristics
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Heuristic: If hidden shortly after blur, possible screenshot/recording setup or switching
+        console.warn("Visibility hidden - Possible capture event");
+      }
+    };
+
+    const handleBlur = () => {
+      lastBlurTime.current = Date.now();
+      console.log("Window blurred");
+    };
+
+    // Combined Heuristic (Example: Blur + Hidden within small window)
+    const checkHeuristics = () => {
+      if (document.hidden && Date.now() - lastBlurTime.current < 500) {
+        console.warn("High Probability Screenshot/Capture detected");
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener("visibilitychange", checkHeuristics);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleBlur);
+      document.removeEventListener("visibilitychange", checkHeuristics);
+    };
+  }, []);
 
   // Get current chat details
   const activeChat = useMemo(() =>
@@ -27,6 +65,9 @@ export default function Home() {
 
   // Mark chat as seen with delay
   const markAsSeen = (chatId: string) => {
+    // Respect "Seen Silently" mode
+    if (silentRead) return;
+
     // Human-like delay logic
     const delay = Math.floor(Math.random() * 2500) + 1500;
 
@@ -189,7 +230,7 @@ export default function Home() {
       </main>
 
       {/* Right Sidebar */}
-      {showRightPanel && <RightPanel />}
+      {showRightPanel && <RightPanel chat={activeChat} />}
     </div >
   );
 }

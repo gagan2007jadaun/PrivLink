@@ -10,7 +10,7 @@ import { mockChats } from "@/lib/data";
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
-    const { fontVariable, setFontVariable } = useSettingsStore();
+    const { fontVariable, setFontVariable, silentRead, toggleSilentRead } = useSettingsStore();
     const [mounted, setMounted] = useState(false);
 
     // Prevent hydration mismatch
@@ -137,6 +137,25 @@ export default function Settings() {
                                             <div className="w-1/2 bg-zinc-900"></div>
                                         </div>
                                         <span className={`text-sm font-medium ${theme === 'system' ? 'text-indigo-700 dark:text-indigo-400' : 'text-zinc-600 dark:text-zinc-400'}`}>System</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Privacy Settings */}
+                        <section>
+                            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Privacy</h2>
+                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-medium text-zinc-900 dark:text-white">Seen Silently Mode</div>
+                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">Read messages without sending receipts</div>
+                                    </div>
+                                    <button
+                                        onClick={toggleSilentRead}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${silentRead ? 'bg-indigo-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${silentRead ? 'translate-x-6' : 'translate-x-1'}`} />
                                     </button>
                                 </div>
                             </div>
