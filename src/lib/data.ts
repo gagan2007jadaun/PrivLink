@@ -1,11 +1,11 @@
 export interface Message {
     id: string;
-    content?: string;
+    type: 'text' | 'audio' | 'video' | 'image';
+    content: string; // Text content or File URL
     timestamp: string;
     isMe: boolean;
-    image?: string;
-    mediaUrl?: string; // For audio/video
-    mediaType?: 'audio' | 'video';
+    duration?: number; // In seconds, for audio/video
+    thumbnailUrl?: string; // For video messages
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
     status?: 'sent' | 'delivered' | 'read';
@@ -131,28 +131,28 @@ export const mockChats: Chat[] = [
 
 export const mockMessages: Record<string, Message[]> = {
     "1": [
-        { id: "1", content: "Is this connection secure?", timestamp: "10:23 AM", isMe: true, confidenceScore: 60 },
-        { id: "2", content: "Yes, this is PrivLink. End-to-end encrypted.", timestamp: "10:24 AM", isMe: false, confidenceScore: 100 },
-        { id: "3", content: "Perfect. Sending the confidential specs.", timestamp: "10:25 AM", isMe: true, confidenceScore: 95 },
-        { id: "4", content: "Ready to receive.", timestamp: "10:25 AM", isMe: false, confidenceScore: 90 },
+        { id: "1", type: "text", content: "Is this connection secure?", timestamp: "10:23 AM", isMe: true, confidenceScore: 60 },
+        { id: "2", type: "text", content: "Yes, this is PrivLink. End-to-end encrypted.", timestamp: "10:24 AM", isMe: false, confidenceScore: 100 },
+        { id: "3", type: "text", content: "Perfect. Sending the confidential specs.", timestamp: "10:25 AM", isMe: true, confidenceScore: 95 },
+        { id: "4", type: "text", content: "Ready to receive.", timestamp: "10:25 AM", isMe: false, confidenceScore: 90 },
     ],
     "2": [
-        { id: "1", content: "Hey team, check out the new designs.", timestamp: "09:00 AM", isMe: false },
-        { id: "2", content: "Looking good! I'll update the components.", timestamp: "09:15 AM", isMe: true, confidenceScore: 85 },
+        { id: "1", type: "text", content: "Hey team, check out the new designs.", timestamp: "09:00 AM", isMe: false },
+        { id: "2", type: "text", content: "Looking good! I'll update the components.", timestamp: "09:15 AM", isMe: true, confidenceScore: 85 },
     ],
     "3": [
-        { id: "1", content: "Can we schedule a call?", timestamp: "1:00 PM", isMe: false },
+        { id: "1", type: "text", content: "Can we schedule a call?", timestamp: "1:00 PM", isMe: false },
     ],
     "4": [
-        { id: "1", content: "Report sent.", timestamp: "Yesterday", isMe: true },
+        { id: "1", type: "text", content: "Report sent.", timestamp: "Yesterday", isMe: true },
     ],
     "5": [
-        { id: "1", content: "Thanks for the help!", timestamp: "Yesterday", isMe: false },
+        { id: "1", type: "text", content: "Thanks for the help!", timestamp: "Yesterday", isMe: false },
     ],
     "6": [
-        { id: "1", content: "See you tomorrow 👋", timestamp: "Yesterday", isMe: false },
+        { id: "1", type: "text", content: "See you tomorrow 👋", timestamp: "Yesterday", isMe: false },
     ],
     "7": [
-        { id: "1", content: "Meeting confirmed for 10am", timestamp: "Monday", isMe: false },
+        { id: "1", type: "text", content: "Meeting confirmed for 10am", timestamp: "Monday", isMe: false },
     ],
 };

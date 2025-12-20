@@ -362,28 +362,17 @@ export default function Home() {
     setShowRightPanel(true); // Ensure panel opens on mobile/tablet logic if applicable
   };
 
-  const handleSendMessage = (content: string, media?: { type: 'audio' | 'video', url: string }, confidenceScore?: number) => {
-    const type = media ? media.type : 'text';
-    const mediaUrl = media ? media.url : undefined;
-
+  const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number) => {
     const newMessage: Message = {
       id: Date.now().toString(),
-      content: type === 'text' ? content : undefined,
+      type: type,
+      content: content,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: true,
-      image: undefined, // MessageInput doesn't handle images yet in this signature, but if it did...
-      // actually MessageInput might send images via media? 
-      // The previous definition had image? 
-      // Let's assume for now media is audio/video. 
-      // If image upload is added back, we need to handle it.
-      // But looking at MessageInput, it only has audio/video recording logic for now in the `media` arg?
-      // Wait, MessageInput has file input ref but the `onChange` was empty in the previous view. 
-      // I'll stick to audio/video for `media` and 'text' for content.
-      mediaUrl: mediaUrl,
-      mediaType: media ? media.type : undefined,
+      duration: duration,
       isConsecutive: messages.length > 0 && messages[messages.length - 1].isMe,
       status: 'sent',
-      confidenceScore: confidenceScore, // Store the calculated confidence score
+      confidenceScore: confidenceScore,
     };
     setMessages((prev) => [...prev, newMessage]);
 
@@ -403,8 +392,6 @@ export default function Home() {
       ));
 
       // Simulate "Read" event (Chat Open + Bottom Scroll + Delay)
-      // Adaptive Delay: Use contact's average read time for natural feel
-      // OR use Relationship Mode presets
       let baseDelay = activeChat.avgReadTime || 2000;
 
       if (activeChat.relationshipMode === 'work') baseDelay = 500; // Instant
@@ -442,6 +429,7 @@ export default function Home() {
     // Initialize empty messages for the new chat
     mockMessages[newChat.id] = [{
       id: 'welcome',
+      type: 'text',
       content: `This is the start of your new ${data.type}: ${data.name}. ${data.description ? `\n\n${data.description}` : ''}`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: false,
@@ -528,10 +516,11 @@ export default function Home() {
                   className={`flex w-full ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
                 >
                   <MessageBubble
-                    content={msg.content}
+                    type={msg.type || 'text'} // Fallback for safety though we migrated mocks
+                    content={msg.content || ''}
                     timestamp={msg.timestamp}
                     isMe={msg.isMe}
-                    image={msg.image}
+                    duration={msg.duration}
                     reactions={msg.reactions}
                     isConsecutive={msg.isConsecutive}
                     status={msg.status}

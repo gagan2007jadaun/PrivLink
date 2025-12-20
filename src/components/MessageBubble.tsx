@@ -1,12 +1,14 @@
 import React from 'react';
+import AudioBubble from './media/AudioBubble';
+import VideoBubble from './media/VideoBubble';
 
 interface MessageBubbleProps {
-    content?: string;
+    type: 'text' | 'audio' | 'video' | 'image';
+    content: string;
     timestamp: string;
     isMe?: boolean;
-    image?: string;
-    mediaUrl?: string; // For audio/video
-    mediaType?: 'audio' | 'video';
+    duration?: number;
+    thumbnailUrl?: string;
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
     status?: 'sent' | 'delivered' | 'read';
@@ -15,12 +17,12 @@ interface MessageBubbleProps {
 }
 
 export default function MessageBubble({
+    type,
     content,
     timestamp,
     isMe = false,
-    image,
-    mediaUrl,
-    mediaType,
+    duration,
+    thumbnailUrl,
     reactions = [],
     isConsecutive = false,
     status = 'sent',
@@ -33,35 +35,33 @@ export default function MessageBubble({
 
                 {/* Main Bubble */}
                 <div
-                    className={`relative px-4 py-2.5 text-sm shadow-sm
+                    className={`relative px-4 py-2.5 text-sm shadow-sm overflow-visible
           ${isMe
                             ? 'rounded-2xl rounded-tr-md bg-indigo-600 text-white selection:bg-indigo-800 selection:text-indigo-100'
                             : 'rounded-2xl rounded-tl-md bg-white text-zinc-900 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700/50'
                         }
-          ${(image || mediaUrl) ? 'p-1' : ''}
+          ${type !== 'text' ? 'p-1' : ''}
           ${confidenceScore !== undefined ? (confidenceScore < 70 ? 'border-b-[3px] border-dotted border-white/40' : 'border-b-[3px] border-solid border-white/20') : ''}
           `}
                 >
-                    {image && (
+                    {type === 'image' && (
                         <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
-                            <img src={image} alt="Attached" className="h-full w-full object-cover transition-transform hover:scale-105" />
+                            <img src={content} alt="Attached" className="h-full w-full object-cover transition-transform hover:scale-105" />
                         </div>
                     )}
 
-                    {mediaUrl && mediaType === 'video' && (
-                        <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
-                            <video src={mediaUrl} controls className="h-full w-full object-cover" />
+                    {type === 'video' && (
+                        <div className="w-full max-w-[320px]">
+                            <VideoBubble src={content} thumbnailUrl={thumbnailUrl} duration={duration} />
                         </div>
                     )}
 
-                    {mediaUrl && mediaType === 'audio' && (
-                        <div className={`mb-2 w-full min-w-[200px] ${isMe ? 'text-white' : 'text-zinc-900'}`}>
-                            <audio src={mediaUrl} controls className="w-full" />
-                        </div>
+                    {type === 'audio' && (
+                        <AudioBubble src={content} duration={duration} isMe={isMe} />
                     )}
 
-                    {content && (
-                        <p className={`leading-relaxed ${(image || mediaUrl) ? 'px-2 pb-2' : ''}`}>{content}</p>
+                    {type === 'text' && content && (
+                        <p className={`leading-relaxed`}>{content}</p>
                     )}
 
                     {/* Timestamp & Status */}

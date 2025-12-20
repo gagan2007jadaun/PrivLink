@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
 import { useTypingMetrics } from '@/hooks/useTypingMetrics';
+import { generateThumbnail } from '@/lib/mediaUtils';
 
 interface MessageInputProps {
-    onSendMessage?: (content: string, media?: { type: 'audio' | 'video', url: string }, confidenceScore?: number) => void;
+    onSendMessage?: (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number, thumbnailUrl?: string) => void;
     boundaryMode?: boolean;
     recentMessages?: string[];
 }
@@ -34,7 +35,6 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
             return;
         }
         // Simple approximate string matching (contains or exact)
-        // Let's do exact match or high similarity for now to avoid annoyance
         const isRepetitive = recentMessages.some(prev =>
             prev.toLowerCase().trim() === message.toLowerCase().trim() ||
             (prev.length > 10 && prev.includes(message)) ||
@@ -65,7 +65,6 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
             clearInterval(timerRef.current);
             timerRef.current = null;
         }
-        setTimer(0);
     };
 
     const formatTime = (seconds: number) => {
@@ -75,8 +74,6 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
     };
 
     const startRecording = async (type: 'audio' | 'video') => {
-        // Respect Boundary Mode for privacy if needed (e.g. no recording allowed?) 
-        // For now user only said typing indicators/read receipts.
         try {
             const constraints = type === 'audio' ? { audio: true } : { video: true, audio: true };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -88,12 +85,20 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                 }
             };
 
-            recorder.onstop = () => {
+            recorder.onstop = async () => {
                 const blob = new Blob(chunksRef.current, { type: type === 'audio' ? 'audio/webm' : 'video/webm' });
                 const url = URL.createObjectURL(blob);
 
+                // Final timer value (Duration)
+                const duration = timer; // Capture closure value or reliance on state (Note: timer might be stopped but state holds last value)
+
+                let thumbnail = undefined;
+                if (type === 'video') {
+                    thumbnail = await generateThumbnail(url);
+                }
+
                 if (onSendMessage) {
-                    onSendMessage(type === 'audio' ? 'Voice Message' : 'Video Message', { type, url });
+                    onSendMessage(url, type, duration, undefined, thumbnail);
                 }
 
                 // Cleanup
@@ -106,6 +111,8 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
             if (type === 'audio') setIsRecordingAudio(true);
             else setIsRecordingVideo(true);
             startTimer();
+            // Clear message input if any
+            setMessage("");
 
         } catch (err) {
             console.error("Error accessing media devices:", err);
@@ -119,7 +126,7 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
             setIsRecordingAudio(false);
             setIsRecordingVideo(false);
             setMediaRecorder(null);
-            stopTimer();
+            stopTimer(); // Stops timer update, preserving value for onstop
         }
     };
 
@@ -129,16 +136,15 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
 
     const handleSend = () => {
         if (message.trim() && onSendMessage) {
-            // If Boundary Mode is ON, do not send confidenceScore (mimics hiding typing behavior)
             const scoreToSend = boundaryMode ? undefined : metrics.confidenceScore;
-
-            onSendMessage(message, undefined, scoreToSend);
+            onSendMessage(message, 'text', undefined, scoreToSend);
             setMessage("");
             metrics.resetMetrics();
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (isRecordingAudio || isRecordingVideo) return; // Disable input
         metrics.handleKeyDown(e);
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -147,21 +153,24 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (isRecordingAudio || isRecordingVideo) return; // Disable input
         setMessage(e.target.value);
         metrics.handleChange(e.target.value);
     };
 
+    const isRecording = isRecordingAudio || isRecordingVideo;
+
     return (
         <div className="relative p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
             {/* Unsent Intent Indicator (Hidden in Boundary Mode) */}
-            {metrics.isUnsentIntent && !boundaryMode && !isEcho && (
+            {metrics.isUnsentIntent && !boundaryMode && !isEcho && !isRecording && (
                 <div className="absolute -top-6 left-6 text-xs italic text-zinc-400 animate-pulse bg-white/80 px-2 py-1 rounded-md shadow-sm dark:bg-zinc-800/80">
                     You almost said something here...
                 </div>
             )}
 
             {/* Echo Detection Warning */}
-            {isEcho && !boundaryMode && (
+            {isEcho && !boundaryMode && !isRecording && (
                 <div className="absolute -top-6 left-6 text-xs font-medium text-amber-500 animate-fade-in-up bg-amber-50 px-2 py-1 rounded-md shadow-sm border border-amber-100 dark:bg-amber-900/30 dark:border-amber-800">
                     ↺ Copycat? You said this recently.
                 </div>
@@ -181,10 +190,10 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                 </div>
             )}
 
-            <div className="flex items-end gap-2 rounded-2xl bg-zinc-100 p-2 ring-1 ring-zinc-200 dark:bg-zinc-800/50 dark:ring-zinc-800 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white dark:focus-within:bg-zinc-800">
+            <div className={`flex items-end gap-2 rounded-2xl bg-zinc-100 p-2 ring-1 ring-zinc-200 dark:bg-zinc-800/50 dark:ring-zinc-800 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white dark:focus-within:bg-zinc-800 ${isRecording ? 'ring-red-200 bg-red-50 dark:bg-red-900/20 dark:ring-red-900/50' : ''}`}>
 
                 {/* Recording Indicator Overlay */}
-                {(isRecordingAudio || isRecordingVideo) && (
+                {isRecording && (
                     <div className="absolute inset-x-2 inset-y-2 flex items-center justify-between rounded-xl bg-red-50 px-4 dark:bg-red-900/20 z-10 backdrop-blur-sm">
                         <div className="flex items-center gap-3">
                             <span className="relative flex h-3 w-3">
@@ -197,7 +206,7 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                         </div>
                         <button
                             onClick={stopRecording}
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 animate-pulse"
                         >
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
                         </button>
@@ -206,7 +215,7 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
 
                 {/* Attachment Button */}
                 <div className="flex shrink-0 pb-1 pl-1">
-                    <button className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-700">
+                    <button className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-700" disabled={isRecording}>
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
@@ -220,8 +229,9 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                         value={message}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
-                        placeholder={boundaryMode ? "Type privately..." : "Type a message..."}
-                        className="w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100"
+                        disabled={isRecording}
+                        placeholder={boundaryMode ? "Type privately..." : (isRecording ? "" : "Type a message...")}
+                        className="w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100 disabled:opacity-50"
                     />
                 </div>
 
@@ -230,7 +240,8 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                     {/* Voice Record Button */}
                     <button
                         onClick={() => startRecording('audio')}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-red-500 dark:hover:bg-zinc-700"
+                        disabled={isRecording}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-red-500 dark:hover:bg-zinc-700 ${isRecording ? 'opacity-0' : ''}`}
                         title="Record Voice"
                     >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -241,7 +252,8 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                     {/* Video Record Button */}
                     <button
                         onClick={() => startRecording('video')}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-red-500 dark:hover:bg-zinc-700"
+                        disabled={isRecording}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-red-500 dark:hover:bg-zinc-700 ${isRecording ? 'opacity-0' : ''}`}
                         title="Record Video"
                     >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -251,7 +263,8 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
 
                     <button
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${showEmojiPicker ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10' : 'text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700'}`}
+                        disabled={isRecording}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${showEmojiPicker ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10' : 'text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700'} ${isRecording ? 'opacity-0' : ''}`}
                     >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -261,7 +274,8 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                     <div className="pl-1">
                         <button
                             onClick={handleSend}
-                            className={`flex h-9 w-9 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-105 active:scale-95 ${boundaryMode ? 'bg-zinc-600 shadow-zinc-500/30 hover:bg-zinc-700' : 'bg-indigo-600 shadow-indigo-500/30 hover:bg-indigo-700'}`}
+                            disabled={!message.trim() || isRecording}
+                            className={`flex h-9 w-9 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-105 active:scale-95 ${boundaryMode ? 'bg-zinc-600 shadow-zinc-500/30 hover:bg-zinc-700' : 'bg-indigo-600 shadow-indigo-500/30 hover:bg-indigo-700'} ${isRecording ? 'opacity-0' : ''}`}
                         >
                             <svg className="h-5 w-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

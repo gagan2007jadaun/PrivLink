@@ -17,6 +17,90 @@
   --interest-low: #C96A5B;
 }
 
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Audio Waveform Animation */
+.audio-wave {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  height: 20px;
+}
+
+.audio-wave .bar {
+  width: 3px;
+  height: 6px;
+  background: currentColor;
+  /* Use text color (white or dark text) */
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+.playing .bar {
+  animation: wave 1s infinite ease-in-out;
+}
+
+.playing .bar:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.playing .bar:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.playing .bar:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.playing .bar:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+@keyframes wave {
+  0% {
+    height: 6px;
+  }
+
+  50% {
+    height: 16px;
+  }
+
+  100% {
+    height: 6px;
+  }
+}
+
+/* Video Thumbnail Container */
+.video-thumb {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.play-btn-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  transition: background 0.2s;
+}
+
+.video-thumb:hover .play-btn-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.play-btn-icon {
+  font-size: 32px;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
