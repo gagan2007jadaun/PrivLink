@@ -117,7 +117,7 @@ export default function Settings() {
                                         onClick={() => setTheme('light')}
                                         className={`group flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${theme === 'light' ? 'border-indigo-600 bg-indigo-50/50 dark:border-indigo-500 dark:bg-indigo-500/10' : 'border-transparent bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700'}`}
                                     >
-                                        <div className="h-20 w-full rounded-lg bg-white shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800"></div>
+                                        <div className="h-20 w-full rounded-lg bg-white shadow-sm ring-1 ring-zinc-200"></div>
                                         <span className={`text-sm font-semibold ${theme === 'light' ? 'text-indigo-700 dark:text-indigo-400' : 'text-zinc-600 dark:text-zinc-400'}`}>Light</span>
                                         {theme === 'light' && <div className="absolute right-2 top-2 h-4 w-4 rounded-full bg-indigo-600"></div>}
                                     </button>
@@ -125,7 +125,7 @@ export default function Settings() {
                                         onClick={() => setTheme('dark')}
                                         className={`group flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${theme === 'dark' ? 'border-indigo-600 bg-indigo-50/50 dark:border-indigo-500 dark:bg-indigo-500/10' : 'border-transparent bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700'}`}
                                     >
-                                        <div className="h-20 w-full rounded-lg bg-zinc-900 shadow-sm ring-1 ring-zinc-800"></div>
+                                        <div className="h-20 w-full rounded-lg bg-zinc-950 shadow-sm ring-1 ring-zinc-800"></div>
                                         <span className={`text-sm font-medium ${theme === 'dark' ? 'text-indigo-700 dark:text-indigo-400' : 'text-zinc-600 dark:text-zinc-400'}`}>Dark</span>
                                     </button>
                                     <button
@@ -133,8 +133,8 @@ export default function Settings() {
                                         className={`group flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${theme === 'system' ? 'border-indigo-600 bg-indigo-50/50 dark:border-indigo-500 dark:bg-indigo-500/10' : 'border-transparent bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700'}`}
                                     >
                                         <div className="flex h-20 w-full overflow-hidden rounded-lg shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
-                                            <div className="w-1/2 bg-white dark:bg-zinc-900"></div>
-                                            <div className="w-1/2 bg-zinc-900"></div>
+                                            <div className="w-1/2 bg-white"></div>
+                                            <div className="w-1/2 bg-zinc-950"></div>
                                         </div>
                                         <span className={`text-sm font-medium ${theme === 'system' ? 'text-indigo-700 dark:text-indigo-400' : 'text-zinc-600 dark:text-zinc-400'}`}>System</span>
                                     </button>

@@ -36,8 +36,15 @@ export interface Chat {
     boundaryMode?: boolean; // If true, hides typing indicators/read receipts strictly
     conversationWeight?: number; // 0-100, depth/seriousness of the chat
     mutualCuriosity?: number; // 0-100, based on question frequency
-    trustTrend?: 'rising' | 'falling' | 'stable'; // Trust recovery indicator
+    trustTrend?: 'rising' | 'falling' | 'stable'; // Trust recovery indicator (Internal logic)
+    interestTrend?: 'rising' | 'falling' | 'stable'; // New Display logic
+    energyBalance?: number; // -100 to 100 (Negative = They talk more, Positive = I talk more)
     persona?: 'morning' | 'night' | 'balanced'; // Time-of-day personality
+
+    // Hub Content Flags (Mock)
+    hasSharedMedia?: boolean;
+    hasSharedDocs?: boolean;
+    hasSharedLinks?: boolean;
 }
 
 export const mockChats: Chat[] = [
@@ -55,7 +62,12 @@ export const mockChats: Chat[] = [
         conversationWeight: 80,
         mutualCuriosity: 90,
         trustTrend: 'rising',
+        interestTrend: 'rising', // New
+        energyBalance: 10, // Balanced
         persona: 'morning',
+        hasSharedMedia: true,
+        hasSharedDocs: true,
+        hasSharedLinks: true,
     },
     {
         id: "2",
@@ -70,6 +82,8 @@ export const mockChats: Chat[] = [
         driftLevel: 'medium',
         gravity: 'one-sided-them', // They talk more?
         boundaryMode: true, // Professional boundary
+        interestTrend: 'stable',
+        hasSharedDocs: true, // Work chat might have docs
     },
     {
         id: "3",
@@ -83,6 +97,7 @@ export const mockChats: Chat[] = [
         gravity: 'one-sided-me',
         conversationWeight: 30,
         trustTrend: 'falling',
+        interestTrend: 'falling',
     },
     {
         id: "4",
@@ -91,12 +106,14 @@ export const mockChats: Chat[] = [
         time: "3h",
         interestScore: 70, // Added interestScore
         driftLevel: 'low', // Added driftLevel
+        interestTrend: 'stable',
     },
     {
         id: "5",
         name: "David Chen",
         lastMessage: "Thanks for the help!",
         time: "Yesterday",
+        interestTrend: 'rising',
     },
     {
         id: "6",

@@ -1,7 +1,8 @@
 @import "tailwindcss";
-@variant dark (&:where(.dark, .dark *));
+@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-:root {
+:root,
+[data-theme="light"] {
   --background: #ffffff;
   --foreground: 240 10% 3.9%;
 
@@ -25,8 +26,8 @@
 
 
 
-/* Support class-based dark mode from next-themes */
-.dark {
+/* Support class-based dark mode (updated to data-theme) */
+[data-theme="dark"] {
   --background: #0a0a0a;
   --foreground: #ededed;
 }

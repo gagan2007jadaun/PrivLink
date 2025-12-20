@@ -70,6 +70,11 @@ export default function Home() {
 
   // Screenshot heuristic state
   const lastBlurTime = useRef<number>(0);
+  const chatsRef = useRef(chats);
+
+  useEffect(() => {
+    chatsRef.current = chats;
+  }, [chats]);
 
   // Selective Read Logic
   const readUpto = useCallback((messageId: string) => {
@@ -79,8 +84,8 @@ export default function Home() {
     // 3. One-way "Ghost Mode" must be OFF
 
     // Find current chat to check per-chat settings
-    const currentChat = chats.find(c => c.id === activeChatId);
-    if (!hasAttention || silentRead || currentChat?.isSilentRead) return;
+    const currentChat = chatsRef.current.find(c => c.id === activeChatId);
+    if (!hasAttention || silentRead || currentChat?.isSilentRead || currentChat?.boundaryMode) return;
 
     setChats(prev => prev.map(c => {
       if (c.id === activeChatId && (c.unreadCount || 0) > 0) {
@@ -197,14 +202,92 @@ export default function Home() {
   }, []);
 
   // Get current chat details
-  const activeChat = useMemo(() =>
-    chats.find(c => c.id === activeChatId) || chats[0],
-    [activeChatId, chats]);
+  const activeChat = useMemo(() => {
+    const chat = chats.find(c => c.id === activeChatId) || chats[0];
+
+    // Dynamic Analysis: Calculate Psychometrics from real messages
+    if (messages.length > 0) {
+      // 1. Gravity (Initiation Balance)
+      let myStarts = 0;
+      let theirStarts = 0;
+      let lastTime = 0;
+
+      messages.forEach(msg => {
+        const msgTime = new Date(msg.timestamp).getTime(); // Note: Mock timestamps are strings like "10:23 AM", so parsing might fail without date. 
+        // Mock timestamps are "10:23 AM". We need robust parsing or just assume basic flow for now.
+        // Let's rely on simple `isConsecutive` logic: A "Start" is a message that is NOT consecutive and follows a long gap.
+        // Since we don't have exact Dates in mock, we'll simpler heuristic:
+        // Who sent the *first* message of the day/session?
+        // Or ratio of total messages?
+        // Let's use Message Count Ratio for Gravity for now as it's robust.
+        // Gravity = Initiation. Let's approximation: Who sent more messages that started a block?
+      });
+
+      // Simpler Gravity: Message Count Ratio (Who drives the volume?)
+      const myMsgCount = messages.filter(m => m.isMe).length;
+      const theirMsgCount = messages.length - myMsgCount;
+      const ratio = myMsgCount / (messages.length || 1);
+
+      let computedGravity: 'balanced' | 'one-sided-me' | 'one-sided-them' = 'balanced';
+      if (ratio > 0.65) computedGravity = 'one-sided-me';
+      if (ratio < 0.35) computedGravity = 'one-sided-them';
+
+      // 2. Persona (Time of Day - Last few messages)
+      // Parse time string "10:23 AM"
+      const times = messages.filter(m => !m.isMe).map(m => {
+        const [time, modifier] = m.timestamp.split(' ');
+        if (!time || !modifier) return null;
+        let [hours, mins] = time.split(':').map(Number);
+        if (modifier === 'PM' && hours < 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+        return hours;
+      }).filter(h => h !== null) as number[];
+
+      let computedPersona: 'morning' | 'night' | 'balanced' = 'balanced';
+      if (times.length > 0) {
+        const avgHour = times.reduce((a, b) => a + b, 0) / times.length;
+        if (avgHour >= 5 && avgHour < 12) computedPersona = 'morning';
+        if (avgHour >= 22 || avgHour < 4) computedPersona = 'night';
+      }
+
+      // 3. Energy Balance (Length of messages)
+      const myLength = messages.filter(m => m.isMe).reduce((acc, m) => acc + (m.content?.length || 0), 0);
+      const theirLength = messages.filter(m => !m.isMe).reduce((acc, m) => acc + (m.content?.length || 0), 0);
+      // Normalized score: -100 (They talk only) to +100 (I talk only)
+      // 0 = Balanced
+      const totalLen = myLength + theirLength || 1;
+      const computedEnergy = Math.round(((myLength - theirLength) / totalLen) * 100);
+
+      // 4. Conversation Weight (Depth/Seriousness)
+      // Heuristic: Average message length. 
+      // Short texts = Light (Weight ~20). Long paragraphs = Heavy (Weight ~80+).
+      const avgLen = totalLen / messages.length;
+      // Map 10 chars -> 10 weight, 200 chars -> 100 weight
+      const computedWeight = Math.min(100, Math.max(10, Math.round((avgLen / 150) * 100)));
+
+      // 5. Mutual Curiosity (Question Frequency)
+      const questionCount = messages.filter(m => (m.content || "").includes('?')).length;
+      // Heuristic: 20% questions = 100 score. (1 in 5)
+      const computedCuriosity = Math.min(100, Math.round((questionCount / (messages.length || 1)) * 500));
+
+      return {
+        ...chat,
+        gravity: computedGravity,
+        persona: computedPersona,
+        energyBalance: computedEnergy,
+        conversationWeight: computedWeight,
+        mutualCuriosity: computedCuriosity
+      };
+    }
+
+    return chat;
+  }, [activeChatId, chats, messages]);
 
   // Mark chat as seen with delay
   const markAsSeen = (chatId: string) => {
-    // Respect "Seen Silently" mode
-    if (silentRead) return;
+    // Respect "Seen Silently" mode AND "Boundary Mode"
+    const currentChat = chats.find(c => c.id === chatId);
+    if (silentRead || currentChat?.boundaryMode) return;
 
     // Human-like delay logic
     const delay = Math.floor(Math.random() * 2500) + 1500;
@@ -391,6 +474,17 @@ export default function Home() {
                 '#FEFCF5' // Warm tint (custom)
         }}
       >
+        {/* Atmosphere/Weight Vignette */}
+        {/* Adds subtle visual depth/heaviness to serious conversations */}
+        <div
+          className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-1000"
+          style={{
+            background: `radial-gradient(circle at center, transparent 50%, rgba(0,0,0, ${Math.max(0.02, (activeChat.conversationWeight || 0) * 0.004)}) 100%)`,
+            // Optional: Inset shadow for extra "tightness"
+            boxShadow: `inset 0 0 ${(activeChat.conversationWeight || 0) * 2}px rgba(0,0,0, ${(activeChat.conversationWeight || 0) * 0.0005})`
+          }}
+        />
+
         {/* Memory Drift Overlay for finer tint control if needed, but using direct bg for now as per "transition background-color" request */}
 
         <ChatHeader
@@ -400,6 +494,10 @@ export default function Home() {
           isOnline={activeChat.isOnline}
           driftLevel={activeChat.driftLevel}
           interestScore={activeChat.interestScore}
+          interestTrend={activeChat.interestTrend}
+          gravity={activeChat.gravity}
+          persona={activeChat.persona}
+          energyBalance={activeChat.energyBalance}
           isScrolled={isScrolledHeader}
         />
 
@@ -438,6 +536,7 @@ export default function Home() {
                     isConsecutive={msg.isConsecutive}
                     status={msg.status}
                     heatScore={msg.heatScore}
+                    confidenceScore={msg.confidenceScore}
                   />
                 </div>
               ))
@@ -447,7 +546,11 @@ export default function Home() {
         </div>
 
         {/* Input Area */}
-        <MessageInput onSendMessage={handleSendMessage} />
+        <MessageInput
+          onSendMessage={handleSendMessage}
+          boundaryMode={activeChat.boundaryMode}
+          recentMessages={messages.filter(m => m.isMe).slice(-5).map(m => m.content || "")}
+        />
       </main>
 
       {/* Right Sidebar */}

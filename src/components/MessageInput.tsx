@@ -5,11 +5,14 @@ import { useTypingMetrics } from '@/hooks/useTypingMetrics';
 
 interface MessageInputProps {
     onSendMessage?: (content: string, media?: { type: 'audio' | 'video', url: string }, confidenceScore?: number) => void;
+    boundaryMode?: boolean;
+    recentMessages?: string[];
 }
 
-export default function MessageInput({ onSendMessage }: MessageInputProps) {
+export default function MessageInput({ onSendMessage, boundaryMode = false, recentMessages = [] }: MessageInputProps) {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [message, setMessage] = useState("");
+    const [isEcho, setIsEcho] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
 
@@ -23,6 +26,22 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
 
     // Typing Metrics Hook
     const metrics = useTypingMetrics(message);
+
+    // Echo Detection
+    useEffect(() => {
+        if (!message || message.length < 5) {
+            setIsEcho(false);
+            return;
+        }
+        // Simple approximate string matching (contains or exact)
+        // Let's do exact match or high similarity for now to avoid annoyance
+        const isRepetitive = recentMessages.some(prev =>
+            prev.toLowerCase().trim() === message.toLowerCase().trim() ||
+            (prev.length > 10 && prev.includes(message)) ||
+            (message.length > 10 && message.includes(prev))
+        );
+        setIsEcho(isRepetitive);
+    }, [message, recentMessages]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -56,6 +75,8 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
     };
 
     const startRecording = async (type: 'audio' | 'video') => {
+        // Respect Boundary Mode for privacy if needed (e.g. no recording allowed?) 
+        // For now user only said typing indicators/read receipts.
         try {
             const constraints = type === 'audio' ? { audio: true } : { video: true, audio: true };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -108,7 +129,10 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
 
     const handleSend = () => {
         if (message.trim() && onSendMessage) {
-            onSendMessage(message, undefined, metrics.confidenceScore);
+            // If Boundary Mode is ON, do not send confidenceScore (mimics hiding typing behavior)
+            const scoreToSend = boundaryMode ? undefined : metrics.confidenceScore;
+
+            onSendMessage(message, undefined, scoreToSend);
             setMessage("");
             metrics.resetMetrics();
         }
@@ -129,12 +153,20 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
 
     return (
         <div className="relative p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
-            {/* Unsent Intent Indicator */}
-            {metrics.isUnsentIntent && (
+            {/* Unsent Intent Indicator (Hidden in Boundary Mode) */}
+            {metrics.isUnsentIntent && !boundaryMode && !isEcho && (
                 <div className="absolute -top-6 left-6 text-xs italic text-zinc-400 animate-pulse bg-white/80 px-2 py-1 rounded-md shadow-sm dark:bg-zinc-800/80">
                     You almost said something here...
                 </div>
             )}
+
+            {/* Echo Detection Warning */}
+            {isEcho && !boundaryMode && (
+                <div className="absolute -top-6 left-6 text-xs font-medium text-amber-500 animate-fade-in-up bg-amber-50 px-2 py-1 rounded-md shadow-sm border border-amber-100 dark:bg-amber-900/30 dark:border-amber-800">
+                    ↺ Copycat? You said this recently.
+                </div>
+            )}
+
             {showEmojiPicker && (
                 <div className="absolute bottom-full left-4 mb-2 z-50 shadow-2xl rounded-2xl" ref={pickerRef}>
                     <EmojiPicker
@@ -188,7 +220,7 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
                         value={message}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
-                        placeholder="Type a message..."
+                        placeholder={boundaryMode ? "Type privately..." : "Type a message..."}
                         className="w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100"
                     />
                 </div>
@@ -229,7 +261,7 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
                     <div className="pl-1">
                         <button
                             onClick={handleSend}
-                            className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 hover:bg-indigo-700 active:scale-95"
+                            className={`flex h-9 w-9 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-105 active:scale-95 ${boundaryMode ? 'bg-zinc-600 shadow-zinc-500/30 hover:bg-zinc-700' : 'bg-indigo-600 shadow-indigo-500/30 hover:bg-indigo-700'}`}
                         >
                             <svg className="h-5 w-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
