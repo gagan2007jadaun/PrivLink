@@ -5,7 +5,14 @@ import { useTypingMetrics } from '@/hooks/useTypingMetrics';
 import { generateThumbnail } from '@/lib/mediaUtils';
 
 interface MessageInputProps {
-    onSendMessage?: (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number, thumbnailUrl?: string) => void;
+    onSendMessage?: (
+        content: string,
+        type: 'text' | 'audio' | 'video' | 'image',
+        duration?: number,
+        confidenceScore?: number,
+        thumbnailUrl?: string,
+        style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }
+    ) => void;
     boundaryMode?: boolean;
     recentMessages?: string[];
 }
@@ -16,6 +23,11 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
     const [isEcho, setIsEcho] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
+
+    // Premium Attachment Menu State
+    const [isAttachOpen, setIsAttachOpen] = useState(false);
+    const [showFontToolbar, setShowFontToolbar] = useState(false);
+    const [messageStyle, setMessageStyle] = useState({ bold: false, italic: false, underline: false });
 
     // Recording State
     const [isRecordingAudio, setIsRecordingAudio] = useState(false);
@@ -34,7 +46,6 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
             setIsEcho(false);
             return;
         }
-        // Simple approximate string matching (contains or exact)
         const isRepetitive = recentMessages.some(prev =>
             prev.toLowerCase().trim() === message.toLowerCase().trim() ||
             (prev.length > 10 && prev.includes(message)) ||
@@ -48,6 +59,9 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
             if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
                 setShowEmojiPicker(false);
             }
+            // Close attachment menu on outside click if not clicking the toggle itself
+            // (Simplified logic: clicking input or elsewhere closes it)
+            // For now, we rely on specific interactions closing it or explicit toggles.
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -75,6 +89,11 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
 
     const startRecording = async (type: 'audio' | 'video') => {
         try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Media recording is not supported in this browser or environment (API not found).");
+                return;
+            }
+
             const constraints = type === 'audio' ? { audio: true } : { video: true, audio: true };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             const recorder = new MediaRecorder(stream);
@@ -88,9 +107,7 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
             recorder.onstop = async () => {
                 const blob = new Blob(chunksRef.current, { type: type === 'audio' ? 'audio/webm' : 'video/webm' });
                 const url = URL.createObjectURL(blob);
-
-                // Final timer value (Duration)
-                const duration = timer; // Capture closure value or reliance on state (Note: timer might be stopped but state holds last value)
+                const duration = timer;
 
                 let thumbnail = undefined;
                 if (type === 'video') {
@@ -101,7 +118,6 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                     onSendMessage(url, type, duration, undefined, thumbnail);
                 }
 
-                // Cleanup
                 stream.getTracks().forEach(track => track.stop());
                 chunksRef.current = [];
             };
@@ -111,8 +127,8 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
             if (type === 'audio') setIsRecordingAudio(true);
             else setIsRecordingVideo(true);
             startTimer();
-            // Clear message input if any
             setMessage("");
+            setIsAttachOpen(false); // Close menu if started from there
 
         } catch (err) {
             console.error("Error accessing media devices:", err);
@@ -126,7 +142,7 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
             setIsRecordingAudio(false);
             setIsRecordingVideo(false);
             setMediaRecorder(null);
-            stopTimer(); // Stops timer update, preserving value for onstop
+            stopTimer();
         }
     };
 
@@ -137,14 +153,23 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
     const handleSend = () => {
         if (message.trim() && onSendMessage) {
             const scoreToSend = boundaryMode ? undefined : metrics.confidenceScore;
-            onSendMessage(message, 'text', undefined, scoreToSend);
+            // Filter inactive styles
+            const activeStyles = {
+                bold: messageStyle.bold || undefined,
+                italic: messageStyle.italic || undefined,
+                underline: messageStyle.underline || undefined,
+            };
+            onSendMessage(message, 'text', undefined, scoreToSend, undefined, activeStyles);
             setMessage("");
             metrics.resetMetrics();
+            // Reset styles after send? Maybe keep them. User preference. Let's keep them for now or reset.
+            // Resetting feels cleaner for new message.
+            // setMessageStyle({ bold: false, italic: false, underline: false });
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (isRecordingAudio || isRecordingVideo) return; // Disable input
+        if (isRecordingAudio || isRecordingVideo) return;
         metrics.handleKeyDown(e);
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -153,15 +178,177 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (isRecordingAudio || isRecordingVideo) return; // Disable input
+        if (isRecordingAudio || isRecordingVideo) return;
         setMessage(e.target.value);
         metrics.handleChange(e.target.value);
+    };
+
+    const toggleStyle = (style: 'bold' | 'italic' | 'underline') => {
+        setMessageStyle(prev => ({ ...prev, [style]: !prev[style] }));
     };
 
     const isRecording = isRecordingAudio || isRecordingVideo;
 
     return (
         <div className="relative p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
+            {/* Font Toolbar */}
+            {showFontToolbar && !isRecording && (
+                <div className="absolute -top-12 left-4 flex items-center gap-1 rounded-xl bg-white p-1 shadow-lg ring-1 ring-black/5 dark:bg-zinc-800 dark:ring-white/10 animate-fade-in-up">
+                    <button
+                        onClick={() => toggleStyle('bold')}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${messageStyle.bold ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800/50'}`}
+                    >
+                        B
+                    </button>
+                    <button
+                        onClick={() => toggleStyle('italic')}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm italic font-serif transition-colors ${messageStyle.italic ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800/50'}`}
+                    >
+                        I
+                    </button>
+                    <button
+                        onClick={() => toggleStyle('underline')}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm underline transition-colors ${messageStyle.underline ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800/50'}`}
+                    >
+                        U
+                    </button>
+                </div>
+            )}
+
+            {/* Attachment Menu */}
+            {isAttachOpen && !isRecording && (
+                <div className="absolute bottom-20 left-4 z-50 flex flex-col min-w-[240px] gap-1 rounded-2xl bg-white/95 p-2 shadow-2xl backdrop-blur-md ring-1 ring-black/5 dark:bg-zinc-900/95 dark:ring-white/10 animate-fade-in-up origin-bottom-left">
+
+                    {/* Camera */}
+                    <button
+                        onClick={() => startRecording('video')}
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100/80 text-red-600 dark:bg-red-900/40 dark:text-red-400">
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                        </span>
+                        <div className="flex flex-col items-start">
+                            <span className="leading-tight">Camera</span>
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Photos & Videos</span>
+                        </div>
+                    </button>
+
+                    {/* Gallery (Functional) */}
+                    <button
+                        onClick={() => document.getElementById('image-upload')?.click()}
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100/80 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400">
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                        </span>
+                        <div className="flex flex-col items-start">
+                            <span className="leading-tight">Gallery</span>
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Send images</span>
+                        </div>
+                    </button>
+                    <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file && onSendMessage) {
+                                const url = URL.createObjectURL(file);
+                                onSendMessage(url, 'image');
+                                setIsAttachOpen(false);
+                            }
+                        }}
+                    />
+
+                    {/* Document (Mock) */}
+                    <button
+                        onClick={() => alert("Document sharing coming soon!")}
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100/80 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </span>
+                        <div className="flex flex-col items-start">
+                            <span className="leading-tight">Document</span>
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Share files</span>
+                        </div>
+                    </button>
+
+                    {/* Poll (Mock) */}
+                    <button
+                        onClick={() => alert("Polls coming soon!")}
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100/80 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </span>
+                        <div className="flex flex-col items-start">
+                            <span className="leading-tight">Poll</span>
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Create a poll</span>
+                        </div>
+                    </button>
+
+                    {/* Contact (Mock) */}
+                    <button
+                        onClick={() => alert("Contact sharing coming soon!")}
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100/80 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </span>
+                        <div className="flex flex-col items-start">
+                            <span className="leading-tight">Contact</span>
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Share contact</span>
+                        </div>
+                    </button>
+
+                    {/* Event (Mock) */}
+                    <button
+                        onClick={() => alert("Event creation coming soon!")}
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100/80 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400">
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </span>
+                        <div className="flex flex-col items-start">
+                            <span className="leading-tight">Event</span>
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Create event</span>
+                        </div>
+                    </button>
+
+                    {/* Font / Text Option */}
+                    <button
+                        onClick={() => {
+                            setShowFontToolbar(!showFontToolbar);
+                            setIsAttachOpen(false);
+                        }}
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100/80 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400">
+                            <span className="text-sm font-serif font-bold">Aa</span>
+                        </span>
+                        <div className="flex flex-col items-start">
+                            <span className="leading-tight">Text Options</span>
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Format text</span>
+                        </div>
+                    </button>
+                </div>
+            )}
+
+
             {/* Unsent Intent Indicator (Hidden in Boundary Mode) */}
             {metrics.isUnsentIntent && !boundaryMode && !isEcho && !isRecording && (
                 <div className="absolute -top-6 left-6 text-xs italic text-zinc-400 animate-pulse bg-white/80 px-2 py-1 rounded-md shadow-sm dark:bg-zinc-800/80">
@@ -213,9 +400,17 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                     </div>
                 )}
 
-                {/* Attachment Button */}
+                {/* Attachment Menu Toggle Button (Replaces old attachment button) */}
                 <div className="flex shrink-0 pb-1 pl-1">
-                    <button className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-700" disabled={isRecording}>
+                    <button
+                        onClick={() => {
+                            setIsAttachOpen(!isAttachOpen);
+                            // Also close font toolbar if opening menu?
+                            if (!isAttachOpen) setShowFontToolbar(false);
+                        }}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ease-spring ${isAttachOpen ? 'rotate-45 bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-white' : 'text-zinc-500 hover:bg-zinc-200 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-700'}`}
+                        disabled={isRecording}
+                    >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
@@ -231,13 +426,18 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                         onKeyDown={handleKeyDown}
                         disabled={isRecording}
                         placeholder={boundaryMode ? "Type privately..." : (isRecording ? "" : "Type a message...")}
-                        className="w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100 disabled:opacity-50"
+                        className={`w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100 disabled:opacity-50`}
+                        style={{
+                            fontWeight: messageStyle.bold ? 700 : 400,
+                            fontStyle: messageStyle.italic ? 'italic' : 'normal',
+                            textDecoration: messageStyle.underline ? 'underline' : 'none',
+                        }}
                     />
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex shrink-0 items-center gap-1 pb-1 pr-1">
-                    {/* Voice Record Button */}
+                    {/* Voice Record Button (Kept as is) */}
                     <button
                         onClick={() => startRecording('audio')}
                         disabled={isRecording}
@@ -249,17 +449,7 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                         </svg>
                     </button>
 
-                    {/* Video Record Button */}
-                    <button
-                        onClick={() => startRecording('video')}
-                        disabled={isRecording}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-red-500 dark:hover:bg-zinc-700 ${isRecording ? 'opacity-0' : ''}`}
-                        title="Record Video"
-                    >
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                    </button>
+                    {/* Old Video Record Button REMOVED */}
 
                     <button
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}

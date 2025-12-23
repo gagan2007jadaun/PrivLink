@@ -14,6 +14,12 @@ interface MessageBubbleProps {
     status?: 'sent' | 'delivered' | 'read';
     heatScore?: number;
     confidenceScore?: number;
+    style?: {
+        bold?: boolean;
+        italic?: boolean;
+        underline?: boolean;
+        fontSize?: string;
+    };
 }
 
 export default function MessageBubble({
@@ -28,6 +34,7 @@ export default function MessageBubble({
     status = 'sent',
     heatScore = 0,
     confidenceScore,
+    style: propsStyle,
 }: MessageBubbleProps) {
     return (
         <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
@@ -61,7 +68,15 @@ export default function MessageBubble({
                     )}
 
                     {type === 'text' && content && (
-                        <p className={`leading-relaxed`}>{content}</p>
+                        <p className={`leading-relaxed ${confidenceScore !== undefined && confidenceScore < 80 ? 'opacity-90' : ''}`}
+                            style={{
+                                fontWeight: (propsStyle?.bold ? 700 : 400),
+                                fontStyle: (propsStyle?.italic ? 'italic' : 'normal'),
+                                textDecoration: (propsStyle?.underline ? 'underline' : 'none'),
+                            }}
+                        >
+                            {content}
+                        </p>
                     )}
 
                     {/* Timestamp & Status */}

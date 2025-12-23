@@ -362,7 +362,7 @@ export default function Home() {
     setShowRightPanel(true); // Ensure panel opens on mobile/tablet logic if applicable
   };
 
-  const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number) => {
+  const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       type: type,
@@ -370,9 +370,11 @@ export default function Home() {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: true,
       duration: duration,
+      thumbnailUrl: thumbnailUrl,
       isConsecutive: messages.length > 0 && messages[messages.length - 1].isMe,
       status: 'sent',
       confidenceScore: confidenceScore,
+      style: style,
     };
     setMessages((prev) => [...prev, newMessage]);
 

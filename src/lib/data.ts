@@ -15,6 +15,12 @@ export interface Message {
     confidenceScore?: number; // 0-100, calculated from typing metrics
     isUnsentIntent?: boolean; // If true, displayed only to sender as a draft/unsent nuance
     echoScore?: number; // 0-100, semantic similarity to previous messages
+    style?: {
+        bold?: boolean;
+        italic?: boolean;
+        underline?: boolean;
+        fontSize?: string; // e.g. 'small', 'medium', 'large'
+    };
 }
 
 export interface Chat {
