@@ -2,7 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import { useState } from 'react';
 import ChatListItem from './ChatListItem';
-import CreateChatModal from './CreateChatModal';
+import CreateGroupOrTree from './CreateGroupOrTree';
+import StartNewChat from './StartNewChat';
 import { Chat } from '@/lib/data';
 
 interface SidebarProps {
@@ -13,7 +14,12 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat }: SidebarProps) {
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const ACTIONS = {
+        CREATE: "create",   // group / family tree
+        CHAT: "chat"        // new chat
+    };
+
+    const [action, setAction] = useState<string | null>(null);
 
     return (
         <aside className="hidden h-full w-80 flex-col border-r border-zinc-200 bg-white/50 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50 md:flex">
@@ -25,7 +31,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                     </h1>
                     <button
                         suppressHydrationWarning
-                        onClick={() => setIsCreateModalOpen(true)}
+                        onClick={() => setAction(ACTIONS.CREATE)}
                         className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-indigo-600 dark:hover:bg-zinc-800"
                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,16 +55,16 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
 
                 {/* Filters */}
                 <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-none">
-                    <button className="whitespace-nowrap rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-900">
+                    <button suppressHydrationWarning className="whitespace-nowrap rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-900">
                         All Chats
                     </button>
-                    <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                    <button suppressHydrationWarning className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
                         Personal
                     </button>
-                    <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                    <button suppressHydrationWarning className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
                         Work
                     </button>
-                    <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                    <button suppressHydrationWarning className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
                         Groups
                     </button>
                 </div>
@@ -92,7 +98,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                     </svg>
                 </Link>
                 <button
-                    onClick={() => setIsCreateModalOpen(true)}
+                    onClick={() => setAction(ACTIONS.CHAT)}
                     className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-700 active:scale-[0.98]"
                 >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,14 +108,21 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                 </button>
             </div>
 
-            <CreateChatModal
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-                onCreate={(data) => {
-                    onCreateChat?.(data);
-                    setIsCreateModalOpen(false);
-                }}
-            />
+            {action === ACTIONS.CREATE && (
+                <CreateGroupOrTree
+                    onClose={() => setAction(null)}
+                    onCreate={(data) => {
+                        onCreateChat?.(data);
+                        setAction(null);
+                    }}
+                />
+            )}
+
+            {action === ACTIONS.CHAT && (
+                <StartNewChat
+                    onClose={() => setAction(null)}
+                />
+            )}
         </aside>
     );
 }
