@@ -224,6 +224,79 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                 </div>
                             </div>
 
+                            {/* Wallpaper Settings */}
+                            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                                <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Wallpaper</h4>
+                                <div className="space-y-3">
+                                    {/* Type Selection */}
+                                    <div className="grid grid-cols-4 gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
+                                        {(['default', 'image', 'color', 'gradient'] as const).map((t) => (
+                                            <button
+                                                key={t}
+                                                onClick={() => {
+                                                    if (t === 'default') {
+                                                        onUpdateChat?.({ ...chat, chatBackground: undefined });
+                                                    } else {
+                                                        onUpdateChat?.({
+                                                            ...chat,
+                                                            chatBackground: {
+                                                                type: t,
+                                                                value: t === 'image' ? 'https://images.unsplash.com/photo-1557683316-973673baf926' : t === 'gradient' ? 'linear-gradient(to right, #6c5ce7, #a29bfe)' : '#ffffff',
+                                                                blur: 0
+                                                            }
+                                                        });
+                                                    }
+                                                }}
+                                                className={`rounded-lg py-1.5 text-[10px] font-bold uppercase transition-all ${(!chat.chatBackground && t === 'default') || chat.chatBackground?.type === t
+                                                        ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
+                                                        : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                                                    }`}
+                                            >
+                                                {t}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Value Input */}
+                                    {chat.chatBackground && (
+                                        <div className="space-y-2 animate-fade-in-up">
+                                            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                                                {chat.chatBackground.type === 'image' ? 'Image URL' : chat.chatBackground.type === 'gradient' ? 'CSS Gradient' : 'Hex Color'}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={chat.chatBackground.value}
+                                                onChange={(e) => onUpdateChat?.({
+                                                    ...chat,
+                                                    chatBackground: { ...chat.chatBackground!, value: e.target.value }
+                                                })}
+                                                className="w-full rounded-xl bg-zinc-100 px-3 py-2 text-xs font-mono text-zinc-900 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                            />
+
+                                            {/* Blur Slider */}
+                                            <div className="pt-2">
+                                                <div className="flex justify-between text-xs text-zinc-500 mb-1">
+                                                    <span>Blur Effect</span>
+                                                    <span>{chat.chatBackground.blur}px</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="20"
+                                                    step="1"
+                                                    value={chat.chatBackground.blur || 0}
+                                                    onChange={(e) => onUpdateChat?.({
+                                                        ...chat,
+                                                        chatBackground: { ...chat.chatBackground!, blur: parseInt(e.target.value) }
+                                                    })}
+                                                    className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-700 accent-indigo-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                 <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Chat Rules</h4>
                                 <div className="space-y-3">
