@@ -547,7 +547,14 @@ export default function Home() {
         </div>
       ) : (
         <main
-          className="flex flex-1 flex-col min-w-0 relative transition-colors duration-[120000ms] ease-linear"
+          className={`flex flex-1 flex-col min-w-0 relative transition-colors duration-[120000ms] ease-linear
+            ${activeChat.permissions?.allowScreenshot === false ? 'select-none decoration-clone' : ''}
+          `}
+          onContextMenu={(e) => {
+            if (activeChat.permissions?.allowSaveMedia === false) {
+              e.preventDefault();
+            }
+          }}
           style={{
             backgroundColor:
               activeChat.driftLevel === 'high' ? '#F4F4F5' : // Cold
@@ -633,7 +640,16 @@ export default function Home() {
       )}
 
       {/* Right Sidebar */}
-      {showRightPanel && activeChat && <RightPanel chat={activeChat} />}
+      {showRightPanel && activeChat && (
+        <RightPanel
+          chat={activeChat}
+          onUpdateChat={(updated) => {
+            const newChats = chats.map(c => c.id === updated.id ? updated : c);
+            saveChats(newChats);
+            // Also update local activeChat state if needed by reference (usually covered by hook or memo but safe to rely on chats prop)
+          }}
+        />
+      )}
     </div >
   );
 }

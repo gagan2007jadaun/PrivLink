@@ -3,9 +3,10 @@ import { Chat } from '@/lib/data';
 
 interface RightPanelProps {
     chat?: Chat;
+    onUpdateChat?: (updatedChat: Chat) => void;
 }
 
-export default function RightPanel({ chat }: RightPanelProps) {
+export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
     const [isPulsing, setIsPulsing] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState<'media' | 'docs' | 'links' | 'settings'>('media');
 
@@ -205,6 +206,44 @@ export default function RightPanel({ chat }: RightPanelProps) {
                                             {mode}
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                                <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Chat Rules</h4>
+                                <div className="space-y-3">
+                                    {/* Allow Forward */}
+                                    <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800">
+                                        <span className="font-medium text-zinc-900 dark:text-white text-sm">Allow Forwarding</span>
+                                        <button
+                                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${chat.permissions?.allowForward ? 'bg-indigo-600' : 'bg-red-500'}`}
+                                            onClick={() => onUpdateChat?.({ ...chat, permissions: { ...chat.permissions, allowForward: !chat.permissions?.allowForward } })}
+                                        >
+                                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${chat.permissions?.allowForward ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                                        </button>
+                                    </div>
+
+                                    {/* Allow Save Media */}
+                                    <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800">
+                                        <span className="font-medium text-zinc-900 dark:text-white text-sm">Allow Saving Media</span>
+                                        <button
+                                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${chat.permissions?.allowSaveMedia ? 'bg-indigo-600' : 'bg-red-500'}`}
+                                            onClick={() => onUpdateChat?.({ ...chat, permissions: { ...chat.permissions, allowSaveMedia: !chat.permissions?.allowSaveMedia } })}
+                                        >
+                                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${chat.permissions?.allowSaveMedia ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                                        </button>
+                                    </div>
+
+                                    {/* Allow Permission */}
+                                    <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800">
+                                        <span className="font-medium text-zinc-900 dark:text-white text-sm">Allow Screenshots</span>
+                                        <button
+                                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${chat.permissions?.allowScreenshot ? 'bg-indigo-600' : 'bg-red-500'}`}
+                                            onClick={() => onUpdateChat?.({ ...chat, permissions: { ...chat.permissions, allowScreenshot: !chat.permissions?.allowScreenshot } })}
+                                        >
+                                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${chat.permissions?.allowScreenshot ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 

@@ -49,6 +49,13 @@ export interface Chat {
     energyBalance?: number; // -100 to 100 (Negative = They talk more, Positive = I talk more)
     persona?: 'morning' | 'night' | 'balanced'; // Time-of-day personality
 
+    // Permissions (Rules)
+    permissions?: {
+        allowForward?: boolean; // Default true
+        allowSaveMedia?: boolean; // Default true
+        allowScreenshot?: boolean; // Default true
+    };
+
     // Hub Content Flags (Mock)
     hasSharedMedia?: boolean;
     hasSharedDocs?: boolean;
@@ -58,6 +65,7 @@ export interface Chat {
 export const mockChats: Chat[] = [
     {
         id: "1",
+        permissions: { allowForward: false, allowSaveMedia: false, allowScreenshot: false }, // Demo restricted permissions
         name: "Sarah Wilson",
         lastMessage: "That looks amazing! ✨",
         time: "5m",
