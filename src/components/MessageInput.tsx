@@ -178,7 +178,7 @@ export default function MessageInput({
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (isRecordingAudio || isRecordingVideo) return;
         metrics.handleKeyDown(e);
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -187,7 +187,7 @@ export default function MessageInput({
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (isRecordingAudio || isRecordingVideo) return;
         setMessage(e.target.value);
         metrics.handleChange(e.target.value);
@@ -200,7 +200,7 @@ export default function MessageInput({
     const isRecording = isRecordingAudio || isRecordingVideo;
 
     return (
-        <div className="relative px-3 py-2 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-[24px] m-[10px] shadow-[0_6px_16px_rgba(0,0,0,0.18)]">
+        <div className="relative px-3 py-2 bg-white/65 backdrop-blur-xl dark:bg-zinc-900/75 border border-white/25 dark:border-white/10 rounded-[24px] m-[10px] shadow-[0_6px_16px_rgba(0,0,0,0.18)]">
             {/* Reply Bar */}
             {replyingTo && (
                 <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-zinc-100 p-2 dark:bg-zinc-800/80 animate-fade-in-up">
@@ -451,11 +451,16 @@ export default function MessageInput({
 
                 {/* Input */}
                 <div className="flex-1">
-                    <input
-                        type="text"
+                    <textarea
+                        rows={1}
                         value={message}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
+                        onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+                        }}
                         disabled={isRecording}
                         placeholder={
                             boundaryMode
@@ -466,7 +471,7 @@ export default function MessageInput({
                                         ? `Message as ${selfAlias}...`
                                         : "Type a message..."
                         }
-                        className={`w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100 disabled:opacity-50`}
+                        className={`w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100 disabled:opacity-50 resize-none overflow-y-auto transition-[height] duration-150 ease-out leading-[1.4] caret-indigo-500`}
                         style={{
                             fontWeight: messageStyle.bold ? 700 : 400,
                             fontStyle: messageStyle.italic ? 'italic' : 'normal',
