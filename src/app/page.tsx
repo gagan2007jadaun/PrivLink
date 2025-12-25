@@ -423,6 +423,7 @@ export default function Home() {
       avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=random`,
       // @ts-ignore - straightforward for mock purposes
       type: data.type,
+      isArchived: false,
     };
 
     setChats(prev => [newChat, ...prev]);
@@ -439,6 +440,15 @@ export default function Home() {
     setMessages(mockMessages[newChat.id]);
   };
 
+  const handleArchiveChat = (chatId: string) => {
+    setChats(prev => prev.map(chat =>
+      chat.id === chatId ? { ...chat, isArchived: !chat.isArchived } : chat
+    ));
+    // If we archive the active chat, switch to another one or stay? 
+    // Usually, if it disappears from list, might need to handle selection.
+    // For now, let's leave it active but it will disappear from "All" list.
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans">
       {/* Left Sidebar */}
@@ -447,6 +457,7 @@ export default function Home() {
         activeChatId={activeChatId}
         onSelectChat={handleChatSelect}
         onCreateChat={handleCreateChat}
+        onArchiveChat={handleArchiveChat}
       />
 
       {/* Main Chat Area */}

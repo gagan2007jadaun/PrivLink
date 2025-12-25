@@ -9,6 +9,8 @@ interface ChatListItemProps {
   avatarUrl?: string; // Optional for now, can use placeholders or initials
   isOnline?: boolean;
   isLocked?: boolean;
+  onArchive?: () => void;
+  isArchived?: boolean;
 }
 
 export default function ChatListItem({
@@ -19,7 +21,9 @@ export default function ChatListItem({
   unreadCount = 0,
   avatarUrl,
   isOnline = false,
-  isLocked = false, // Default value for isLocked
+  isLocked = false,
+  onArchive,
+  isArchived = false,
 }: ChatListItemProps) {
   return (
     <div
@@ -64,6 +68,22 @@ export default function ChatListItem({
             </span>
           )}
         </div>
+      </div>
+
+      {/* Archive Action (Visible on Group Hover) */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            // We'll pass an onArchive prop
+          }}
+          className="rounded-lg bg-zinc-200 p-2 text-zinc-600 hover:bg-zinc-300 hover:text-zinc-900 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:hover:text-white"
+          title="Archive"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+          </svg>
+        </button>
       </div>
     </div>
   );

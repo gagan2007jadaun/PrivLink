@@ -11,14 +11,20 @@ interface SidebarProps {
     activeChatId: string;
     onSelectChat: (chatId: string) => void;
     onCreateChat?: (data: { type: string; name: string; description: string }) => void;
+    onArchiveChat?: (chatId: string) => void;
 }
 
-export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat }: SidebarProps) {
+export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat, onArchiveChat }: SidebarProps) {
     const ACTIONS = {
         CREATE: "create",   // group / family tree
-        CHAT: "chat"        // new chat
+        CHAT: "chat",        // new chat
     };
 
+    // Filters
+    const FILTER_ALL = 'All Chats';
+    const FILTER_ARCHIVED = 'Archived';
+
+    const [activeFilter, setActiveFilter] = useState(FILTER_ALL);
     const [action, setAction] = useState<string | null>(null);
 
     return (
@@ -55,16 +61,25 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
 
                 {/* Filters */}
                 <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-none">
-                    <button suppressHydrationWarning className="whitespace-nowrap rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-900">
+                    <button
+                        onClick={() => setActiveFilter(FILTER_ALL)}
+                        className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeFilter === FILTER_ALL ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}
+                    >
                         All Chats
                     </button>
-                    <button suppressHydrationWarning className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                    <button
+                        onClick={() => setActiveFilter(FILTER_ARCHIVED)}
+                        className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeFilter === FILTER_ARCHIVED ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}
+                    >
+                        Archived
+                    </button>
+                    <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
                         Personal
                     </button>
-                    <button suppressHydrationWarning className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                    <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
                         Work
                     </button>
-                    <button suppressHydrationWarning className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                    <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
                         Groups
                     </button>
                 </div>
@@ -73,19 +88,26 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
             {/* Chat List */}
             <div className="flex-1 overflow-y-auto px-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800">
                 <div className="space-y-1 py-2">
-                    {chats.map((chat) => (
-                        <div key={chat.id} onClick={() => onSelectChat(chat.id)}>
-                            <ChatListItem
-                                name={chat.name}
-                                lastMessage={chat.lastMessage}
-                                time={chat.time}
-                                unreadCount={chat.unreadCount}
-                                isOnline={chat.isOnline}
-                                isActive={chat.id === activeChatId}
-                                avatarUrl={chat.avatarUrl}
-                            />
-                        </div>
-                    ))}
+                    {chats
+                        .filter(chat => {
+                            if (activeFilter === FILTER_ARCHIVED) return chat.isArchived;
+                            return !chat.isArchived;
+                        })
+                        .map((chat) => (
+                            <div key={chat.id} onClick={() => onSelectChat(chat.id)}>
+                                <ChatListItem
+                                    name={chat.name}
+                                    lastMessage={chat.lastMessage}
+                                    time={chat.time}
+                                    unreadCount={chat.unreadCount}
+                                    isOnline={chat.isOnline}
+                                    isActive={chat.id === activeChatId}
+                                    avatarUrl={chat.avatarUrl}
+                                    isArchived={chat.isArchived}
+                                    onArchive={() => onArchiveChat?.(chat.id)}
+                                />
+                            </div>
+                        ))}
                 </div>
             </div>
 

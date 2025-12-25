@@ -30,6 +30,7 @@ export interface Chat {
     lastMessage: string;
     time: string;
     unreadCount?: number;
+    isArchived?: boolean; // New Archive Flag
     isOnline?: boolean;
     interestScore?: number; // 0-100 (Renamed from trustScore)
     avgReadTime?: number; // ms
