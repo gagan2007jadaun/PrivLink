@@ -224,6 +224,128 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                 </div>
                             </div>
 
+                            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Wallpaper</h4>
+                                    {chat.chatBackground && (
+                                        <button
+                                            onClick={() => {
+                                                localStorage.removeItem(`chat-bg-${chat.id}`);
+                                                onUpdateChat?.({ ...chat, chatBackground: undefined });
+                                            }}
+                                            className="text-[10px] font-medium text-red-500 hover:text-red-700 transition-colors"
+                                        >
+                                            Reset to Default
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="space-y-4">
+                                    {/* 1. Gallery (File Picker) */}
+                                    <label className="flex items-center gap-3 w-full cursor-pointer group">
+                                        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 group-hover:bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 transition-colors">
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <span className="block text-sm font-medium text-zinc-700 dark:text-zinc-200">Choose from Gallery</span>
+                                            <span className="block text-[10px] text-zinc-400">Max size 5MB recommended</span>
+                                        </div>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                const reader = new FileReader();
+                                                reader.onload = () => {
+                                                    const bg = { type: "image", value: reader.result as string, blur: 0 };
+                                                    localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
+                                                    onUpdateChat?.({ ...chat, chatBackground: bg as any });
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }}
+                                        />
+                                    </label>
+
+                                    {/* 2. Solid Colors */}
+                                    <div>
+                                        <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">Solid Colors</label>
+                                        <div className="grid grid-cols-6 gap-2">
+                                            {[
+                                                "#f5f5f5", "#121212", "#5f54f5", "#2ecc71", "#f39c12", "#e74c3c",
+                                                "#9b59b6", "#34495e", "#1abc9c", "#e67e22", "#95a5a6", "#3498db"
+                                            ].map((color) => (
+                                                <button
+                                                    key={color}
+                                                    onClick={() => {
+                                                        const bg = { type: "color", value: color, blur: 0 };
+                                                        localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
+                                                        onUpdateChat?.({ ...chat, chatBackground: bg as any });
+                                                    }}
+                                                    className={`h-8 w-8 rounded-full border-2 transition-all hover:scale-110 ${chat.chatBackground?.value === color ? 'border-indigo-500 shadow-md scale-110' : 'border-transparent'}`}
+                                                    style={{ backgroundColor: color }}
+                                                    title={color}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Gradients */}
+                                    <div>
+                                        <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">Gradients</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[
+                                                "linear-gradient(135deg, #667eea, #764ba2)",
+                                                "linear-gradient(135deg, #ff9a9e, #fad0c4)",
+                                                "linear-gradient(135deg, #89f7fe, #66a6ff)",
+                                                "linear-gradient(135deg, #a18cd1, #fbc2eb)",
+                                                "linear-gradient(135deg, #fbc2eb, #a6c1ee)",
+                                                "linear-gradient(135deg, #84fab0, #8fd3f4)"
+                                            ].map((g, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => {
+                                                        const bg = { type: "gradient", value: g, blur: 0 };
+                                                        localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
+                                                        onUpdateChat?.({ ...chat, chatBackground: bg as any });
+                                                    }}
+                                                    className={`h-10 w-full rounded-lg border-2 transition-all hover:opacity-90 ${chat.chatBackground?.value === g ? 'border-indigo-500 shadow-md' : 'border-transparent'}`}
+                                                    style={{ background: g }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Blur Slider */}
+                                    {chat.chatBackground && (
+                                        <div className="pt-2">
+                                            <div className="flex justify-between text-xs text-zinc-500 mb-1">
+                                                <span>Blur Effect</span>
+                                                <span>{chat.chatBackground.blur}px</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="20"
+                                                step="1"
+                                                value={chat.chatBackground.blur || 0}
+                                                onChange={(e) => {
+                                                    const newBlur = parseInt(e.target.value);
+                                                    const newBg = { ...chat.chatBackground!, blur: newBlur };
+                                                    localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(newBg));
+                                                    onUpdateChat?.({ ...chat, chatBackground: newBg as any });
+                                                }}
+                                                className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-700 accent-indigo-500"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
 
                             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                 <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Chat Rules</h4>
