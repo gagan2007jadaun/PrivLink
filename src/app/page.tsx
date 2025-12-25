@@ -58,6 +58,16 @@ export default function Home() {
   // Initialize state from Local Storage or Mocks
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState("");
+  const [userPrefs, setUserPrefs] = useState<any>({});
+
+  useEffect(() => {
+    const stored = localStorage.getItem("userPrefs");
+    if (stored) {
+      try {
+        setUserPrefs(JSON.parse(stored));
+      } catch (e) { console.error("Failed to parse userPrefs", e); }
+    }
+  }, []);
   const [messages, setMessages] = useState<Message[]>([]);
 
   // Offline / Queue State
@@ -672,6 +682,27 @@ export default function Home() {
                   '#fdfbf7' // Warm tint (Cream)
           }}
         >
+          {/* Dynamic Wallpaper Layer (Z-0) */}
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-all duration-700 chat-background-pan"
+              style={{
+                backgroundImage: (activeChat.chatBackground?.type === 'image' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'image'))
+                  ? `url(${activeChat.chatBackground?.value || userPrefs.chatBackground?.value})`
+                  : undefined,
+                background: (activeChat.chatBackground?.type === 'gradient' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'gradient'))
+                  ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
+                  : undefined,
+                backgroundColor: (activeChat.chatBackground?.type === 'color' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'color'))
+                  ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
+                  : undefined,
+                filter: `blur(${activeChat.chatBackground?.blur ?? userPrefs.chatBackground?.blur ?? 0}px) saturate(1.1)`,
+                opacity: 0.18,
+              }}
+            />
+            <div className="absolute inset-0 bg-white/55 dark:bg-black/20 mix-blend-overlay"></div>
+          </div>
+
           {/* Atmosphere/Weight Vignette */}
           <div
             className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-1000"
@@ -681,25 +712,27 @@ export default function Home() {
             }}
           />
 
-          <ChatHeader
-            onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
-            name={activeChat.name}
-            avatarUrl={activeChat.avatarUrl}
-            isOnline={activeChat.isOnline}
-            driftLevel={activeChat.driftLevel}
-            interestScore={activeChat.interestScore}
-            interestTrend={activeChat.interestTrend}
-            gravity={activeChat.gravity}
-            persona={activeChat.persona}
-            energyBalance={activeChat.energyBalance}
-            isScrolled={isScrolledHeader}
-          />
+          <div className="relative z-10 w-full">
+            <ChatHeader
+              onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
+              name={activeChat.name}
+              avatarUrl={activeChat.avatarUrl}
+              isOnline={activeChat.isOnline}
+              driftLevel={activeChat.driftLevel}
+              interestScore={activeChat.interestScore}
+              interestTrend={activeChat.interestTrend}
+              gravity={activeChat.gravity}
+              persona={activeChat.persona}
+              energyBalance={activeChat.energyBalance}
+              isScrolled={isScrolledHeader}
+            />
+          </div>
 
           {/* Messages Container */}
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar"
+            className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar"
           >
             <div className="mx-auto max-w-3xl space-y-6">
 
@@ -750,14 +783,16 @@ export default function Home() {
           </div>
 
           {/* Input Area */}
-          <MessageInput
-            onSendMessage={handleSendMessage}
-            boundaryMode={activeChat.boundaryMode}
-            recentMessages={messages.filter(m => m.isMe).slice(-5).map(m => m.content || "")}
-            selfAlias={activeChat.selfAlias}
-            replyingTo={replyingTo}
-            onCancelReply={cancelReply}
-          />
+          <div className="relative z-10 w-full">
+            <MessageInput
+              onSendMessage={handleSendMessage}
+              boundaryMode={activeChat.boundaryMode}
+              recentMessages={messages.filter(m => m.isMe).slice(-5).map(m => m.content || "")}
+              selfAlias={activeChat.selfAlias}
+              replyingTo={replyingTo}
+              onCancelReply={cancelReply}
+            />
+          </div>
         </main>
       )}
 

@@ -67,6 +67,13 @@ export interface Chat {
     hasSharedMedia?: boolean;
     hasSharedDocs?: boolean;
     hasSharedLinks?: boolean;
+
+    // Customization
+    chatBackground?: {
+        type: "image" | "gradient" | "color";
+        value: string; // image url / gradient css / hex
+        blur: number;  // px
+    };
 }
 
 export const mockChats: Chat[] = [
