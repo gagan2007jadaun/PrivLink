@@ -83,6 +83,16 @@ export default function Home() {
     // 2. Global "Silent Read" must be OFF
     // 3. One-way "Ghost Mode" must be OFF
 
+    // Auto-Archive Logic (Run once on mount or when chats change significantly)
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    // Check if any visible chat is old enough to be archived
+    // We do this check and update state if needed.
+    // To prevent infinite loops, we should be careful. 
+    // Best to do this check in a separate effect or initial load.
+    // For now, let's put it in a separate effect that runs once on mount or when chat list is re-initialized.
+
     // Find current chat to check per-chat settings
     const currentChat = chatsRef.current.find(c => c.id === activeChatId);
     if (!hasAttention || silentRead || currentChat?.isSilentRead || currentChat?.boundaryMode) return;
@@ -200,6 +210,26 @@ export default function Home() {
       document.removeEventListener("visibilitychange", checkHeuristics);
     };
   }, []);
+
+  // Auto-Archive Effect
+  useEffect(() => {
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    setChats(prev => {
+      let hasChanges = false;
+      const updated = prev.map(chat => {
+        const chatTime = new Date(chat.timestamp || Date.now()).getTime();
+        // If older than 30 days and NOT already archived
+        if (now - chatTime > THIRTY_DAYS_MS && !chat.isArchived) {
+          hasChanges = true;
+          return { ...chat, isArchived: true };
+        }
+        return chat;
+      });
+      return hasChanges ? updated : prev;
+    });
+  }, []); // Run once on mount
 
   // Get current chat details
   const activeChat = useMemo(() => {

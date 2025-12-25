@@ -29,6 +29,7 @@ export interface Chat {
     avatarUrl?: string; // Optional, initials will be used if missing
     lastMessage: string;
     time: string;
+    timestamp?: string; // ISO Date String for auto-archive logic
     unreadCount?: number;
     isArchived?: boolean; // New Archive Flag
     isOnline?: boolean;
@@ -60,6 +61,7 @@ export const mockChats: Chat[] = [
         name: "Sarah Wilson",
         lastMessage: "That looks amazing! ✨",
         time: "5m",
+        timestamp: new Date().toISOString(), // Just now
         unreadCount: 2,
         isOnline: true,
         interestScore: 95,
@@ -132,7 +134,8 @@ export const mockChats: Chat[] = [
         id: "7",
         name: "Project Alpha",
         lastMessage: "Meeting confirmed for 10am",
-        time: "2d ago",
+        time: "2mo ago",
+        timestamp: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), // 60 days old
     },
 ];
 
