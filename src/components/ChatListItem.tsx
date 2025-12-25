@@ -61,8 +61,8 @@ export default function ChatListItem({
           <span className="text-xs text-zinc-400 group-hover:text-zinc-500 dark:text-zinc-500">{time}</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <p className={`truncate text-sm ${isActive ? 'text-indigo-700/80 dark:text-indigo-300/70' : 'text-zinc-500 group-hover:text-zinc-600 dark:text-zinc-400'}`}>
-            {lastMessage}
+          <p className={`truncate text-sm ${isActive ? 'text-indigo-700/80 dark:text-indigo-300/70' : 'text-zinc-500 group-hover:text-zinc-600 dark:text-zinc-400'} ${isLocked ? 'blur-[3px] select-none opacity-50' : ''}`}>
+            {isLocked ? 'Locked Message Content' : lastMessage}
           </p>
           {unreadCount > 0 && (
             <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-bold text-white shadow-md shadow-indigo-500/20">

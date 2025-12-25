@@ -173,6 +173,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                                 isActive={chat.id === activeChatId}
                                 avatarUrl={chat.avatarUrl}
                                 isArchived={chat.isArchived}
+                                isLocked={chat.isLocked}
                                 onArchive={() => onArchiveChat?.(chat.id)}
                                 onDelete={() => onDeleteChat?.(chat.id)}
                             />
