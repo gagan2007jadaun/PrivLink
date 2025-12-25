@@ -53,11 +53,16 @@ function useAttention() {
 
 export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Initialize state from Local Storage or Mocks
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Load Chats on Mount
   useEffect(() => {
@@ -520,6 +525,8 @@ export default function Home() {
       }
     }
   };
+
+  if (!isMounted) return null;
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans">
