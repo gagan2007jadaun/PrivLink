@@ -25,8 +25,47 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
     const FILTER_ALL = 'All Chats';
     const FILTER_ARCHIVED = 'Archived';
 
+    // Search Filters
+    type SearchType = 'text' | 'media' | 'links';
+    const [searchType, setSearchType] = useState<SearchType>('text');
+    const [searchQuery, setSearchQuery] = useState("");
+
     const [activeFilter, setActiveFilter] = useState(FILTER_ALL);
     const [action, setAction] = useState<string | null>(null);
+
+    // Filter Logic
+    const getFilteredChats = () => {
+        let filtered = chats.filter(chat => {
+            // 1. Archive Status
+            if (activeFilter === FILTER_ARCHIVED && !chat.isArchived) return false;
+            if (activeFilter !== FILTER_ARCHIVED && chat.isArchived) return false;
+            return true;
+        });
+
+        // 2. Search Query
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(chat =>
+                chat.name.toLowerCase().includes(query) ||
+                chat.lastMessage.toLowerCase().includes(query)
+            );
+        }
+
+        // 3. Search Type (Heuristics on Last Message)
+        if (searchType === 'media') {
+            const mediaKeywords = ['photo', 'video', 'image', 'audio', 'gif', 'sticker'];
+            filtered = filtered.filter(chat =>
+                mediaKeywords.some(keyword => chat.lastMessage.toLowerCase().includes(keyword))
+            );
+        } else if (searchType === 'links') {
+            filtered = filtered.filter(chat =>
+                chat.lastMessage.toLowerCase().includes('http') ||
+                chat.lastMessage.toLowerCase().includes('www.')
+            );
+        }
+
+        return filtered;
+    };
 
     return (
         <aside className="hidden h-full w-80 flex-col border-r border-zinc-200 bg-white/50 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50 md:flex">
@@ -48,68 +87,97 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                 </div>
 
                 {/* Search */}
-                <div className="relative">
-                    <svg className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input
-                        suppressHydrationWarning
-                        type="text"
-                        placeholder="Search messages..."
-                        className="w-full rounded-xl border-none bg-zinc-100 py-2 pl-9 pr-4 text-sm font-medium text-zinc-900 transition-all placeholder:text-zinc-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:bg-zinc-800 md:text-sm"
-                    />
+                <div className="space-y-3">
+                    <div className="relative">
+                        <svg className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input
+                            suppressHydrationWarning
+                            type="text"
+                            placeholder="Search messages..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full rounded-xl border-none bg-zinc-100 py-2 pl-9 pr-4 text-sm font-medium text-zinc-900 transition-all placeholder:text-zinc-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:bg-zinc-800 md:text-sm"
+                        />
+                    </div>
+                    {/* Search Filters */}
+                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                        {(['text', 'media', 'links'] as const).map((type) => (
+                            <button
+                                key={type}
+                                onClick={() => setSearchType(type)}
+                                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-all ${searchType === type
+                                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm'
+                                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
+                                    }`}
+                            >
+                                {type === 'text' && (
+                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                                    </svg>
+                                )}
+                                {type === 'media' && (
+                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                )}
+                                {type === 'links' && (
+                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                )}
+                                {type}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+            </div>
 
-                {/* Filters */}
-                <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-none">
-                    <button
-                        onClick={() => setActiveFilter(FILTER_ALL)}
-                        className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeFilter === FILTER_ALL ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}
-                    >
-                        All Chats
-                    </button>
-                    <button
-                        onClick={() => setActiveFilter(FILTER_ARCHIVED)}
-                        className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeFilter === FILTER_ARCHIVED ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}
-                    >
-                        Archived
-                    </button>
-                    <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
-                        Personal
-                    </button>
-                    <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
-                        Work
-                    </button>
-                    <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
-                        Groups
-                    </button>
-                </div>
+            {/* Filters */}
+            <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-none">
+                <button
+                    onClick={() => setActiveFilter(FILTER_ALL)}
+                    className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeFilter === FILTER_ALL ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}
+                >
+                    All Chats
+                </button>
+                <button
+                    onClick={() => setActiveFilter(FILTER_ARCHIVED)}
+                    className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeFilter === FILTER_ARCHIVED ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}
+                >
+                    Archived
+                </button>
+                <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                    Personal
+                </button>
+                <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                    Work
+                </button>
+                <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                    Groups
+                </button>
             </div>
 
             {/* Chat List */}
             <div className="flex-1 overflow-y-auto px-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800">
                 <div className="space-y-1 py-2">
-                    {chats
-                        .filter(chat => {
-                            if (activeFilter === FILTER_ARCHIVED) return chat.isArchived;
-                            return !chat.isArchived;
-                        })
-                        .map((chat) => (
-                            <div key={chat.id} onClick={() => onSelectChat(chat.id)}>
-                                <ChatListItem
-                                    name={chat.name}
-                                    lastMessage={chat.lastMessage}
-                                    time={chat.time}
-                                    unreadCount={chat.unreadCount}
-                                    isOnline={chat.isOnline}
-                                    isActive={chat.id === activeChatId}
-                                    avatarUrl={chat.avatarUrl}
-                                    isArchived={chat.isArchived}
-                                    onArchive={() => onArchiveChat?.(chat.id)}
-                                    onDelete={() => onDeleteChat?.(chat.id)}
-                                />
-                            </div>
-                        ))}
+                    {getFilteredChats().map((chat) => (
+                        <div key={chat.id} onClick={() => onSelectChat(chat.id)}>
+                            <ChatListItem
+                                name={chat.name}
+                                lastMessage={chat.lastMessage}
+                                time={chat.time}
+                                unreadCount={chat.unreadCount}
+                                isOnline={chat.isOnline}
+                                isActive={chat.id === activeChatId}
+                                avatarUrl={chat.avatarUrl}
+                                isArchived={chat.isArchived}
+                                onArchive={() => onArchiveChat?.(chat.id)}
+                                onDelete={() => onDeleteChat?.(chat.id)}
+                            />
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -132,21 +200,25 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                 </button>
             </div>
 
-            {action === ACTIONS.CREATE && (
-                <CreateGroupOrTree
-                    onClose={() => setAction(null)}
-                    onCreate={(data) => {
-                        onCreateChat?.(data);
-                        setAction(null);
-                    }}
-                />
-            )}
+            {
+                action === ACTIONS.CREATE && (
+                    <CreateGroupOrTree
+                        onClose={() => setAction(null)}
+                        onCreate={(data) => {
+                            onCreateChat?.(data);
+                            setAction(null);
+                        }}
+                    />
+                )
+            }
 
-            {action === ACTIONS.CHAT && (
-                <StartNewChat
-                    onClose={() => setAction(null)}
-                />
-            )}
-        </aside>
+            {
+                action === ACTIONS.CHAT && (
+                    <StartNewChat
+                        onClose={() => setAction(null)}
+                    />
+                )
+            }
+        </aside >
     );
 }
