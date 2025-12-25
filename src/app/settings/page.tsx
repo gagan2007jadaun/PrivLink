@@ -161,6 +161,14 @@ export default function Settings() {
                             </div>
                         </section>
 
+                        {/* Encrypted Backup */}
+                        <section>
+                            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Security & Backup</h2>
+                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                                <BackupManager />
+                            </div>
+                        </section>
+
                         {/* Notifications */}
                         <section>
                             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Notifications</h2>
@@ -188,6 +196,134 @@ export default function Settings() {
             </main>
         </div>
     );
+}
+
+function BackupManager() {
+    const [password, setPassword] = useState("");
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleBackup = async () => {
+        if (!password) {
+            alert("Please set a password to encrypt your backup.");
+            return;
+        }
+        setIsExporting(true);
+        try {
+            // 1. Gather Data
+            const chats = localStorage.getItem("privlink_chats");
+            const queue = localStorage.getItem("privlink_message_queue");
+            const data = JSON.stringify({
+                timestamp: new Date().toISOString(),
+                chats: chats ? JSON.parse(chats) : [],
+                queue: queue ? JSON.parse(queue) : [],
+                version: 1
+            });
+
+            // 2. Encrypt
+            const encryptedBlob = await encryptData(data, password);
+
+            // 3. Download
+            const url = URL.createObjectURL(encryptedBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `privlink-backup-${new Date().toISOString().slice(0, 10)}.enc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert("Backup encrypted and downloaded successfully!");
+            setPassword("");
+        } catch (error) {
+            console.error("Backup failed", error);
+            alert("Backup failed. See console for details.");
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 className="font-medium text-zinc-900 dark:text-white">Encrypted Local Backup</h3>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        Export your chats and settings to a local file. Your data is encrypted with the password you provide.
+                        <strong> You hold the key.</strong>
+                    </p>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/50">
+                <label className="text-xs font-semibold uppercase text-zinc-400">Set Backup Password</label>
+                <div className="flex gap-2">
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter a strong password..."
+                        className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+                    />
+                    <button
+                        onClick={handleBackup}
+                        disabled={isExporting || !password}
+                        className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+                    >
+                        {isExporting ? 'Encrypting...' : 'Download Backup'}
+                    </button>
+                </div>
+                <p className="text-[10px] text-zinc-400">
+                    Warning: If you lose this password, this backup cannot be recovered. We do not store your password.
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// Web Crypto API Helper
+async function encryptData(plainText: string, password: string): Promise<Blob> {
+    const enc = new TextEncoder();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        enc.encode(password),
+        { name: "PBKDF2" },
+        false,
+        ["deriveKey"]
+    );
+
+    const key = await crypto.subtle.deriveKey(
+        {
+            name: "PBKDF2",
+            salt: salt,
+            iterations: 100000,
+            hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt"]
+    );
+
+    const encryptedContent = await crypto.subtle.encrypt(
+        {
+            name: "AES-GCM",
+            iv: iv
+        },
+        key,
+        enc.encode(plainText)
+    );
+
+    // Pack: Salt (16) + IV (12) + Content
+    const blob = new Blob([salt, iv, new Uint8Array(encryptedContent)], { type: 'application/octet-stream' });
+    return blob;
 }
 
 function NotificationToggle({ title, desc, defaultChecked }: { title: string, desc: string, defaultChecked: boolean }) {
