@@ -699,7 +699,7 @@ export default function Home() {
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800"
+            className="flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar"
           >
             <div className="mx-auto max-w-3xl space-y-6">
 

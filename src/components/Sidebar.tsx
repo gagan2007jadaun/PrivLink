@@ -160,7 +160,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
             </div>
 
             {/* Chat List */}
-            <div className="flex-1 overflow-y-auto px-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800">
+            <div className="flex-1 overflow-y-auto px-2 no-scrollbar">
                 <div className="space-y-1 py-2">
                     {getFilteredChats().map((chat) => (
                         <div key={chat.id} onClick={() => onSelectChat(chat.id)}>

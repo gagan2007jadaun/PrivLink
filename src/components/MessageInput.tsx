@@ -572,7 +572,7 @@ export default function MessageInput({
                                         ? `Message as ${selfAlias}...`
                                         : "Type a message..."
                         }
-                        className={`w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100 disabled:opacity-50 resize-none overflow-y-auto transition-[height] duration-150 ease-out leading-[1.4] caret-indigo-500`}
+                        className={`w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100 disabled:opacity-50 resize-none overflow-y-auto no-scrollbar transition-[height] duration-150 ease-out leading-[1.4] caret-indigo-500`}
                         style={{
                             fontWeight: messageStyle.bold ? 700 : 400,
                             fontStyle: messageStyle.italic ? 'italic' : 'normal',
