@@ -135,26 +135,26 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
             </div>
 
             {/* Filters */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-none">
+            <div className="flex items-center gap-2 overflow-x-auto overflow-y-hidden no-scrollbar px-2 pb-2">
                 <button
                     onClick={() => setActiveFilter(FILTER_ALL)}
-                    className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeFilter === FILTER_ALL ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}
+                    className={`whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-bold transition-all ${activeFilter === FILTER_ALL ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md transform scale-105' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 bg-white/50 dark:bg-zinc-800/50'}`}
                 >
-                    All Chats
+                    All
                 </button>
                 <button
                     onClick={() => setActiveFilter(FILTER_ARCHIVED)}
-                    className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeFilter === FILTER_ARCHIVED ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}
+                    className={`whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-bold transition-all ${activeFilter === FILTER_ARCHIVED ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md transform scale-105' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 bg-white/50 dark:bg-zinc-800/50'}`}
                 >
                     Archived
                 </button>
-                <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                <button className="whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 bg-white/50 dark:bg-zinc-800/50">
                     Personal
                 </button>
-                <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                <button className="whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 bg-white/50 dark:bg-zinc-800/50">
                     Work
                 </button>
-                <button className="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">
+                <button className="whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 bg-white/50 dark:bg-zinc-800/50">
                     Groups
                 </button>
             </div>
