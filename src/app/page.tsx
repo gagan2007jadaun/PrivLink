@@ -60,6 +60,10 @@ export default function Home() {
   const [activeChatId, setActiveChatId] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
 
+  // Offline / Queue State
+  const [isOnline, setIsOnline] = useState(true);
+  const [messageQueue, setMessageQueue] = useState<Message[]>([]);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -83,6 +87,54 @@ export default function Home() {
       setActiveChatId(mockChats[0].id);
       localStorage.setItem("privlink_chats", JSON.stringify(mockChats));
     }
+  }, []);
+
+  // Network Status & Queue Processing
+  useEffect(() => {
+    // 1. Initial State
+    setIsOnline(navigator.onLine);
+    const storedQueue = localStorage.getItem('privlink_message_queue');
+    if (storedQueue) {
+      try {
+        setMessageQueue(JSON.parse(storedQueue));
+      } catch (e) { console.error(e); }
+    }
+
+    // 2. Listeners
+    const handleOnline = () => {
+      setIsOnline(true);
+      // Process Queue
+      const currentQueue = JSON.parse(localStorage.getItem('privlink_message_queue') || '[]');
+      if (currentQueue.length > 0) {
+        console.log("Restored connection. Sending queue:", currentQueue.length);
+
+        // Simulate sequential sending
+        currentQueue.forEach((msg: Message, i: number) => {
+          setTimeout(() => {
+            setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'sent' } : m));
+
+            // Trigger delivery simulation (Simplified)
+            setTimeout(() => {
+              setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m));
+            }, 1500);
+          }, i * 300);
+        });
+
+        // Clear Queue
+        setMessageQueue([]);
+        localStorage.removeItem('privlink_message_queue');
+      }
+    };
+
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   const saveChats = (updatedChats: Chat[]) => {
@@ -438,11 +490,18 @@ export default function Home() {
       duration: duration,
       thumbnailUrl: thumbnailUrl,
       isConsecutive: messages.length > 0 && messages[messages.length - 1].isMe,
-      status: 'sent',
+      status: isOnline ? 'sent' : 'queued',
       confidenceScore: confidenceScore,
       style: style,
     };
     setMessages((prev) => [...prev, newMessage]);
+
+    if (!isOnline) {
+      const updatedQueue = [...messageQueue, newMessage];
+      setMessageQueue(updatedQueue);
+      localStorage.setItem('privlink_message_queue', JSON.stringify(updatedQueue));
+      return; // Stop here, don't simulate network events
+    }
 
     // Simulate "Drift" reduction on interaction
     if (activeChat.driftLevel === 'high') {

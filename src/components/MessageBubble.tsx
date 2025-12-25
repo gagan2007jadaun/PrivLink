@@ -11,7 +11,7 @@ interface MessageBubbleProps {
     thumbnailUrl?: string;
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
-    status?: 'sent' | 'delivered' | 'read';
+    status?: 'sent' | 'delivered' | 'read' | 'queued' | 'sending';
     heatScore?: number;
     confidenceScore?: number;
     style?: {
@@ -86,6 +86,17 @@ export default function MessageBubble({
                         </span>
                         {isMe && (
                             <div className="flex items-center" title={status}>
+                                {status === 'sending' && (
+                                    <svg className="animate-spin h-3 w-3 text-indigo-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                )}
+                                {status === 'queued' && (
+                                    <svg viewBox="0 0 24 24" width="14" height="14" className="text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                )}
                                 {status === 'sent' && (
                                     <svg viewBox="0 0 16 15" width="16" height="15" className="text-indigo-200/70">
                                         <path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L4.566 14.377l-3.609-3.419a.364.364 0 0 0-.513.008l-.5.509a.364.364 0 0 0 .009.513l4.316 4.088a.36.36 0 0 0 .506-.01L15.074 3.827a.365.365 0 0 0-.063-.51z" />

@@ -8,7 +8,7 @@ export interface Message {
     thumbnailUrl?: string; // For video messages
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
-    status?: 'sent' | 'delivered' | 'read';
+    status?: 'sent' | 'delivered' | 'read' | 'queued' | 'sending';
     deliveredAt?: string;
     readAt?: string;
     heatScore?: number; // 0-100, calculated from dwell time / length
