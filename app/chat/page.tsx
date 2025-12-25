@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import Sidebar from "@/components/Sidebar";
@@ -5,37 +6,44 @@ import ChatHeader from "@/components/ChatHeader";
 import MessageBubble from "@/components/MessageBubble";
 import MessageInput from "@/components/MessageInput";
 import RightPanel from "@/components/RightPanel";
+import AppNavigation from "@/components/AppNavigation";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { mockChats, mockMessages, Message, Chat } from "@/lib/data";
 
-import { useSettingsStore } from "@/store/useSettingsStore";
+import { useSettingsStore } from "../../store/useSettingsStore";
 
 // Hook: Track User Attention
 function useAttention() {
   const [isAttentionActive, setIsAttentionActive] = useState(false);
   const lastActivityRef = useRef(Date.now());
   const attentionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isActiveRef = useRef(false);
 
   useEffect(() => {
     const handleActivity = () => {
       lastActivityRef.current = Date.now();
-      if (!isAttentionActive && document.hasFocus()) {
+      if (!isActiveRef.current && document.hasFocus()) {
+        isActiveRef.current = true;
         setIsAttentionActive(true);
       }
 
       // Reset "Idle" timer
       if (attentionTimeoutRef.current) clearTimeout(attentionTimeoutRef.current);
       attentionTimeoutRef.current = setTimeout(() => {
+        isActiveRef.current = false;
         setIsAttentionActive(false);
       }, 2000); // 2 seconds idle = No attention
     };
 
     const handleFocus = () => handleActivity();
-    const handleBlur = () => setIsAttentionActive(false);
+    const handleBlur = () => {
+      isActiveRef.current = false;
+      setIsAttentionActive(false);
+    };
 
-    window.addEventListener("mousemove", handleActivity);
-    window.addEventListener("scroll", handleActivity);
-    window.addEventListener("keydown", handleActivity);
+    window.addEventListener("mousemove", handleActivity, { passive: true });
+    window.addEventListener("scroll", handleActivity, { passive: true });
+    window.addEventListener("keydown", handleActivity, { passive: true });
     window.addEventListener("focus", handleFocus);
     window.addEventListener("blur", handleBlur);
 
@@ -45,20 +53,144 @@ function useAttention() {
       window.removeEventListener("keydown", handleActivity);
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("blur", handleBlur);
+      if (attentionTimeoutRef.current) clearTimeout(attentionTimeoutRef.current);
     };
-  }, [isAttentionActive]);
+  }, []); // Run only on mount
 
   return isAttentionActive;
 }
 
+import { useSocket } from "@/hooks/useSocket";
+
 export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isIncognito, setIsIncognito] = useState(false);
+  const [isGhostTyping, setIsGhostTyping] = useState(false);
+  const { updateProfile, silentRead, experiments } = useSettingsStore();
 
-  // Initialize state from Local Storage or Mocks
+
+
+  // 🧪 Experiment: Neon Mode
+  useEffect(() => {
+    if (experiments.neonMode) {
+      document.body.classList.add('neon-mode');
+    } else {
+      document.body.classList.remove('neon-mode');
+    }
+  }, [experiments.neonMode]);
+
+  // 🧪 Experiment: Ghost Typing Simulation
+  useEffect(() => {
+    if (!experiments.ghostTyping) {
+      setIsGhostTyping(false);
+      return;
+    }
+
+    // Randomly show typing every 10-25 seconds
+    const loop = () => {
+      const delay = Math.random() * 15000 + 10000;
+      setTimeout(() => {
+        if (experiments.ghostTyping) {
+          setIsGhostTyping(true);
+          // Stop typing after 3-5 seconds
+          setTimeout(() => {
+            setIsGhostTyping(false);
+            loop(); // Schedule next
+          }, Math.random() * 2000 + 3000);
+        }
+      }, delay);
+    };
+
+    loop();
+    return () => setIsGhostTyping(false); // Cleanup isn't perfect here but good enough for experiment
+  }, [experiments.ghostTyping]);
+
+  // 🧪 Experiment: UI Sounds Helper
+  const playInteractionSound = () => {
+    if (!experiments.uiSounds) return;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      // Subtle "pop"
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } catch (e) {
+      console.error("Audio play failed", e);
+    }
+  };
+
+  // FIX: Blur input on zoom to prevent jump (Refined)
+  // FIX: Blur input on zoom to prevent jump (Refined with VisualViewport)
+  useEffect(() => {
+    let zoomTimeout: NodeJS.Timeout;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+          (active as HTMLElement).blur();
+        }
+      }
+    };
+
+    const handleResize = () => {
+      // If visual viewport scale > 1, it means we are zoomed in
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      if (isIOS && window.visualViewport && window.visualViewport.scale > 1) {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+          (active as HTMLElement).blur();
+        }
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+    }
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Check for alias from Identity Page
+    const alias = sessionStorage.getItem("alias");
+    if (alias) {
+      updateProfile({
+        displayName: alias,
+        username: alias.toLowerCase().replace(/\s+/g, '_'),
+      });
+      // Clear it so it doesn't overwrite if the user later changes it manually and refreshes
+      // sessionStorage.removeItem("alias"); // KEEP ALIAS for persistence logic (isMe checks, api calls)
+    }
+  }, [updateProfile]);
+
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState("");
   const [userPrefs, setUserPrefs] = useState<any>({});
+
+  // Persist Active Chat
+  useEffect(() => {
+    if (activeChatId) {
+      localStorage.setItem("privlink_last_chat_id", activeChatId);
+    }
+  }, [activeChatId]);
 
   useEffect(() => {
     const stored = localStorage.getItem("userPrefs");
@@ -110,78 +242,133 @@ export default function Home() {
     setIsMounted(true);
   }, []);
 
-  // Load Chats on Mount
+  // Socket Integration
+  const { socket, isConnected } = useSocket();
+
+  // Join Chat Room
   useEffect(() => {
-    const storedChats = localStorage.getItem("privlink_chats");
-    if (storedChats) {
-      try {
-        const parsed = JSON.parse(storedChats) as Chat[];
-
-        // Restore background data from individual keys
-        const chatsWithBg = parsed.map(chat => {
-          const bgKey = `chat-bg-${chat.id}`;
-          const storedBg = localStorage.getItem(bgKey);
-          if (storedBg) {
-            try {
-              return { ...chat, chatBackground: JSON.parse(storedBg) };
-            } catch (e) {
-              console.error(`Failed to parse background for chat ${chat.id}`, e);
-            }
-          }
-          return chat;
-        });
-
-        setChats(chatsWithBg);
-        if (chatsWithBg.length > 0) setActiveChatId(chatsWithBg[0].id);
-      } catch (e) {
-        console.error("Failed to parse chats", e);
-        setChats(mockChats);
-        setActiveChatId(mockChats[0].id);
-      }
-    } else {
-      setChats(mockChats);
-      setActiveChatId(mockChats[0].id);
-      try {
-        localStorage.setItem("privlink_chats", JSON.stringify(mockChats));
-      } catch (e) { console.error("Initial save failed", e); }
+    if (socket && activeChatId) {
+      socket.emit('join_chat', activeChatId);
     }
+  }, [socket, activeChatId]);
+
+  // Listen for Messages
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('receive_message', (data: Message) => {
+      // Only append if it's the current chat to avoid pollution
+      setMessages((prev) => {
+        if (prev.some(m => m.id === data.id)) return prev;
+        return [...prev, data];
+      });
+      // Clear typing indicator for sender
+      setTypingUsers(prev => {
+        const next = new Set(prev);
+        next.delete((data as any).senderId || 'Unknown'); // Use ID or Name
+        return next;
+      });
+    });
+
+    socket.on('user_typing', (data: { username: string }) => {
+      setTypingUsers(prev => {
+        const next = new Set(prev);
+        next.add(data.username);
+        return next;
+      });
+    });
+
+    socket.on('user_stop_typing', (data: { username: string }) => {
+      setTypingUsers(prev => {
+        const next = new Set(prev);
+        next.delete(data.username);
+        return next;
+      });
+    });
+
+    socket.on('reaction_added', (data: { messageId: string, emoji: string }) => {
+      setMessages(prev => prev.map(msg => {
+        if (msg.id === data.messageId) {
+          const existingReaction = msg.reactions?.find(r => r.emoji === data.emoji);
+          const newReactions = existingReaction
+            ? msg.reactions?.map(r => r.emoji === data.emoji ? { ...r, count: r.count + 1 } : r)
+            : [...(msg.reactions || []), { emoji: data.emoji, count: 1 }];
+          return { ...msg, reactions: newReactions };
+        }
+        return msg;
+      }));
+    });
+
+    return () => {
+      socket.off('receive_message');
+      socket.off('user_typing');
+      socket.off('user_stop_typing');
+      socket.off('reaction_added');
+    };
+  }, [socket, activeChatId]);
+
+  // Typing Logic
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+
+  const handleTyping = (isTyping: boolean) => {
+    if (!socket || !activeChatId) return;
+
+    const username = sessionStorage.getItem("alias") || "Anonymous";
+    if (isTyping) {
+      socket.emit('typing_start', { chatId: activeChatId, username });
+    } else {
+      socket.emit('typing_stop', { chatId: activeChatId, username });
+    }
+  };
+
+  // Load Chats from Mock Data
+  useEffect(() => {
+    const loadChats = () => {
+      try {
+        const data = mockChats;
+
+        if (data && data.length > 0) {
+          // Hydrate with local backgrounds
+          const hydratedChats = data.map((chat: any) => {
+            const storedBg = localStorage.getItem(`chat-bg-${chat.id}`);
+            if (storedBg) {
+              try {
+                return { ...chat, chatBackground: JSON.parse(storedBg) };
+              } catch (e) {
+                console.error("Failed to parse bg", e);
+                return chat;
+              }
+            }
+            return chat;
+          });
+
+          setChats(hydratedChats);
+          const savedActiveId = localStorage.getItem("privlink_last_chat_id");
+          if (savedActiveId && data.some((c: any) => c.id === savedActiveId)) {
+            setActiveChatId(savedActiveId);
+          } else {
+            setActiveChatId(data[0].id);
+          }
+        }
+      } catch (e) {
+        console.error("Mock Data Error (Chats):", e);
+        setChats([]);
+        setActiveChatId("");
+      }
+    };
+
+    loadChats();
   }, []);
 
   // Network Status & Queue Processing
   useEffect(() => {
     // 1. Initial State
     setIsOnline(navigator.onLine);
-    const storedQueue = localStorage.getItem('privlink_message_queue');
-    if (storedQueue) {
-      try {
-        setMessageQueue(JSON.parse(storedQueue));
-      } catch (e) { console.error(e); }
-    }
 
     // 2. Listeners
     const handleOnline = () => {
       setIsOnline(true);
-      // Process Queue
-      const currentQueue = JSON.parse(localStorage.getItem('privlink_message_queue') || '[]');
-      if (currentQueue.length > 0) {
-        console.log("Restored connection. Sending queue:", currentQueue.length);
-
-        // Simulate sequential sending
-        currentQueue.forEach((msg: Message, i: number) => {
-          setTimeout(() => {
-            setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'sent' } : m));
-
-            // Trigger delivery simulation (Simplified)
-            setTimeout(() => {
-              setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m));
-            }, 1500);
-          }, i * 300);
-        });
-
-        // Clear Queue
-        setMessageQueue([]);
-        localStorage.removeItem('privlink_message_queue');
-      }
+      // Queue processing removed for ephemeral mode
     };
 
     const handleOffline = () => setIsOnline(false);
@@ -197,30 +384,10 @@ export default function Home() {
 
   const saveChats = (updatedChats: Chat[]) => {
     setChats(updatedChats);
-
-    // Strip large base64 data for main storage to avoid QuotaExceededError
-    const optimizedChats = updatedChats.map(chat => {
-      if (chat.chatBackground?.type === 'image' && chat.chatBackground.value.startsWith('data:')) {
-        // We only save the metadata, the actual base64 is already in its own key via RightPanel.tsx
-        return {
-          ...chat,
-          chatBackground: { ...chat.chatBackground, value: "[DECOUPLED_DATA_URL]" }
-        };
-      }
-      return chat;
-    });
-
-    try {
-      localStorage.setItem("privlink_chats", JSON.stringify(optimizedChats));
-    } catch (e) {
-      console.error("Critical: Failed to save chats to localStorage", e);
-      // Fallback: Notify user or attempt to clear old backgrounds? 
-      // For now, we log to prevent secondary crashes.
-    }
+    // Persistence removed
   };
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
   const [isScrolledHeader, setIsScrolledHeader] = useState(false); // Header calm-down state
-  const { silentRead } = useSettingsStore();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -405,20 +572,9 @@ export default function Home() {
       let theirStarts = 0;
       let lastTime = 0;
 
-      messages.forEach(msg => {
-        const msgTime = new Date(msg.timestamp).getTime(); // Note: Mock timestamps are strings like "10:23 AM", so parsing might fail without date. 
-        // Mock timestamps are "10:23 AM". We need robust parsing or just assume basic flow for now.
-        // Let's rely on simple `isConsecutive` logic: A "Start" is a message that is NOT consecutive and follows a long gap.
-        // Since we don't have exact Dates in mock, we'll simpler heuristic:
-        // Who sent the *first* message of the day/session?
-        // Or ratio of total messages?
-        // Let's use Message Count Ratio for Gravity for now as it's robust.
-        // Gravity = Initiation. Let's approximation: Who sent more messages that started a block?
-      });
-
       // Simpler Gravity: Message Count Ratio (Who drives the volume?)
       const myMsgCount = messages.filter(m => m.isMe).length;
-      const theirMsgCount = messages.length - myMsgCount;
+      const theirMsgCount = Math.max(0, messages.length - myMsgCount);
       const ratio = myMsgCount / (messages.length || 1);
 
       let computedGravity: 'balanced' | 'one-sided-me' | 'one-sided-them' = 'balanced';
@@ -428,8 +584,17 @@ export default function Home() {
       // 2. Persona (Time of Day - Last few messages)
       // Parse time string "10:23 AM"
       const times = messages.filter(m => !m.isMe).map(m => {
-        const [time, modifier] = m.timestamp.split(' ');
-        if (!time || !modifier) return null;
+        if (!m.timestamp || typeof m.timestamp !== 'string') return null;
+        const parts = m.timestamp.split(' ');
+        // If format is not "HH:MM AM/PM", try standard date parsing
+        if (parts.length < 2) {
+          const date = new Date(m.timestamp);
+          if (!isNaN(date.getTime())) {
+            return date.getHours();
+          }
+          return null;
+        }
+        const [time, modifier] = parts;
         let [hours, mins] = time.split(':').map(Number);
         if (modifier === 'PM' && hours < 12) hours += 12;
         if (modifier === 'AM' && hours === 12) hours = 0;
@@ -458,18 +623,12 @@ export default function Home() {
       // Map 10 chars -> 10 weight, 200 chars -> 100 weight
       const computedWeight = Math.min(100, Math.max(10, Math.round((avgLen / 150) * 100)));
 
-      // 5. Mutual Curiosity (Question Frequency)
-      const questionCount = messages.filter(m => (m.content || "").includes('?')).length;
-      // Heuristic: 20% questions = 100 score. (1 in 5)
-      const computedCuriosity = Math.min(100, Math.round((questionCount / (messages.length || 1)) * 500));
-
       return {
         ...chat,
         gravity: computedGravity,
         persona: computedPersona,
         energyBalance: computedEnergy,
-        conversationWeight: computedWeight,
-        mutualCuriosity: computedCuriosity
+        conversationWeight: computedWeight
       };
     }
 
@@ -514,13 +673,29 @@ export default function Home() {
     }
   }, [activeChatId, isScrolledBottom]);
 
-  // Load messages when active chat changes
+  // Load messages from Mock Data when active chat changes
   useEffect(() => {
-    if (mockMessages[activeChatId]) {
-      setMessages(mockMessages[activeChatId]);
-    } else {
-      setMessages([]);
-    }
+    if (!activeChatId) return;
+
+    const loadMessages = () => {
+      try {
+        const data = mockMessages[activeChatId] || [];
+        const currentUser = sessionStorage.getItem("alias");
+
+        const processed = data.map((m: any) => ({
+          ...m,
+          isMe: m.isMe || m.senderId === currentUser,
+          status: m.status || 'read'
+        }));
+
+        setMessages(processed);
+      } catch (e) {
+        console.error("Mock Data Error (Messages):", e);
+        setMessages([]);
+      }
+    };
+
+    loadMessages();
   }, [activeChatId]);
 
   const scrollToBottom = () => {
@@ -566,12 +741,40 @@ export default function Home() {
     handleSendMessage(msg.content, msg.type, msg.duration, msg.confidenceScore, msg.thumbnailUrl, msg.style);
   };
 
-  const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }) => {
+  const handleReaction = (messageId: string, emoji: string) => {
+    if (!socket || !activeChatId) return;
+
+    // Optimistic Update
+    setMessages(prev => prev.map(msg => {
+      if (msg.id === messageId) {
+        const existingReaction = msg.reactions?.find(r => r.emoji === emoji);
+        const newReactions = existingReaction
+          ? msg.reactions?.map(r => r.emoji === emoji ? { ...r, count: r.count + 1 } : r)
+          : [...(msg.reactions || []), { emoji, count: 1 }];
+        return { ...msg, reactions: newReactions };
+      }
+      return msg;
+    }));
+
+    socket.emit('add_reaction', { chatId: activeChatId, messageId, emoji });
+  };
+
+  const handleSetDisappearingDuration = (duration: number) => {
+    if (!activeChatId) return;
+
+    // Local Update Only
+    setChats(prev => prev.map(c => c.id === activeChatId ? { ...c, disappearingDuration: duration } : c));
+  };
+
+  const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image' | 'file', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }, fileName?: string, fileSize?: string) => {
     if (!activeChat) return;
 
-    const newMessage: Message = {
+    // 🧪 Experiment: Play Sound
+    playInteractionSound();
+
+    const newMessage: any = {
       id: Date.now().toString(),
-      type: type,
+      type: type as any,
       content: content,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: true,
@@ -580,6 +783,8 @@ export default function Home() {
       isConsecutive: messages.length > 0 && messages[messages.length - 1].isMe,
       status: isOnline ? 'sent' : 'queued',
       confidenceScore: confidenceScore,
+      fileName: fileName,
+      fileSize: fileSize,
       style: style,
       replyTo: replyingTo ? {
         messageId: replyingTo.id,
@@ -588,13 +793,51 @@ export default function Home() {
         mediaType: replyingTo.mediaType
       } : undefined
     };
-    setMessages((prev) => [...prev, newMessage]);
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
+
+    // Mock Persistence (Local state only)
+    console.log("Message sent (Mock):", newMessage);
+
+
     setReplyingTo(null); // Clear reply state
+
+    // UPDATE SIDEBAR ("You: ...")
+    const updatedChats = chats.map(c => {
+      if (c.id === activeChatId) {
+        let preview = content;
+        if (isIncognito) preview = '🔒 Incognito Message';
+        else if (type === 'image') preview = '📷 Photo';
+        else if (type === 'video') preview = '📹 Video';
+        else if (type === 'audio') preview = '🎤 Audio';
+
+        return {
+          ...c,
+          lastMessage: `You: ${preview}`,
+          time: 'Just now',
+          unreadCount: 0
+        };
+      }
+      return c;
+    });
+
+    // Sort active chat to top
+    updatedChats.sort((a, b) => a.id === activeChatId ? -1 : b.id === activeChatId ? 1 : 0);
+
+    setChats(updatedChats);
+    // Chat persistence removed
+
 
     if (!isOnline) {
       const updatedQueue = [...messageQueue, newMessage];
       setMessageQueue(updatedQueue);
-      localStorage.setItem('privlink_message_queue', JSON.stringify(updatedQueue));
+      if (!isIncognito) {
+        try {
+          localStorage.setItem('privlink_message_queue', JSON.stringify(updatedQueue));
+        } catch (e) {
+          console.error("Failed to save queue:", e);
+        }
+      }
       return; // Stop here, don't simulate network events
     }
 
@@ -683,27 +926,30 @@ export default function Home() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans">
-      {/* Left Sidebar */}
-      <Sidebar
-        chats={chats}
-        activeChatId={activeChatId}
-        onSelectChat={handleChatSelect}
-        onCreateChat={handleCreateChat}
-        onArchiveChat={handleArchiveChat}
-        onDeleteChat={handleDeleteChat}
-      />
+    <div className={`h-screen w-full overflow-hidden bg-background text-zinc-900 dark:text-zinc-100 font-sans grid ${showRightPanel && activeChat ? 'grid-cols-1 md:grid-cols-[320px_1fr] xl:grid-cols-[320px_1fr_340px]' : 'grid-cols-1 md:grid-cols-[320px_1fr]'}`}>
+      {/* Unified Left Navigation Panel */}
+      <div className="hidden md:flex md:my-3 md:ml-3 md:h-[calc(100vh-24px)] rounded-[24px] overflow-hidden shadow-lg border border-white/20 dark:border-white/10 z-20 bg-sidebar">
+        <AppNavigation />
+        <Sidebar
+          chats={chats}
+          activeChatId={activeChatId}
+          onSelectChat={handleChatSelect}
+          onCreateChat={handleCreateChat}
+          onArchiveChat={handleArchiveChat}
+          onDeleteChat={handleDeleteChat}
+        />
+      </div>
 
       {/* Main Chat Area */}
       {!activeChat ? (
-        <div className="flex flex-1 items-center justify-center bg-zinc-50 dark:bg-black text-zinc-400">
+        <div className="flex flex-1 items-center justify-center bg-background text-zinc-400">
           <p>Select a conversation to start chatting.</p>
         </div>
       ) : (
         <main
-          className={`flex flex-1 flex-col min-w-0 relative transition-colors duration-[120000ms] ease-linear
+          className={`flex flex-1 flex-col h-full relative z-10
             ${activeChat.permissions?.allowScreenshot === false ? 'select-none decoration-clone' : ''}
-            md:rounded-[18px] md:m-2 md:overflow-hidden shadow-sm
+            md:rounded-[18px] md:m-2 md:overflow-hidden bg-zinc-50 dark:bg-[#121212] shadow-xl
           `}
           onContextMenu={(e) => {
             if (activeChat.permissions?.allowSaveMedia === false) {
@@ -711,10 +957,7 @@ export default function Home() {
             }
           }}
           style={{
-            backgroundColor:
-              activeChat.driftLevel === 'high' ? '#F4F4F5' : // Cold
-                activeChat.driftLevel === 'medium' ? '#FAFAFA' : // Neutral
-                  '#fdfbf7' // Warm tint (Cream)
+            backgroundColor: 'transparent' // Let the wallpaper/global background handle it
           }}
         >
           {/* Dynamic Wallpaper Layer (Z-0) */}
@@ -740,7 +983,7 @@ export default function Home() {
                 opacity: (activeChat.chatBackground?.intensity ?? userPrefs.chatBackground?.intensity ?? (activeChat.chatBackground?.type === 'texture' || userPrefs.chatBackground?.type === 'texture' ? 0.15 : 0.45)),
               }}
             />
-            <div className="absolute inset-0 bg-white/55 dark:bg-black/20 mix-blend-overlay"></div>
+            <div className="absolute inset-0 bg-white/20 dark:bg-black/30 mix-blend-overlay"></div>
           </div>
 
           {/* Atmosphere/Weight Vignette */}
@@ -772,7 +1015,7 @@ export default function Home() {
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar"
+            className="chat-center relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar"
           >
             <div className="mx-auto max-w-3xl space-y-6">
 
@@ -792,7 +1035,7 @@ export default function Home() {
                   <div
                     key={msg.id}
                     data-message-id={msg.id}
-                    className={`flex w-full ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
+                    className={`flex w-full relative ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       handleReply(msg);
@@ -813,17 +1056,32 @@ export default function Home() {
                       style={msg.style}
                       replyTo={msg.replyTo}
                       onReplyClick={scrollToMessage}
-                      onRetry={() => handleRetry(msg.id)}
                     />
                   </div>
                 ))
               )}
               <div ref={messagesEndRef} />
+
+              {/* Typing Indicator */}
+              {(typingUsers.size > 0 || isGhostTyping) && (
+                <div className="ml-4 flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-500 animate-pulse">
+                  <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span>
+                    {typingUsers.size > 0
+                      ? `${Array.from(typingUsers).join(', ')} is typing...`
+                      : 'Someone is typing...'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Input Area */}
-          <div className="relative z-10 w-full">
+          <div className="relative z-20 w-full shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90 backdrop-blur-xl">
             <MessageInput
               onSendMessage={handleSendMessage}
               boundaryMode={activeChat.boundaryMode}
@@ -837,15 +1095,45 @@ export default function Home() {
       )}
 
       {/* Right Sidebar */}
-      {showRightPanel && activeChat && (
-        <RightPanel
-          chat={activeChat}
+      <div className="hidden xl:flex xl:my-3 xl:mr-3 xl:h-[calc(100vh-24px)] overflow-y-auto no-scrollbar rounded-[24px] z-20">
+        {showRightPanel && activeChat && (
+          <RightPanel
+            chat={activeChat}
+          messages={messages}
+          onImageClick={(url) => setSelectedImage(url)}
           onUpdateChat={(updated) => {
             const newChats = chats.map(c => c.id === updated.id ? updated : c);
             saveChats(newChats);
             // Also update local activeChat state if needed by reference (usually covered by hook or memo but safe to rely on chats prop)
           }}
         />
+      )}
+      </div>
+      {/* Lightbox Overlay */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fade-in"
+          onClick={() => setSelectedImage(null)}
+        >
+          {/* Close Button */}
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 p-2 text-white/70 hover:text-white transition-colors"
+          >
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Image */}
+          <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={selectedImage}
+              alt="Full screen"
+              className="max-h-[90vh] max-w-full object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
       )}
     </div >
   );

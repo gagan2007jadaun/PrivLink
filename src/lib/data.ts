@@ -70,9 +70,10 @@ export interface Chat {
 
     // Customization
     chatBackground?: {
-        type: "image" | "gradient" | "color";
-        value: string; // image url / gradient css / hex
-        blur: number;  // px
+        type: "image" | "texture" | "gradient" | "color";
+        value: string; // image url / gradient css / hex / texture path
+        blur?: number;  // px
+        intensity?: number; // 0.05 - 0.35
     };
 }
 

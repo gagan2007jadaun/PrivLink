@@ -48,8 +48,8 @@ export default function MessageBubble({
     onRetry,
 }: MessageBubbleProps) {
     return (
-        <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
-            <div className={`relative max-w-[70%] sm:max-w-[65%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+        <>
+            <div className={`relative max-w-[85%] sm:max-w-[70%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
 
                 {/* Main Bubble */}
                 <div
@@ -183,6 +183,6 @@ export default function MessageBubble({
                     </div>
                 )}
             </div>
-        </div>
+        </>
     );
 }

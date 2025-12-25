@@ -1,0 +1,176 @@
+.sidebar {
+  --width-open: 260px;
+  --width-closed: 64px;
+  position: relative; /* Changed from absolute for Flexbox layout */
+  width: var(--width-closed);
+  background: transparent;
+  transition: width 0.3s;
+  height: 100%; /* Fill most of the screen vertically */
+  flex-shrink: 0; /* Prevent flexbox from squishing it */
+  z-index: 50; /* Ensure it stays above other elements if needed */
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar.open {
+  width: var(--width-open);
+}
+
+.toggle {
+  position: absolute;
+  z-index: 2;
+  top: 24px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #3e3d54;
+  color: #8f8d9b;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.open .toggle {
+  rotate: 180deg;
+}
+
+.inner {
+  position: absolute;
+  inset: 0;
+  width: 260px; /* Keep strict inner width so text doesn't flow during animation */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  height: 72px;
+  width: var(--width-closed);
+  padding: 0 20px;
+  border-radius: 16px 16px 0 0;
+  transition: 0.3s;
+}
+
+.open .header {
+  width: var(--width-open);
+}
+
+.header h1 {
+  margin-left: 12px;
+  color: #f9f9f9;
+  opacity: 0;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.search {
+  position: relative;
+  padding: 16px 0;
+  margin: 0 10px;
+  width: calc(var(--width-closed) - 20px);
+  transition: 0.3s;
+}
+
+.open .search {
+  width: calc(var(--width-open) - 20px);
+}
+
+.searchIcon {
+  position: absolute;
+  top: 26px;
+  left: 12px;
+  color: #68687a;
+  pointer-events: none;
+}
+
+.searchInput {
+  background: rgb(255 255 255 / 6%);
+  border: 0;
+  border-radius: 8px;
+  width: 100%;
+  height: 44px;
+  padding-left: 30px;
+  transition: 0.3s;
+  color: #f9f9f9;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: transparent;
+}
+
+.open .searchInput::placeholder {
+  color: #68687a;
+}
+
+.open .searchInput {
+  padding-left: 52px;
+}
+
+.menu {
+  position: relative;
+  display: grid;
+}
+
+.menuIndicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 56px;
+  width: 6px;
+  background: #656aff;
+  translate: 0 var(--top);
+  transition: 0.3s;
+  pointer-events: none; /* Let clicks pass through to buttons */
+}
+
+.menuButton {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  height: 56px;
+  width: var(--width-closed);
+  padding: 0 21px; 
+  opacity: 0.8;
+  transition: 0.3s;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: #8f8d9b; /* Default text color for icons, inherited if SVG */
+}
+
+.open .menuButton {
+  width: var(--width-open);
+}
+
+.menuButton:hover:not(.active) {
+  color: rgb(255 255 255 / 90%);
+  background: rgb(255 255 255 / 2%);
+}
+
+.menuButton.active {
+  color: #f9f9f9;
+  background: rgb(255 255 255 / 4%);
+  opacity: 1;
+  cursor: default;
+}
+
+.menuButton p {
+  opacity: 0;
+  white-space: nowrap;
+  font-size: 15px;
+  margin: 0; /* Override any tailwind margins */
+}
+
+.open :is(.menuButton p, .header h1) {
+  opacity: 1;
+}
+
+.menuButtonIcon,
+.logoIcon {
+  flex-shrink: 0;
+}
