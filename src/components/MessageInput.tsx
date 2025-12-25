@@ -16,9 +16,18 @@ interface MessageInputProps {
     boundaryMode?: boolean;
     recentMessages?: string[];
     selfAlias?: string;
+    replyingTo?: { sender: string; text: string; mediaType?: string } | null;
+    onCancelReply?: () => void;
 }
 
-export default function MessageInput({ onSendMessage, boundaryMode = false, recentMessages = [], selfAlias }: MessageInputProps) {
+export default function MessageInput({
+    onSendMessage,
+    boundaryMode = false,
+    recentMessages = [],
+    selfAlias,
+    replyingTo,
+    onCancelReply
+}: MessageInputProps) {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [message, setMessage] = useState("");
     const [isEcho, setIsEcho] = useState(false);
@@ -192,6 +201,28 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
 
     return (
         <div className="relative p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
+            {/* Reply Bar */}
+            {replyingTo && (
+                <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-zinc-100 p-2 dark:bg-zinc-800/80 animate-fade-in-up">
+                    <div className="flex flex-col overflow-hidden">
+                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                            Replying to {replyingTo.sender}
+                        </span>
+                        <span className="truncate text-xs text-zinc-600 dark:text-zinc-400">
+                            {replyingTo.mediaType ? `[${replyingTo.mediaType}] ` : ''}{replyingTo.text}
+                        </span>
+                    </div>
+                    <button
+                        onClick={onCancelReply}
+                        className="ml-2 rounded-full p-1 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                    >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            )}
+
             {/* Font Toolbar */}
             {showFontToolbar && !isRecording && (
                 <div className="absolute -top-12 left-4 flex items-center gap-1 rounded-xl bg-white p-1 shadow-lg ring-1 ring-black/5 dark:bg-zinc-800 dark:ring-white/10 animate-fade-in-up">

@@ -64,6 +64,38 @@ export default function Home() {
   const [isOnline, setIsOnline] = useState(true);
   const [messageQueue, setMessageQueue] = useState<Message[]>([]);
 
+  // Reply State
+  const [replyingTo, setReplyingTo] = useState<{ id: string; sender: string; text: string; mediaType?: 'image' | 'video' | 'audio' } | null>(null);
+
+  const handleReply = (msg: Message) => {
+    let text = msg.content;
+    let mediaType: 'image' | 'video' | 'audio' | undefined;
+
+    if (msg.type === 'image') { text = "Photo"; mediaType = 'image'; }
+    if (msg.type === 'video') { text = "Video"; mediaType = 'video'; }
+    if (msg.type === 'audio') { text = "Audio Message"; mediaType = 'audio'; }
+
+    setReplyingTo({
+      id: msg.id,
+      sender: msg.isMe ? 'You' : (activeChatId ? chats.find(c => c.id === activeChatId)?.name || 'Sender' : 'Sender'),
+      text,
+      mediaType
+    });
+  };
+
+  const cancelReply = () => setReplyingTo(null);
+
+  const scrollToMessage = (messageId: string) => {
+    const el = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('bg-indigo-50/50', 'dark:bg-indigo-900/20', 'transition-colors', 'duration-500');
+      setTimeout(() => {
+        el.classList.remove('bg-indigo-50/50', 'dark:bg-indigo-900/20');
+      }, 1000);
+    }
+  };
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -493,8 +525,15 @@ export default function Home() {
       status: isOnline ? 'sent' : 'queued',
       confidenceScore: confidenceScore,
       style: style,
+      replyTo: replyingTo ? {
+        messageId: replyingTo.id,
+        username: replyingTo.sender,
+        text: replyingTo.text,
+        mediaType: replyingTo.mediaType
+      } : undefined
     };
     setMessages((prev) => [...prev, newMessage]);
+    setReplyingTo(null); // Clear reply state
 
     if (!isOnline) {
       const updatedQueue = [...messageQueue, newMessage];
@@ -669,6 +708,10 @@ export default function Home() {
                     key={msg.id}
                     data-message-id={msg.id}
                     className={`flex w-full ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      handleReply(msg);
+                    }}
                   >
                     <MessageBubble
                       type={msg.type || 'text'}
@@ -676,11 +719,15 @@ export default function Home() {
                       timestamp={msg.timestamp}
                       isMe={msg.isMe}
                       duration={msg.duration}
+                      thumbnailUrl={msg.thumbnailUrl}
                       reactions={msg.reactions}
                       isConsecutive={msg.isConsecutive}
                       status={msg.status}
                       heatScore={msg.heatScore}
                       confidenceScore={msg.confidenceScore}
+                      style={msg.style}
+                      replyTo={msg.replyTo}
+                      onReplyClick={scrollToMessage}
                     />
                   </div>
                 ))
@@ -695,6 +742,8 @@ export default function Home() {
             boundaryMode={activeChat.boundaryMode}
             recentMessages={messages.filter(m => m.isMe).slice(-5).map(m => m.content || "")}
             selfAlias={activeChat.selfAlias}
+            replyingTo={replyingTo}
+            onCancelReply={cancelReply}
           />
         </main>
       )}

@@ -20,6 +20,13 @@ interface MessageBubbleProps {
         underline?: boolean;
         fontSize?: string;
     };
+    replyTo?: {
+        messageId: string;
+        username: string;
+        text: string;
+        mediaType?: 'image' | 'video' | 'audio';
+    };
+    onReplyClick?: (messageId: string) => void;
 }
 
 export default function MessageBubble({
@@ -35,6 +42,8 @@ export default function MessageBubble({
     heatScore = 0,
     confidenceScore,
     style: propsStyle,
+    replyTo,
+    onReplyClick,
 }: MessageBubbleProps) {
     return (
         <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
@@ -51,6 +60,25 @@ export default function MessageBubble({
           ${confidenceScore !== undefined ? (confidenceScore < 70 ? 'border-b-[3px] border-dotted border-white/40' : 'border-b-[3px] border-solid border-white/20') : ''}
           `}
                 >
+                    {/* Reply Preview */}
+                    {replyTo && (
+                        <div
+                            onClick={(e) => { e.stopPropagation(); onReplyClick?.(replyTo.messageId); }}
+                            className={`mb-2 cursor-pointer rounded-sm border-l-[3px] px-2 py-0.5 text-xs opacity-90 transition-opacity hover:opacity-100 ${isMe ? 'border-indigo-300 bg-indigo-700/30' : 'border-indigo-500 bg-zinc-100 dark:bg-zinc-700/50'}`}
+                        >
+                            <span className="block font-bold mb-0.5 opacity-100">{replyTo.username}</span>
+                            <span className="block truncate opacity-80">
+                                {replyTo.mediaType ? (
+                                    <span className="italic">
+                                        {replyTo.mediaType === 'image' && '🖼 Photo'}
+                                        {replyTo.mediaType === 'video' && '📹 Video'}
+                                        {replyTo.mediaType === 'audio' && '🎤 Audio'}
+                                    </span>
+                                ) : replyTo.text}
+                            </span>
+                        </div>
+                    )}
+
                     {type === 'image' && (
                         <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
                             <img src={content} alt="Attached" className="h-full w-full object-cover transition-transform hover:scale-105" />

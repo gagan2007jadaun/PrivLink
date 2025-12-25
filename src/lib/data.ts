@@ -21,6 +21,12 @@ export interface Message {
         underline?: boolean;
         fontSize?: string; // e.g. 'small', 'medium', 'large'
     };
+    replyTo?: {
+        messageId: string;
+        username: string; // "You" or Sender Name
+        text: string; // Snapshot or "[Media]"
+        mediaType?: 'image' | 'video' | 'audio'; // Helper for icon
+    };
 }
 
 export interface Chat {
