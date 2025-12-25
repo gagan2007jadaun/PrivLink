@@ -47,6 +47,12 @@ export default function MessageInput({
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const chunksRef = useRef<BlobPart[]>([]);
 
+    // Audio Visualization Refs
+    const [waveBars, setWaveBars] = useState<number[]>(new Array(12).fill(4));
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const analyserRef = useRef<AnalyserNode | null>(null);
+    const animationFrameRef = useRef<number | null>(null);
+
     // Typing Metrics Hook
     const metrics = useTypingMetrics(message);
 
@@ -97,6 +103,20 @@ export default function MessageInput({
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const isRecordingCancelled = useRef(false);
+
+    // Auto-stop recording after 60 seconds
+    useEffect(() => {
+        if ((isRecordingAudio || isRecordingVideo) && timer >= 60) {
+            stopRecording();
+        }
+    }, [timer, isRecordingAudio, isRecordingVideo]);
+
+    const cancelRecording = () => {
+        isRecordingCancelled.current = true;
+        stopRecording();
+    };
+
     const startRecording = async (type: 'audio' | 'video') => {
         try {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -115,6 +135,23 @@ export default function MessageInput({
             };
 
             recorder.onstop = async () => {
+                // Cleanup Audio Context / Visualization
+                if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+                if (audioContextRef.current) {
+                    audioContextRef.current.close();
+                    audioContextRef.current = null;
+                }
+                analyserRef.current = null;
+                setWaveBars(new Array(12).fill(4));
+
+                if (isRecordingCancelled.current) {
+                    // Discard
+                    stream.getTracks().forEach(track => track.stop());
+                    chunksRef.current = [];
+                    isRecordingCancelled.current = false;
+                    return;
+                }
+
                 const blob = new Blob(chunksRef.current, { type: type === 'audio' ? 'audio/webm' : 'video/webm' });
                 const url = URL.createObjectURL(blob);
                 const duration = timer;
@@ -134,8 +171,40 @@ export default function MessageInput({
 
             recorder.start();
             setMediaRecorder(recorder);
-            if (type === 'audio') setIsRecordingAudio(true);
-            else setIsRecordingVideo(true);
+            isRecordingCancelled.current = false;
+
+            if (type === 'audio') {
+                setIsRecordingAudio(true);
+                // Setup Visualization
+                try {
+                    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+                    if (AudioCtx) {
+                        const audioCtx = new AudioCtx();
+                        const analyser = audioCtx.createAnalyser();
+                        analyser.fftSize = 64;
+                        const source = audioCtx.createMediaStreamSource(stream);
+                        source.connect(analyser);
+
+                        audioContextRef.current = audioCtx;
+                        analyserRef.current = analyser;
+
+                        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                        const animate = () => {
+                            analyser.getByteFrequencyData(dataArray);
+                            // Take first 12 bins
+                            const bars = Array.from(dataArray.slice(0, 12)).map(v => Math.max(4, v / 6));
+                            setWaveBars(bars);
+                            animationFrameRef.current = requestAnimationFrame(animate);
+                        };
+                        animate();
+                    }
+                } catch (e) {
+                    console.error("Audio Web API error", e);
+                }
+            } else {
+                setIsRecordingVideo(true);
+            }
+
             startTimer();
             setMessage("");
             setIsAttachOpen(false); // Close menu if started from there
@@ -412,23 +481,55 @@ export default function MessageInput({
             <div className={`flex items-center gap-2 rounded-2xl bg-zinc-100 px-3 py-1.5 min-h-[38px] ring-1 ring-zinc-200 dark:bg-zinc-800/50 dark:ring-zinc-800 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white dark:focus-within:bg-zinc-800 ${isRecording ? 'ring-red-200 bg-red-50 dark:bg-red-900/20 dark:ring-red-900/50' : ''}`}>
 
                 {/* Recording Indicator Overlay */}
+                {/* Recording Indicator Overlay */}
                 {isRecording && (
-                    <div className="absolute inset-x-2 inset-y-2 flex items-center justify-between rounded-xl bg-red-50 px-4 dark:bg-red-900/20 z-10 backdrop-blur-sm">
-                        <div className="flex items-center gap-3">
-                            <span className="relative flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                            </span>
-                            <span className="font-mono font-medium text-red-600 dark:text-red-400">
-                                {isRecordingAudio ? 'Recording Audio...' : 'Recording Video...'}  {formatTime(timer)}
-                            </span>
+                    <div className="absolute inset-x-2 inset-y-2 flex items-center justify-between rounded-xl bg-red-50/90 dark:bg-red-900/40 z-10 backdrop-blur-md shadow-[0_0_15px_rgba(239,68,68,0.2)] border border-red-100 dark:border-red-800/50 transition-all duration-300">
+                        {/* Waveform Visualization */}
+                        <div className="flex items-center gap-4 pl-3">
+                            <div className="flex items-center gap-1 h-8 filter drop-shadow-[0_0_4px_rgba(108,92,231,0.4)]">
+                                {isRecordingAudio ? waveBars.map((h, i) => (
+                                    <div
+                                        key={i}
+                                        className="w-[3px] bg-indigo-500 rounded-full transition-[height] duration-75 ease-linear"
+                                        style={{ height: `${h}px` }}
+                                    />
+                                )) : (
+                                    <span className="flex h-3 w-3 relative">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col justify-center">
+                                <span className={`font-mono text-sm font-bold ${isRecordingAudio ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-600 dark:text-red-400'}`}>
+                                    {formatTime(timer)}
+                                </span>
+                                <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400">
+                                    {isRecordingAudio ? 'Mic Active' : 'Recording'}
+                                </span>
+                            </div>
                         </div>
-                        <button
-                            onClick={stopRecording}
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 animate-pulse"
-                        >
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
-                        </button>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 pr-2">
+                            <button
+                                onClick={cancelRecording}
+                                className="p-2 rounded-full text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-700 transition-colors"
+                                title="Cancel"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={stopRecording}
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-white hover:bg-indigo-600 shadow-lg shadow-indigo-500/30 transition-all transform hover:scale-105 active:scale-95"
+                                title="Send"
+                            >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+                            </button>
+                        </div>
                     </div>
                 )}
 
