@@ -688,7 +688,7 @@ export default function Home() {
               className="absolute inset-0 bg-cover bg-center transition-all duration-700 chat-background-pan"
               style={{
                 backgroundImage: (activeChat.chatBackground?.type === 'image' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'image'))
-                  ? `url(${activeChat.chatBackground?.value || userPrefs.chatBackground?.value})`
+                  ? `url("${activeChat.chatBackground?.value || userPrefs.chatBackground?.value}")`
                   : (activeChat.chatBackground?.type === 'gradient' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'gradient'))
                     ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
                     : 'none',
