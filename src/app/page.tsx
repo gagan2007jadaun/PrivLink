@@ -54,10 +54,36 @@ function useAttention() {
 export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
 
-  // Initialize state
-  const [chats, setChats] = useState<Chat[]>(mockChats);
-  const [activeChatId, setActiveChatId] = useState(mockChats[0].id);
+  // Initialize state from Local Storage or Mocks
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [activeChatId, setActiveChatId] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+
+  // Load Chats on Mount
+  useEffect(() => {
+    // Client-side only
+    const storedChats = localStorage.getItem("privlink_chats");
+    if (storedChats) {
+      try {
+        const parsed = JSON.parse(storedChats);
+        setChats(parsed);
+        if (parsed.length > 0) setActiveChatId(parsed[0].id);
+      } catch (e) {
+        console.error("Failed to parse chats", e);
+        setChats(mockChats);
+        setActiveChatId(mockChats[0].id);
+      }
+    } else {
+      setChats(mockChats);
+      setActiveChatId(mockChats[0].id);
+      localStorage.setItem("privlink_chats", JSON.stringify(mockChats));
+    }
+  }, []);
+
+  const saveChats = (updatedChats: Chat[]) => {
+    setChats(updatedChats);
+    localStorage.setItem("privlink_chats", JSON.stringify(updatedChats));
+  };
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
   const [isScrolledHeader, setIsScrolledHeader] = useState(false); // Header calm-down state
   const { silentRead } = useSettingsStore();
@@ -456,7 +482,7 @@ export default function Home() {
       isArchived: false,
     };
 
-    setChats(prev => [newChat, ...prev]);
+    saveChats([newChat, ...chats]);
     setActiveChatId(newChat.id);
 
     // Initialize empty messages for the new chat
@@ -471,12 +497,23 @@ export default function Home() {
   };
 
   const handleArchiveChat = (chatId: string) => {
-    setChats(prev => prev.map(chat =>
+    const updated = chats.map(chat =>
       chat.id === chatId ? { ...chat, isArchived: !chat.isArchived } : chat
-    ));
-    // If we archive the active chat, switch to another one or stay? 
-    // Usually, if it disappears from list, might need to handle selection.
-    // For now, let's leave it active but it will disappear from "All" list.
+    );
+    saveChats(updated);
+  };
+
+  const handleDeleteChat = (chatId: string) => {
+    if (confirm("Are you sure you want to delete this chat?")) {
+      const updated = chats.filter(c => c.id !== chatId);
+      saveChats(updated);
+
+      if (activeChatId === chatId && updated.length > 0) {
+        setActiveChatId(updated[0].id);
+      } else if (updated.length === 0) {
+        setActiveChatId("");
+      }
+    }
   };
 
   return (
@@ -488,6 +525,7 @@ export default function Home() {
         onSelectChat={handleChatSelect}
         onCreateChat={handleCreateChat}
         onArchiveChat={handleArchiveChat}
+        onDeleteChat={handleDeleteChat}
       />
 
       {/* Main Chat Area */}

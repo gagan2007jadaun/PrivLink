@@ -12,9 +12,10 @@ interface SidebarProps {
     onSelectChat: (chatId: string) => void;
     onCreateChat?: (data: { type: string; name: string; description: string }) => void;
     onArchiveChat?: (chatId: string) => void;
+    onDeleteChat?: (chatId: string) => void;
 }
 
-export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat, onArchiveChat }: SidebarProps) {
+export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat, onArchiveChat, onDeleteChat }: SidebarProps) {
     const ACTIONS = {
         CREATE: "create",   // group / family tree
         CHAT: "chat",        // new chat
@@ -105,6 +106,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                                     avatarUrl={chat.avatarUrl}
                                     isArchived={chat.isArchived}
                                     onArchive={() => onArchiveChat?.(chat.id)}
+                                    onDelete={() => onDeleteChat?.(chat.id)}
                                 />
                             </div>
                         ))}

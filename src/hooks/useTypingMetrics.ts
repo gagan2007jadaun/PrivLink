@@ -5,7 +5,7 @@ export interface TypingMetrics {
     isUnsentIntent: boolean;
     hesitationCount: number;
     resetMetrics: () => void;
-    handleKeyDown: (e: React.KeyboardEventHTMLInputElement | React.KeyboardEventHTMLTextAreaElement) => void;
+    handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     handleChange: (val: string) => void;
 }
 

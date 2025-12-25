@@ -212,8 +212,8 @@ const AudioBubble: React.FC<AudioBubbleProps> = ({ src, duration, isMe }) => {
                 <button
                     onClick={togglePlay}
                     className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all active:scale-95 ${isMe
-                            ? 'bg-white/20 hover:bg-white/30 text-white'
-                            : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200 dark:shadow-none'
+                        ? 'bg-white/20 hover:bg-white/30 text-white'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200 dark:shadow-none'
                         }`}
                 >
                     {isPlaying ? (
@@ -224,10 +224,11 @@ const AudioBubble: React.FC<AudioBubbleProps> = ({ src, duration, isMe }) => {
                 </button>
 
                 {/* Waveform Canvas */}
-                <div className="flex-1 h-8 relative group cursor-pointer" onClick={handleCanvasClick}>
+                <div className="flex-1 h-8 relative group cursor-pointer">
                     <canvas
                         ref={canvasRef}
                         className="w-full h-full block"
+                        onClick={handleCanvasClick}
                     />
                     {/* Hover Line (CSS-only or JS managed, CSS easier for simple implementation) */}
                     <div className="absolute top-0 bottom-0 w-[1px] bg-red-400 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" style={{ left: '0%' /* Would need mouse tracking for precise line helper */ }} />
@@ -238,8 +239,8 @@ const AudioBubble: React.FC<AudioBubbleProps> = ({ src, duration, isMe }) => {
                     <button
                         onClick={toggleSpeed}
                         className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md transition-colors ${isMe
-                                ? 'bg-white/20 hover:bg-white/30 text-white/90'
-                                : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
+                            ? 'bg-white/20 hover:bg-white/30 text-white/90'
+                            : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
                             }`}
                         title="Playback Speed"
                     >
