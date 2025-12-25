@@ -200,7 +200,7 @@ export default function MessageInput({
     const isRecording = isRecordingAudio || isRecordingVideo;
 
     return (
-        <div className="relative p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-[22px] m-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.25)]">
+        <div className="relative px-3 py-2 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-[24px] m-[10px] shadow-[0_6px_16px_rgba(0,0,0,0.18)]">
             {/* Reply Bar */}
             {replyingTo && (
                 <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-zinc-100 p-2 dark:bg-zinc-800/80 animate-fade-in-up">
@@ -409,7 +409,7 @@ export default function MessageInput({
                 </div>
             )}
 
-            <div className={`flex items-end gap-2 rounded-2xl bg-zinc-100 p-2 ring-1 ring-zinc-200 dark:bg-zinc-800/50 dark:ring-zinc-800 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white dark:focus-within:bg-zinc-800 ${isRecording ? 'ring-red-200 bg-red-50 dark:bg-red-900/20 dark:ring-red-900/50' : ''}`}>
+            <div className={`flex items-center gap-2 rounded-2xl bg-zinc-100 px-3 py-1.5 min-h-[38px] ring-1 ring-zinc-200 dark:bg-zinc-800/50 dark:ring-zinc-800 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white dark:focus-within:bg-zinc-800 ${isRecording ? 'ring-red-200 bg-red-50 dark:bg-red-900/20 dark:ring-red-900/50' : ''}`}>
 
                 {/* Recording Indicator Overlay */}
                 {isRecording && (
@@ -433,7 +433,7 @@ export default function MessageInput({
                 )}
 
                 {/* Attachment Menu Toggle Button (Replaces old attachment button) */}
-                <div className="flex shrink-0 pb-1 pl-1">
+                <div className="flex shrink-0 pl-1">
                     <button
                         onClick={() => {
                             setIsAttachOpen(!isAttachOpen);
@@ -450,7 +450,7 @@ export default function MessageInput({
                 </div>
 
                 {/* Input */}
-                <div className="min-h-[44px] flex-1 py-2.5">
+                <div className="flex-1">
                     <input
                         type="text"
                         value={message}
@@ -476,7 +476,7 @@ export default function MessageInput({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex shrink-0 items-center gap-1 pb-1 pr-1">
+                <div className="flex shrink-0 items-center gap-1 pr-1">
                     {/* Voice Record Button (Kept as is) */}
                     <button
                         onClick={() => startRecording('audio')}
