@@ -658,6 +658,7 @@ export default function Home() {
         <main
           className={`flex flex-1 flex-col min-w-0 relative transition-colors duration-[120000ms] ease-linear
             ${activeChat.permissions?.allowScreenshot === false ? 'select-none decoration-clone' : ''}
+            md:rounded-[18px] md:m-2 md:overflow-hidden shadow-sm
           `}
           onContextMenu={(e) => {
             if (activeChat.permissions?.allowSaveMedia === false) {
@@ -668,7 +669,7 @@ export default function Home() {
             backgroundColor:
               activeChat.driftLevel === 'high' ? '#F4F4F5' : // Cold
                 activeChat.driftLevel === 'medium' ? '#FAFAFA' : // Neutral
-                  '#FEFCF5' // Warm tint
+                  '#fdfbf7' // Warm tint (Cream)
           }}
         >
           {/* Atmosphere/Weight Vignette */}
