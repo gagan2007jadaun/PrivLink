@@ -259,7 +259,10 @@ export default function Home() {
 
   // Get current chat details
   const activeChat = useMemo(() => {
+    // Safety check: chats might be empty initially before loading from local storage
+    if (chats.length === 0) return null;
     const chat = chats.find(c => c.id === activeChatId) || chats[0];
+    if (!chat) return null;
 
     // Dynamic Analysis: Calculate Psychometrics from real messages
     if (messages.length > 0) {
@@ -419,6 +422,8 @@ export default function Home() {
   };
 
   const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }) => {
+    if (!activeChat) return;
+
     const newMessage: Message = {
       id: Date.now().toString(),
       type: type,
@@ -529,102 +534,99 @@ export default function Home() {
       />
 
       {/* Main Chat Area */}
-      {/* Background Drift Logic: 
-          Warm (#9AA57A tint) -> Low Drift
-          Neutral (Grey) -> Medium Drift
-          Cold (#8A7F7F tint) -> High Drift
-      */}
-      <main
-        className="flex flex-1 flex-col min-w-0 relative transition-colors duration-[120000ms] ease-linear"
-        style={{
-          backgroundColor:
-            activeChat.driftLevel === 'high' ? '#F4F4F5' : // Cold (using zinc-100ish for now, tint via overlay maybe better but request says bg color)
-              activeChat.driftLevel === 'medium' ? '#FAFAFA' : // Neutral
-                '#FEFCF5' // Warm tint (custom)
-        }}
-      >
-        {/* Atmosphere/Weight Vignette */}
-        {/* Adds subtle visual depth/heaviness to serious conversations */}
-        <div
-          className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-1000"
-          style={{
-            background: `radial-gradient(circle at center, transparent 50%, rgba(0,0,0, ${Math.max(0.02, (activeChat.conversationWeight || 0) * 0.004)}) 100%)`,
-            // Optional: Inset shadow for extra "tightness"
-            boxShadow: `inset 0 0 ${(activeChat.conversationWeight || 0) * 2}px rgba(0,0,0, ${(activeChat.conversationWeight || 0) * 0.0005})`
-          }}
-        />
-
-        {/* Memory Drift Overlay for finer tint control if needed, but using direct bg for now as per "transition background-color" request */}
-
-        <ChatHeader
-          onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
-          name={activeChat.name}
-          avatarUrl={activeChat.avatarUrl}
-          isOnline={activeChat.isOnline}
-          driftLevel={activeChat.driftLevel}
-          interestScore={activeChat.interestScore}
-          interestTrend={activeChat.interestTrend}
-          gravity={activeChat.gravity}
-          persona={activeChat.persona}
-          energyBalance={activeChat.energyBalance}
-          isScrolled={isScrolledHeader}
-        />
-
-        {/* Messages Container */}
-        <div
-          ref={scrollContainerRef}
-          onScroll={handleScroll}
-          className="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800"
-        >
-          <div className="mx-auto max-w-3xl space-y-6">
-
-            {/* Date Divider */}
-            <div className="flex items-center justify-center">
-              <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                Today
-              </span>
-            </div>
-
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-zinc-500 mt-20">
-                <p>No messages yet.</p>
-              </div>
-            ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  data-message-id={msg.id}
-                  className={`flex w-full ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
-                >
-                  <MessageBubble
-                    type={msg.type || 'text'} // Fallback for safety though we migrated mocks
-                    content={msg.content || ''}
-                    timestamp={msg.timestamp}
-                    isMe={msg.isMe}
-                    duration={msg.duration}
-                    reactions={msg.reactions}
-                    isConsecutive={msg.isConsecutive}
-                    status={msg.status}
-                    heatScore={msg.heatScore}
-                    confidenceScore={msg.confidenceScore}
-                  />
-                </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+      {!activeChat ? (
+        <div className="flex flex-1 items-center justify-center bg-zinc-50 dark:bg-black text-zinc-400">
+          <p>Select a conversation to start chatting.</p>
         </div>
+      ) : (
+        <main
+          className="flex flex-1 flex-col min-w-0 relative transition-colors duration-[120000ms] ease-linear"
+          style={{
+            backgroundColor:
+              activeChat.driftLevel === 'high' ? '#F4F4F5' : // Cold
+                activeChat.driftLevel === 'medium' ? '#FAFAFA' : // Neutral
+                  '#FEFCF5' // Warm tint
+          }}
+        >
+          {/* Atmosphere/Weight Vignette */}
+          <div
+            className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-1000"
+            style={{
+              background: `radial-gradient(circle at center, transparent 50%, rgba(0,0,0, ${Math.max(0.02, (activeChat.conversationWeight || 0) * 0.004)}) 100%)`,
+              boxShadow: `inset 0 0 ${(activeChat.conversationWeight || 0) * 2}px rgba(0,0,0, ${(activeChat.conversationWeight || 0) * 0.0005})`
+            }}
+          />
 
-        {/* Input Area */}
-        <MessageInput
-          onSendMessage={handleSendMessage}
-          boundaryMode={activeChat.boundaryMode}
-          recentMessages={messages.filter(m => m.isMe).slice(-5).map(m => m.content || "")}
-        />
-      </main>
+          <ChatHeader
+            onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
+            name={activeChat.name}
+            avatarUrl={activeChat.avatarUrl}
+            isOnline={activeChat.isOnline}
+            driftLevel={activeChat.driftLevel}
+            interestScore={activeChat.interestScore}
+            interestTrend={activeChat.interestTrend}
+            gravity={activeChat.gravity}
+            persona={activeChat.persona}
+            energyBalance={activeChat.energyBalance}
+            isScrolled={isScrolledHeader}
+          />
+
+          {/* Messages Container */}
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800"
+          >
+            <div className="mx-auto max-w-3xl space-y-6">
+
+              {/* Date Divider */}
+              <div className="flex items-center justify-center">
+                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                  Today
+                </span>
+              </div>
+
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-zinc-500 mt-20">
+                  <p>No messages yet.</p>
+                </div>
+              ) : (
+                messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    data-message-id={msg.id}
+                    className={`flex w-full ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
+                  >
+                    <MessageBubble
+                      type={msg.type || 'text'}
+                      content={msg.content || ''}
+                      timestamp={msg.timestamp}
+                      isMe={msg.isMe}
+                      duration={msg.duration}
+                      reactions={msg.reactions}
+                      isConsecutive={msg.isConsecutive}
+                      status={msg.status}
+                      heatScore={msg.heatScore}
+                      confidenceScore={msg.confidenceScore}
+                    />
+                  </div>
+                ))
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Input Area */}
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            boundaryMode={activeChat.boundaryMode}
+            recentMessages={messages.filter(m => m.isMe).slice(-5).map(m => m.content || "")}
+          />
+        </main>
+      )}
 
       {/* Right Sidebar */}
-      {showRightPanel && <RightPanel chat={activeChat} />}
+      {showRightPanel && activeChat && <RightPanel chat={activeChat} />}
     </div >
   );
 }
