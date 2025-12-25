@@ -112,13 +112,27 @@ export default function Home() {
 
   // Load Chats on Mount
   useEffect(() => {
-    // Client-side only
     const storedChats = localStorage.getItem("privlink_chats");
     if (storedChats) {
       try {
-        const parsed = JSON.parse(storedChats);
-        setChats(parsed);
-        if (parsed.length > 0) setActiveChatId(parsed[0].id);
+        const parsed = JSON.parse(storedChats) as Chat[];
+
+        // Restore background data from individual keys
+        const chatsWithBg = parsed.map(chat => {
+          const bgKey = `chat-bg-${chat.id}`;
+          const storedBg = localStorage.getItem(bgKey);
+          if (storedBg) {
+            try {
+              return { ...chat, chatBackground: JSON.parse(storedBg) };
+            } catch (e) {
+              console.error(`Failed to parse background for chat ${chat.id}`, e);
+            }
+          }
+          return chat;
+        });
+
+        setChats(chatsWithBg);
+        if (chatsWithBg.length > 0) setActiveChatId(chatsWithBg[0].id);
       } catch (e) {
         console.error("Failed to parse chats", e);
         setChats(mockChats);
@@ -127,7 +141,9 @@ export default function Home() {
     } else {
       setChats(mockChats);
       setActiveChatId(mockChats[0].id);
-      localStorage.setItem("privlink_chats", JSON.stringify(mockChats));
+      try {
+        localStorage.setItem("privlink_chats", JSON.stringify(mockChats));
+      } catch (e) { console.error("Initial save failed", e); }
     }
   }, []);
 
@@ -181,7 +197,26 @@ export default function Home() {
 
   const saveChats = (updatedChats: Chat[]) => {
     setChats(updatedChats);
-    localStorage.setItem("privlink_chats", JSON.stringify(updatedChats));
+
+    // Strip large base64 data for main storage to avoid QuotaExceededError
+    const optimizedChats = updatedChats.map(chat => {
+      if (chat.chatBackground?.type === 'image' && chat.chatBackground.value.startsWith('data:')) {
+        // We only save the metadata, the actual base64 is already in its own key via RightPanel.tsx
+        return {
+          ...chat,
+          chatBackground: { ...chat.chatBackground, value: "[DECOUPLED_DATA_URL]" }
+        };
+      }
+      return chat;
+    });
+
+    try {
+      localStorage.setItem("privlink_chats", JSON.stringify(optimizedChats));
+    } catch (e) {
+      console.error("Critical: Failed to save chats to localStorage", e);
+      // Fallback: Notify user or attempt to clear old backgrounds? 
+      // For now, we log to prevent secondary crashes.
+    }
   };
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
   const [isScrolledHeader, setIsScrolledHeader] = useState(false); // Header calm-down state
@@ -685,18 +720,24 @@ export default function Home() {
           {/* Dynamic Wallpaper Layer (Z-0) */}
           <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
             <div
-              className="absolute inset-0 bg-cover bg-center transition-all duration-700 chat-background-pan"
+              className={`absolute inset-0 transition-all duration-700 chat-background-pan ${(activeChat.chatBackground?.type === 'texture' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'texture'))
+                ? 'bg-repeat'
+                : 'bg-cover bg-center'
+                }`}
               style={{
                 backgroundImage: (activeChat.chatBackground?.type === 'image' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'image'))
                   ? `url("${activeChat.chatBackground?.value || userPrefs.chatBackground?.value}")`
-                  : (activeChat.chatBackground?.type === 'gradient' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'gradient'))
-                    ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
-                    : 'none',
+                  : (activeChat.chatBackground?.type === 'texture' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'texture'))
+                    ? `url("${activeChat.chatBackground?.value || userPrefs.chatBackground?.value}")`
+                    : (activeChat.chatBackground?.type === 'gradient' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'gradient'))
+                      ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
+                      : 'none',
                 backgroundColor: (activeChat.chatBackground?.type === 'color' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'color'))
                   ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
                   : 'transparent',
+                backgroundSize: (activeChat.chatBackground?.type === 'texture' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'texture')) ? 'auto' : undefined,
                 filter: `blur(${activeChat.chatBackground?.blur ?? userPrefs.chatBackground?.blur ?? 0}px) saturate(1.1)`,
-                opacity: 0.18,
+                opacity: (activeChat.chatBackground?.intensity ?? userPrefs.chatBackground?.intensity ?? (activeChat.chatBackground?.type === 'texture' || userPrefs.chatBackground?.type === 'texture' ? 0.15 : 0.45)),
               }}
             />
             <div className="absolute inset-0 bg-white/55 dark:bg-black/20 mix-blend-overlay"></div>

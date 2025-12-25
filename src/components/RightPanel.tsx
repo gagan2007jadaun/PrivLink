@@ -21,8 +21,6 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
         return () => clearTimeout(timer);
     }, [score]);
 
-    // Calculate color based on score using tokens is tricky with Tailwind classes if we want exact vars
-    // But we can use style prop or custom classes. Let's use style prop for the tokens to be specific.
     const getScoreColorStyle = (score: number) => {
         if (score >= 80) return 'var(--interest-high)';
         if (score >= 50) return 'var(--interest-mid)';
@@ -73,7 +71,7 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                         </div>
                     </div>
 
-                    {/* Curiosity Index (New) */}
+                    {/* Curiosity Index */}
                     <div className="mt-2 flex w-full items-center justify-between rounded-xl bg-zinc-50 px-4 py-3 dark:bg-zinc-800/50">
                         <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Curiosity</span>
                         <div className="flex items-center gap-2">
@@ -108,87 +106,18 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                 <div className="mt-6 flex-1 min-h-0 flex flex-col">
 
                     {/* MEDIA TAB */}
-                    {activeTab === 'media' && (() => {
-                        const mediaList: any[] = []; // Dummy grid removed
-
-                        if (mediaList.length === 0) {
-                            return <ProfileEmptyState type="media" />;
-                        }
-
-                        return (
-                            <div className="space-y-4 animate-fade-in duration-200">
-                                <div className="grid grid-cols-3 gap-2">
-                                    {mediaList.map((i) => (
-                                        <div key={i} className="aspect-square relative overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 cursor-pointer group">
-                                            <div className="absolute inset-0 bg-linear-to-br from-indigo-500/10 to-purple-500/10 group-hover:opacity-75 transition-opacity" />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })()}
+                    {activeTab === 'media' && <ProfileEmptyState type="media" />}
 
                     {/* DOCS TAB */}
-                    {activeTab === 'docs' && (() => {
-                        const docsList: any[] = [];
-
-                        if (docsList.length === 0) {
-                            return <ProfileEmptyState type="docs" />;
-                        }
-
-                        return (
-                            <div className="space-y-3 animate-fade-in duration-200">
-                                {docsList.map((doc, i) => (
-                                    <div key={i} className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-                                        <div className="flex-1 overflow-hidden">
-                                            <h4 className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{doc.name}</h4>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        );
-                    })()}
+                    {activeTab === 'docs' && <ProfileEmptyState type="docs" />}
 
                     {/* LINKS TAB */}
-                    {activeTab === 'links' && (() => {
-                        const linksList: any[] = [];
-
-                        if (linksList.length === 0) {
-                            return <ProfileEmptyState type="links" />;
-                        }
-
-                        return (
-                            <div className="space-y-4 animate-fade-in duration-200">
-                                {linksList.map((link, i) => (
-                                    <div key={i} className="group rounded-xl border border-zinc-100 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/50">
-                                        <p className="mb-1 text-xs font-semibold text-zinc-400">{link.site}</p>
-                                        <a href="#" className="block truncate text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
-                                            {link.url}
-                                        </a>
-                                    </div>
-                                ))}
-                            </div>
-                        );
-                    })()}
+                    {activeTab === 'links' && <ProfileEmptyState type="links" />}
 
                     {/* SETTINGS TAB */}
                     {activeTab === 'settings' && (
                         <div className="space-y-6 pt-2 animate-fade-in-up">
                             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Relationship Settings</h3>
-
-                            {/* Silent Boundary Mode */}
-                            <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800">
-                                <div>
-                                    <div className="font-medium text-zinc-900 dark:text-white text-sm">Silent Boundary</div>
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">Hide typing & read status</div>
-                                </div>
-                                <button
-                                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${chat.boundaryMode ? 'bg-indigo-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
-                                    onClick={() => alert("Silent Boundary Mode toggled (Mock)")}
-                                >
-                                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${chat.boundaryMode ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
-                                </button>
-                            </div>
 
                             {/* Relationship Mode */}
                             <div className="space-y-2">
@@ -209,6 +138,7 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                 </div>
                             </div>
 
+                            {/* Identity Layer */}
                             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                 <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Identity Layer</h4>
                                 <div className="space-y-2">
@@ -224,6 +154,7 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                 </div>
                             </div>
 
+                            {/* Wallpaper Settings */}
                             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                 <div className="flex items-center justify-between mb-3">
                                     <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Wallpaper</h4>
@@ -241,7 +172,7 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                 </div>
 
                                 <div className="space-y-4">
-                                    {/* 1. Gallery (File Picker) */}
+                                    {/* Gallery */}
                                     <label className="flex items-center gap-3 w-full cursor-pointer group">
                                         <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 group-hover:bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 transition-colors">
                                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -250,7 +181,6 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                         </div>
                                         <div className="flex-1">
                                             <span className="block text-sm font-medium text-zinc-700 dark:text-zinc-200">Choose from Gallery</span>
-                                            <span className="block text-[10px] text-zinc-400">Max size 5MB recommended</span>
                                         </div>
                                         <input
                                             type="file"
@@ -259,10 +189,9 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
-
                                                 const reader = new FileReader();
                                                 reader.onload = () => {
-                                                    const bg = { type: "image", value: reader.result as string, blur: 0 };
+                                                    const bg = { type: "image", value: reader.result as string, blur: 10, intensity: 0.45 };
                                                     localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
                                                     onUpdateChat?.({ ...chat, chatBackground: bg as any });
                                                 };
@@ -271,86 +200,85 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                         />
                                     </label>
 
-                                    {/* 2. Solid Colors */}
+                                    {/* Textures */}
                                     <div>
-                                        <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">Solid Colors</label>
-                                        <div className="grid grid-cols-6 gap-2">
+                                        <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">Textures</label>
+                                        <div className="grid grid-cols-5 gap-2 text-[8px] font-bold text-white uppercase text-center overflow-hidden">
                                             {[
-                                                "#f5f5f5", "#121212", "#5f54f5", "#2ecc71", "#f39c12", "#e74c3c",
-                                                "#9b59b6", "#34495e", "#1abc9c", "#e67e22", "#95a5a6", "#3498db"
-                                            ].map((color) => (
+                                                { id: "paper", value: "/textures/paper.png" },
+                                                { id: "noise", value: "/textures/noise.png" },
+                                                { id: "fabric", value: "/textures/fabric.png" },
+                                                { id: "grid", value: "/textures/grid.png" },
+                                                { id: "carbon", value: "/textures/carbon.png" }
+                                            ].map((t) => (
                                                 <button
-                                                    key={color}
+                                                    key={t.id}
                                                     onClick={() => {
-                                                        const bg = { type: "color", value: color, blur: 0 };
+                                                        const bg = { type: "texture", value: t.value, blur: 0, intensity: 0.15 };
                                                         localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
                                                         onUpdateChat?.({ ...chat, chatBackground: bg as any });
                                                     }}
-                                                    className={`h-8 w-8 rounded-full border-2 transition-all hover:scale-110 ${chat.chatBackground?.value === color ? 'border-indigo-500 shadow-md scale-110' : 'border-transparent'}`}
-                                                    style={{ backgroundColor: color }}
-                                                    title={color}
-                                                />
+                                                    className={`h-10 w-full rounded-xl border-2 bg-center bg-no-repeat transition-all hover:border-indigo-500 overflow-hidden relative flex items-center justify-center ${chat.chatBackground?.value === t.value ? 'border-indigo-500 shadow-lg scale-105' : 'border-zinc-100 dark:border-zinc-800'}`}
+                                                    style={{ backgroundImage: `url(${t.value})`, backgroundSize: '64px' }}
+                                                >
+                                                    <span className="relative z-10 bg-black/20 backdrop-blur-[1px] px-1 rounded">{t.id}</span>
+                                                </button>
                                             ))}
                                         </div>
                                     </div>
 
-                                    {/* 3. Gradients */}
-                                    <div>
-                                        <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">Gradients</label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {[
-                                                "linear-gradient(135deg, #667eea, #764ba2)",
-                                                "linear-gradient(135deg, #ff9a9e, #fad0c4)",
-                                                "linear-gradient(135deg, #89f7fe, #66a6ff)",
-                                                "linear-gradient(135deg, #a18cd1, #fbc2eb)",
-                                                "linear-gradient(135deg, #fbc2eb, #a6c1ee)",
-                                                "linear-gradient(135deg, #84fab0, #8fd3f4)"
-                                            ].map((g, i) => (
-                                                <button
-                                                    key={i}
-                                                    onClick={() => {
-                                                        const bg = { type: "gradient", value: g, blur: 0 };
-                                                        localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
-                                                        onUpdateChat?.({ ...chat, chatBackground: bg as any });
-                                                    }}
-                                                    className={`h-10 w-full rounded-lg border-2 transition-all hover:opacity-90 ${chat.chatBackground?.value === g ? 'border-indigo-500 shadow-md' : 'border-transparent'}`}
-                                                    style={{ background: g }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Blur Slider */}
+                                    {/* Adjustment Controls */}
                                     {chat.chatBackground && (
-                                        <div className="pt-2">
-                                            <div className="flex justify-between text-xs text-zinc-500 mb-1">
-                                                <span>Blur Effect</span>
-                                                <span>{chat.chatBackground.blur}px</span>
+                                        <div className="space-y-4 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between text-[10px] font-bold uppercase text-zinc-400">
+                                                    <span>Intensity</span>
+                                                    <span>{Math.round((chat.chatBackground.intensity ?? 0.15) * 100)}%</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="0.05"
+                                                    max="0.8"
+                                                    step="0.01"
+                                                    value={chat.chatBackground.intensity ?? 0.15}
+                                                    onChange={(e) => {
+                                                        const val = parseFloat(e.target.value);
+                                                        const newBg = { ...chat.chatBackground!, intensity: val };
+                                                        localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(newBg));
+                                                        onUpdateChat?.({ ...chat, chatBackground: newBg as any });
+                                                    }}
+                                                    className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer dark:bg-zinc-800 accent-indigo-500"
+                                                />
                                             </div>
-                                            <input
-                                                type="range"
-                                                min="0"
-                                                max="20"
-                                                step="1"
-                                                value={chat.chatBackground.blur || 0}
-                                                onChange={(e) => {
-                                                    const newBlur = parseInt(e.target.value);
-                                                    const newBg = { ...chat.chatBackground!, blur: newBlur };
-                                                    localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(newBg));
-                                                    onUpdateChat?.({ ...chat, chatBackground: newBg as any });
-                                                }}
-                                                className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-700 accent-indigo-500"
-                                            />
+
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between text-[10px] font-bold uppercase text-zinc-400">
+                                                    <span>Blur</span>
+                                                    <span>{chat.chatBackground.blur ?? 10}px</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="40"
+                                                    step="1"
+                                                    value={chat.chatBackground.blur ?? 10}
+                                                    onChange={(e) => {
+                                                        const val = parseInt(e.target.value);
+                                                        const newBg = { ...chat.chatBackground!, blur: val };
+                                                        localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(newBg));
+                                                        onUpdateChat?.({ ...chat, chatBackground: newBg as any });
+                                                    }}
+                                                    className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer dark:bg-zinc-800 accent-indigo-500"
+                                                />
+                                            </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-
                             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                 <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Chat Rules</h4>
                                 <div className="space-y-3">
-                                    {/* Allow Forward */}
                                     <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800">
                                         <span className="font-medium text-zinc-900 dark:text-white text-sm">Allow Forwarding</span>
                                         <button
@@ -358,28 +286,6 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                             onClick={() => onUpdateChat?.({ ...chat, permissions: { ...chat.permissions, allowForward: !chat.permissions?.allowForward } })}
                                         >
                                             <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${chat.permissions?.allowForward ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
-                                        </button>
-                                    </div>
-
-                                    {/* Allow Save Media */}
-                                    <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800">
-                                        <span className="font-medium text-zinc-900 dark:text-white text-sm">Allow Saving Media</span>
-                                        <button
-                                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${chat.permissions?.allowSaveMedia ? 'bg-indigo-600' : 'bg-red-500'}`}
-                                            onClick={() => onUpdateChat?.({ ...chat, permissions: { ...chat.permissions, allowSaveMedia: !chat.permissions?.allowSaveMedia } })}
-                                        >
-                                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${chat.permissions?.allowSaveMedia ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
-                                        </button>
-                                    </div>
-
-                                    {/* Allow Permission */}
-                                    <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800">
-                                        <span className="font-medium text-zinc-900 dark:text-white text-sm">Allow Screenshots</span>
-                                        <button
-                                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${chat.permissions?.allowScreenshot ? 'bg-indigo-600' : 'bg-red-500'}`}
-                                            onClick={() => onUpdateChat?.({ ...chat, permissions: { ...chat.permissions, allowScreenshot: !chat.permissions?.allowScreenshot } })}
-                                        >
-                                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${chat.permissions?.allowScreenshot ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
                                         </button>
                                     </div>
                                 </div>
@@ -395,7 +301,6 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                             </div>
                         </div>
                     )}
-
                 </div>
             </div>
         </aside>
