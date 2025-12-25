@@ -635,6 +635,7 @@ export default function Home() {
             onSendMessage={handleSendMessage}
             boundaryMode={activeChat.boundaryMode}
             recentMessages={messages.filter(m => m.isMe).slice(-5).map(m => m.content || "")}
+            selfAlias={activeChat.selfAlias}
           />
         </main>
       )}

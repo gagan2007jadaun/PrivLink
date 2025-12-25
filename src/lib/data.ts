@@ -39,6 +39,7 @@ export interface Chat {
     isSilentRead?: boolean;
     relationshipMode?: 'work' | 'casual' | 'personal';
     driftLevel?: 'low' | 'medium' | 'high';
+    selfAlias?: string; // User's private identity in this chat "Who I am to them"
     // Psychological & Analytical Features
     gravity?: 'balanced' | 'one-sided-me' | 'one-sided-them'; // Conversation balance
     boundaryMode?: boolean; // If true, hides typing indicators/read receipts strictly

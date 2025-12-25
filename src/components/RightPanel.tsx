@@ -210,6 +210,21 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                             </div>
 
                             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                                <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Identity Layer</h4>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Your Alias in this Chat</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Public Name (Default)"
+                                        value={chat.selfAlias || ''}
+                                        onChange={(e) => onUpdateChat?.({ ...chat, selfAlias: e.target.value })}
+                                        className="w-full rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    />
+                                    <p className="text-[10px] text-zinc-400">This is how you appear in this specific conversation.</p>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                 <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Chat Rules</h4>
                                 <div className="space-y-3">
                                     {/* Allow Forward */}

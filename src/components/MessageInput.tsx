@@ -15,9 +15,10 @@ interface MessageInputProps {
     ) => void;
     boundaryMode?: boolean;
     recentMessages?: string[];
+    selfAlias?: string;
 }
 
-export default function MessageInput({ onSendMessage, boundaryMode = false, recentMessages = [] }: MessageInputProps) {
+export default function MessageInput({ onSendMessage, boundaryMode = false, recentMessages = [], selfAlias }: MessageInputProps) {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [message, setMessage] = useState("");
     const [isEcho, setIsEcho] = useState(false);
@@ -425,7 +426,15 @@ export default function MessageInput({ onSendMessage, boundaryMode = false, rece
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
                         disabled={isRecording}
-                        placeholder={boundaryMode ? "Type privately..." : (isRecording ? "" : "Type a message...")}
+                        placeholder={
+                            boundaryMode
+                                ? "Type privately..."
+                                : isRecording
+                                    ? ""
+                                    : selfAlias
+                                        ? `Message as ${selfAlias}...`
+                                        : "Type a message..."
+                        }
                         className={`w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100 disabled:opacity-50`}
                         style={{
                             fontWeight: messageStyle.bold ? 700 : 400,
