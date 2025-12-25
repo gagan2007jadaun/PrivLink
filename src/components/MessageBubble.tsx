@@ -11,7 +11,7 @@ interface MessageBubbleProps {
     thumbnailUrl?: string;
     reactions?: { emoji: string; count: number }[];
     isConsecutive?: boolean;
-    status?: 'sent' | 'delivered' | 'read' | 'queued' | 'sending';
+    status?: 'sent' | 'delivered' | 'read' | 'queued' | 'sending' | 'failed';
     heatScore?: number;
     confidenceScore?: number;
     style?: {
@@ -27,6 +27,7 @@ interface MessageBubbleProps {
         mediaType?: 'image' | 'video' | 'audio';
     };
     onReplyClick?: (messageId: string) => void;
+    onRetry?: () => void;
 }
 
 export default function MessageBubble({
@@ -44,6 +45,7 @@ export default function MessageBubble({
     style: propsStyle,
     replyTo,
     onReplyClick,
+    onRetry,
 }: MessageBubbleProps) {
     return (
         <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
@@ -119,6 +121,14 @@ export default function MessageBubble({
                                         <circle cx="12" cy="12" r="10" strokeDasharray="4 4" strokeLinecap="round" />
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
                                     </svg>
+                                )}
+                                {status === 'failed' && (
+                                    <button onClick={(e) => { e.stopPropagation(); onRetry?.(); }} className="flex items-center justify-center transition-transform hover:scale-110 active:scale-95">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" className="text-red-500" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
+                                        </svg>
+                                    </button>
                                 )}
                                 {status === 'queued' && (
                                     <svg viewBox="0 0 24 24" width="14" height="14" className="text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2">

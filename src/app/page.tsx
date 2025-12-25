@@ -510,6 +510,17 @@ export default function Home() {
     setShowRightPanel(true); // Ensure panel opens on mobile/tablet logic if applicable
   };
 
+  const handleRetry = (id: string) => {
+    const msg = messages.find(m => m.id === id);
+    if (!msg) return;
+
+    // Remove failed message
+    setMessages(prev => prev.filter(m => m.id !== id));
+
+    // Resend
+    handleSendMessage(msg.content, msg.type, msg.duration, msg.confidenceScore, msg.thumbnailUrl, msg.style);
+  };
+
   const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }) => {
     if (!activeChat) return;
 
@@ -728,6 +739,7 @@ export default function Home() {
                       style={msg.style}
                       replyTo={msg.replyTo}
                       onReplyClick={scrollToMessage}
+                      onRetry={() => handleRetry(msg.id)}
                     />
                   </div>
                 ))
