@@ -32,7 +32,7 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
     const scoreColorStyle = getScoreColorStyle(score);
 
     return (
-        <aside className="hidden h-full w-72 flex-col border-l border-zinc-200 bg-white/50 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50 xl:flex">
+        <aside className="hidden w-72 flex-col border-l border-zinc-200 bg-white/50 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50 xl:flex xl:m-2 xl:rounded-2xl xl:border xl:h-[calc(100vh-16px)] overflow-hidden shadow-sm">
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-none">

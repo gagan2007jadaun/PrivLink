@@ -200,7 +200,7 @@ export default function MessageInput({
     const isRecording = isRecordingAudio || isRecordingVideo;
 
     return (
-        <div className="relative p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="relative p-4 bg-white/50 backdrop-blur-xl dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-[22px] m-[10px] shadow-[0_8px_24px_rgba(0,0,0,0.25)]">
             {/* Reply Bar */}
             {replyingTo && (
                 <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-zinc-100 p-2 dark:bg-zinc-800/80 animate-fade-in-up">
