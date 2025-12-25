@@ -689,13 +689,12 @@ export default function Home() {
               style={{
                 backgroundImage: (activeChat.chatBackground?.type === 'image' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'image'))
                   ? `url(${activeChat.chatBackground?.value || userPrefs.chatBackground?.value})`
-                  : undefined,
-                background: (activeChat.chatBackground?.type === 'gradient' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'gradient'))
-                  ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
-                  : undefined,
+                  : (activeChat.chatBackground?.type === 'gradient' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'gradient'))
+                    ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
+                    : 'none',
                 backgroundColor: (activeChat.chatBackground?.type === 'color' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'color'))
                   ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
-                  : undefined,
+                  : 'transparent',
                 filter: `blur(${activeChat.chatBackground?.blur ?? userPrefs.chatBackground?.blur ?? 0}px) saturate(1.1)`,
                 opacity: 0.18,
               }}
