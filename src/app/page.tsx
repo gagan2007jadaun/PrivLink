@@ -1,911 +1,114 @@
 "use client";
-
+import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import ChatHeader from "@/components/ChatHeader";
 import MessageBubble from "@/components/MessageBubble";
 import MessageInput from "@/components/MessageInput";
 import RightPanel from "@/components/RightPanel";
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { mockChats, mockMessages, Message, Chat } from "@/lib/data";
-
-import { useSettingsStore } from "@/store/useSettingsStore";
-import { loadChatWallpaper } from "@/lib/wallpaperUtils";
-import { ChatBackground } from "@/lib/data";
-
-// Hook: Track User Attention
-function useAttention() {
-  const [isAttentionActive, setIsAttentionActive] = useState(false);
-  const lastActivityRef = useRef(Date.now());
-  const attentionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    const handleActivity = () => {
-      lastActivityRef.current = Date.now();
-      if (!isAttentionActive && document.hasFocus()) {
-        setIsAttentionActive(true);
-      }
-
-      // Reset "Idle" timer
-      if (attentionTimeoutRef.current) clearTimeout(attentionTimeoutRef.current);
-      attentionTimeoutRef.current = setTimeout(() => {
-        setIsAttentionActive(false);
-      }, 2000); // 2 seconds idle = No attention
-    };
-
-    const handleFocus = () => handleActivity();
-    const handleBlur = () => setIsAttentionActive(false);
-
-    window.addEventListener("mousemove", handleActivity);
-    window.addEventListener("scroll", handleActivity);
-    window.addEventListener("keydown", handleActivity);
-    window.addEventListener("focus", handleFocus);
-    window.addEventListener("blur", handleBlur);
-
-    return () => {
-      window.removeEventListener("mousemove", handleActivity);
-      window.removeEventListener("scroll", handleActivity);
-      window.removeEventListener("keydown", handleActivity);
-      window.removeEventListener("focus", handleFocus);
-      window.removeEventListener("blur", handleBlur);
-    };
-  }, [isAttentionActive]);
-
-  return isAttentionActive;
-}
+import SettingsView from "@/components/SettingsView";
 
 export default function Home() {
-  const [showRightPanel, setShowRightPanel] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
-
-  // Initialize state from Local Storage or Mocks
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [activeChatId, setActiveChatId] = useState("");
-  const [chatBg, setChatBg] = useState<ChatBackground | null>(null);
-  const [userPrefs, setUserPrefs] = useState<any>({});
-
-  useEffect(() => {
-    const stored = localStorage.getItem("userPrefs");
-    if (stored) {
-      try {
-        setUserPrefs(JSON.parse(stored));
-      } catch (e) { console.error("Failed to parse userPrefs", e); }
-    }
-  }, []);
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  // Offline / Queue State
-  const [isOnline, setIsOnline] = useState(true);
-  const [messageQueue, setMessageQueue] = useState<Message[]>([]);
-
-  // Reply State
-  const [replyingTo, setReplyingTo] = useState<{ id: string; sender: string; text: string; mediaType?: 'image' | 'video' | 'audio' } | null>(null);
-
-  const handleReply = (msg: Message) => {
-    let text = msg.content;
-    let mediaType: 'image' | 'video' | 'audio' | undefined;
-
-    if (msg.type === 'image') { text = "Photo"; mediaType = 'image'; }
-    if (msg.type === 'video') { text = "Video"; mediaType = 'video'; }
-    if (msg.type === 'audio') { text = "Audio Message"; mediaType = 'audio'; }
-
-    setReplyingTo({
-      id: msg.id,
-      sender: msg.isMe ? 'You' : (activeChatId ? chats.find(c => c.id === activeChatId)?.name || 'Sender' : 'Sender'),
-      text,
-      mediaType
-    });
-  };
-
-  const cancelReply = () => setReplyingTo(null);
-
-  const scrollToMessage = (messageId: string) => {
-    const el = document.querySelector(`[data-message-id="${messageId}"]`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.classList.add('bg-indigo-50/50', 'dark:bg-indigo-900/20', 'transition-colors', 'duration-500');
-      setTimeout(() => {
-        el.classList.remove('bg-indigo-50/50', 'dark:bg-indigo-900/20');
-      }, 1000);
-    }
-  };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Load Chats on Mount
-  useEffect(() => {
-    const storedChats = localStorage.getItem("privlink_chats");
-    if (storedChats) {
-      try {
-        const parsed = JSON.parse(storedChats) as Chat[];
-
-        // Restore background data from individual keys
-        const chatsWithBg = parsed.map(chat => {
-          const bgKey = `chat-bg-${chat.id}`;
-          const storedBg = localStorage.getItem(bgKey);
-          if (storedBg) {
-            try {
-              return { ...chat, chatBackground: JSON.parse(storedBg) };
-            } catch (e) {
-              console.error(`Failed to parse background for chat ${chat.id}`, e);
-            }
-          }
-          return chat;
-        });
-
-        setChats(chatsWithBg);
-        if (chatsWithBg.length > 0) setActiveChatId(chatsWithBg[0].id);
-      } catch (e) {
-        console.error("Failed to parse chats", e);
-        setChats(mockChats);
-        setActiveChatId(mockChats[0].id);
-      }
-    } else {
-      setChats(mockChats);
-      setActiveChatId(mockChats[0].id);
-      try {
-        localStorage.setItem("privlink_chats", JSON.stringify(mockChats));
-      } catch (e) { console.error("Initial save failed", e); }
-    }
-  }, []);
-
-  // Network Status & Queue Processing
-  useEffect(() => {
-    // 1. Initial State
-    setIsOnline(navigator.onLine);
-    const storedQueue = localStorage.getItem('privlink_message_queue');
-    if (storedQueue) {
-      try {
-        setMessageQueue(JSON.parse(storedQueue));
-      } catch (e) { console.error(e); }
-    }
-
-    // 2. Listeners
-    const handleOnline = () => {
-      setIsOnline(true);
-      // Process Queue
-      const currentQueue = JSON.parse(localStorage.getItem('privlink_message_queue') || '[]');
-      if (currentQueue.length > 0) {
-        console.log("Restored connection. Sending queue:", currentQueue.length);
-
-        // Simulate sequential sending
-        currentQueue.forEach((msg: Message, i: number) => {
-          setTimeout(() => {
-            setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'sent' } : m));
-
-            // Trigger delivery simulation (Simplified)
-            setTimeout(() => {
-              setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m));
-            }, 1500);
-          }, i * 300);
-        });
-
-        // Clear Queue
-        setMessageQueue([]);
-        localStorage.removeItem('privlink_message_queue');
-      }
-    };
-
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  const saveChats = (updatedChats: Chat[]) => {
-    setChats(updatedChats);
-
-    // Strip large base64 data for main storage to avoid QuotaExceededError
-    const optimizedChats = updatedChats.map(chat => {
-      if (chat.chatBackground?.type === 'image' && chat.chatBackground.value.startsWith('data:')) {
-        // We only save the metadata, the actual base64 is already in its own key via RightPanel.tsx
-        return {
-          ...chat,
-          chatBackground: { ...chat.chatBackground, value: "[DECOUPLED_DATA_URL]" }
-        };
-      }
-      return chat;
-    });
-
-    try {
-      localStorage.setItem("privlink_chats", JSON.stringify(optimizedChats));
-    } catch (e) {
-      console.error("Critical: Failed to save chats to localStorage", e);
-      // Fallback: Notify user or attempt to clear old backgrounds? 
-      // For now, we log to prevent secondary crashes.
-    }
-  };
-  const [isScrolledBottom, setIsScrolledBottom] = useState(true);
-  const [isScrolledHeader, setIsScrolledHeader] = useState(false); // Header calm-down state
-  const { silentRead } = useSettingsStore();
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Attention Tracking
-  const hasAttention = useAttention();
-
-  // Screenshot heuristic state
-  const lastBlurTime = useRef<number>(0);
-  const chatsRef = useRef(chats);
-
-  useEffect(() => {
-    chatsRef.current = chats;
-  }, [chats]);
-
-  // Selective Read Logic
-  const readUpto = useCallback((messageId: string) => {
-    // Requirements for "Read":
-    // 1. App must be focused & user active (hasAttention)
-    // 2. Global "Silent Read" must be OFF
-    // 3. One-way "Ghost Mode" must be OFF
-
-    // Auto-Archive Logic (Run once on mount or when chats change significantly)
-    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-    const now = Date.now();
-
-    // Check if any visible chat is old enough to be archived
-    // We do this check and update state if needed.
-    // To prevent infinite loops, we should be careful. 
-    // Best to do this check in a separate effect or initial load.
-    // For now, let's put it in a separate effect that runs once on mount or when chat list is re-initialized.
-
-    // Find current chat to check per-chat settings
-    const currentChat = chatsRef.current.find(c => c.id === activeChatId);
-    if (!hasAttention || silentRead || currentChat?.isSilentRead || currentChat?.boundaryMode) return;
-
-    setChats(prev => prev.map(c => {
-      if (c.id === activeChatId && (c.unreadCount || 0) > 0) {
-        // Simple Mock: If we see the *last* message, clear unread count.
-        // In real app, we'd check index > readIndex.
-        const isLastMessage = messages.length > 0 && messages[messages.length - 1].id === messageId;
-        if (isLastMessage) {
-          return { ...c, unreadCount: 0 };
-        }
-      }
-      return c;
-    }));
-  }, [activeChatId, hasAttention, messages, silentRead]);
-
-  // Use IntersectionObserver to call readUpto for *visible* messages AND track Heatmap
-  useEffect(() => {
-    if (!scrollContainerRef.current) return;
-
-    const entryTimes = new Map<string, number>();
-
-    const observer = new IntersectionObserver((entries) => {
-      const now = Date.now();
-      entries.forEach(entry => {
-        const messageId = entry.target.getAttribute("data-message-id");
-        if (!messageId) return;
-
-        if (entry.isIntersecting) {
-          // READ LOGIC
-          if (hasAttention) readUpto(messageId);
-
-          // HEATMAP START
-          if (!entryTimes.has(messageId)) {
-            entryTimes.set(messageId, now);
-          }
-        } else {
-          // HEATMAP END
-          const startTime = entryTimes.get(messageId);
-          if (startTime) {
-            const duration = now - startTime;
-            entryTimes.delete(messageId);
-
-            // Calculate Heat Score
-            setMessages(prev => prev.map(msg => {
-              if (msg.id === messageId) {
-                // Formula: Heat = Duration (ms) / Length (chars) * Factor
-                // Example: 2000ms / 20 chars = 100 heat. 
-                // Threshold ~ 50.
-                const length = msg.content?.length || 10;
-                const score = Math.min(100, Math.floor((duration / length) * 0.5)); // Arbitrary factor
-
-                // Only update if significantly hotter or new
-                if (score > (msg.heatScore || 0)) {
-                  return { ...msg, heatScore: score };
-                }
-              }
-              return msg;
-            }));
-          }
-        }
-      });
-    }, { root: scrollContainerRef.current, threshold: 0.8 });
-
-    // Note: We need to actually observe elements. Since we render messages in a map, 
-    // we'll need to make sure we query them. 
-    // For this iteration, we assume the MessageBubble container has data-message-id
-    // We will add this observation logic in a separate effect or after render in a real app,
-    // but for this file structure, we might need to select them manually:
-    const userMessages = document.querySelectorAll("[data-message-id]");
-    userMessages.forEach(el => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, [readUpto, hasAttention, messages]); // Re-run when messages change to observe new ones
-
-  // Auto-scroll logic also triggers read if attention is present
-  useEffect(() => {
-    if (isScrolledBottom) {
-      scrollToBottom();
-      if (messages.length > 0) {
-        readUpto(messages[messages.length - 1].id);
-      }
-    }
-  }, [messages, isScrolledBottom, readUpto]);
-
-  useEffect(() => {
-    // Screenshot Detection Heuristics
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        // Heuristic: If hidden shortly after blur, possible screenshot/recording setup or switching
-        console.warn("Visibility hidden - Possible capture event");
-      }
-    };
-
-    const handleBlur = () => {
-      lastBlurTime.current = Date.now();
-      console.log("Window blurred");
-    };
-
-    // Combined Heuristic (Example: Blur + Hidden within small window)
-    const checkHeuristics = () => {
-      if (document.hidden && Date.now() - lastBlurTime.current < 500) {
-        console.warn("High Probability Screenshot/Capture detected");
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleBlur);
-    document.addEventListener("visibilitychange", checkHeuristics);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleBlur);
-      document.removeEventListener("visibilitychange", checkHeuristics);
-    };
-  }, []);
-
-  // Auto-Archive Effect
-  useEffect(() => {
-    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-    const now = Date.now();
-
-    setChats(prev => {
-      let hasChanges = false;
-      const updated = prev.map(chat => {
-        const chatTime = new Date(chat.timestamp || Date.now()).getTime();
-        // If older than 30 days and NOT already archived
-        if (now - chatTime > THIRTY_DAYS_MS && !chat.isArchived) {
-          hasChanges = true;
-          return { ...chat, isArchived: true };
-        }
-        return chat;
-      });
-      return hasChanges ? updated : prev;
-    });
-  }, []); // Run once on mount
-
-  // Get current chat details
-  const activeChat = useMemo(() => {
-    // Safety check: chats might be empty initially before loading from local storage
-    if (chats.length === 0) return null;
-    const chat = chats.find(c => c.id === activeChatId) || chats[0];
-    if (!chat) return null;
-
-    // Dynamic Analysis: Calculate Psychometrics from real messages
-    if (messages.length > 0) {
-      // 1. Gravity (Initiation Balance)
-      let myStarts = 0;
-      let theirStarts = 0;
-      let lastTime = 0;
-
-      messages.forEach(msg => {
-        const msgTime = new Date(msg.timestamp).getTime(); // Note: Mock timestamps are strings like "10:23 AM", so parsing might fail without date. 
-        // Mock timestamps are "10:23 AM". We need robust parsing or just assume basic flow for now.
-        // Let's rely on simple `isConsecutive` logic: A "Start" is a message that is NOT consecutive and follows a long gap.
-        // Since we don't have exact Dates in mock, we'll simpler heuristic:
-        // Who sent the *first* message of the day/session?
-        // Or ratio of total messages?
-        // Let's use Message Count Ratio for Gravity for now as it's robust.
-        // Gravity = Initiation. Let's approximation: Who sent more messages that started a block?
-      });
-
-      // Simpler Gravity: Message Count Ratio (Who drives the volume?)
-      const myMsgCount = messages.filter(m => m.isMe).length;
-      const theirMsgCount = messages.length - myMsgCount;
-      const ratio = myMsgCount / (messages.length || 1);
-
-      let computedGravity: 'balanced' | 'one-sided-me' | 'one-sided-them' = 'balanced';
-      if (ratio > 0.65) computedGravity = 'one-sided-me';
-      if (ratio < 0.35) computedGravity = 'one-sided-them';
-
-      // 2. Persona (Time of Day - Last few messages)
-      // Parse time string "10:23 AM"
-      const times = messages.filter(m => !m.isMe).map(m => {
-        const [time, modifier] = m.timestamp.split(' ');
-        if (!time || !modifier) return null;
-        let [hours, mins] = time.split(':').map(Number);
-        if (modifier === 'PM' && hours < 12) hours += 12;
-        if (modifier === 'AM' && hours === 12) hours = 0;
-        return hours;
-      }).filter(h => h !== null) as number[];
-
-      let computedPersona: 'morning' | 'night' | 'balanced' = 'balanced';
-      if (times.length > 0) {
-        const avgHour = times.reduce((a, b) => a + b, 0) / times.length;
-        if (avgHour >= 5 && avgHour < 12) computedPersona = 'morning';
-        if (avgHour >= 22 || avgHour < 4) computedPersona = 'night';
-      }
-
-      // 3. Energy Balance (Length of messages)
-      const myLength = messages.filter(m => m.isMe).reduce((acc, m) => acc + (m.content?.length || 0), 0);
-      const theirLength = messages.filter(m => !m.isMe).reduce((acc, m) => acc + (m.content?.length || 0), 0);
-      // Normalized score: -100 (They talk only) to +100 (I talk only)
-      // 0 = Balanced
-      const totalLen = myLength + theirLength || 1;
-      const computedEnergy = Math.round(((myLength - theirLength) / totalLen) * 100);
-
-      // 4. Conversation Weight (Depth/Seriousness)
-      // Heuristic: Average message length. 
-      // Short texts = Light (Weight ~20). Long paragraphs = Heavy (Weight ~80+).
-      const avgLen = totalLen / messages.length;
-      // Map 10 chars -> 10 weight, 200 chars -> 100 weight
-      const computedWeight = Math.min(100, Math.max(10, Math.round((avgLen / 150) * 100)));
-
-      // 5. Mutual Curiosity (Question Frequency)
-      const questionCount = messages.filter(m => (m.content || "").includes('?')).length;
-      // Heuristic: 20% questions = 100 score. (1 in 5)
-      const computedCuriosity = Math.min(100, Math.round((questionCount / (messages.length || 1)) * 500));
-
-      return {
-        ...chat,
-        gravity: computedGravity,
-        persona: computedPersona,
-        energyBalance: computedEnergy,
-        conversationWeight: computedWeight,
-        mutualCuriosity: computedCuriosity
-      };
-    }
-
-    return chat;
-  }, [activeChatId, chats, messages]);
-
-  // Mark chat as seen with delay
-  const markAsSeen = (chatId: string) => {
-    // Respect "Seen Silently" mode AND "Boundary Mode"
-    const currentChat = chats.find(c => c.id === chatId);
-    if (silentRead || currentChat?.boundaryMode) return;
-
-    // Human-like delay logic
-    const delay = Math.floor(Math.random() * 2500) + 1500;
-
-    setTimeout(() => {
-      setChats(prev => prev.map(chat =>
-        chat.id === chatId && (chat.unreadCount || 0) > 0
-          ? { ...chat, unreadCount: 0 }
-          : chat
-      ));
-    }, delay);
-  };
-
-  const handleScroll = () => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      // Check if scrolled based on threshold for Header Micro-Motion
-      setIsScrolledHeader(scrollTop > 40);
-
-      // Check if scrolled to bottom with a small tolerance (e.g. 20px)
-      const isBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 20;
-      setIsScrolledBottom(isBottom);
-    }
-  };
-
-  // Check if we should mark as seen when scroll position or active chat changes
-  useEffect(() => {
-    if (activeChatId && isScrolledBottom) {
-      markAsSeen(activeChatId);
-    }
-  }, [activeChatId, isScrolledBottom]);
-
-  // Load messages when active chat changes
-  useEffect(() => {
-    if (mockMessages[activeChatId]) {
-      setMessages(mockMessages[activeChatId]);
-    } else {
-      setMessages([]);
-    }
-  }, [activeChatId]);
-
-  // Load Wallpaper Effect
-  useEffect(() => {
-    if (!activeChatId) {
-      setChatBg(null);
-      return;
-    }
-    const savedBg = loadChatWallpaper(activeChatId);
-    setChatBg(savedBg);
-  }, [activeChatId]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Smarter Auto-Scroll Logic
-  const prevMessagesLength = useRef(messages.length);
-
-  useEffect(() => {
-    // Only handle auto-scroll if new messages are added
-    if (messages.length > prevMessagesLength.current) {
-      const lastMessage = messages[messages.length - 1];
-
-      // If I sent it, or if I was already at the bottom, scroll down
-      if (lastMessage.isMe || isScrolledBottom) {
-        scrollToBottom();
-      }
-    }
-    prevMessagesLength.current = messages.length;
-  }, [messages, isScrolledBottom]);
-
-  // Handle chat selection with "Biometric Lock"
-  const handleChatSelect = (chatId: string) => {
-    const chat = chats.find(c => c.id === chatId);
-    if (chat?.isLocked) {
-      // Mock Biometric Auth
-      const isAuthenticated = window.confirm(`🔐 "Biometric Scan" Required\n\nClick OK to simulate successful FaceID/TouchID.`);
-      if (!isAuthenticated) return;
-    }
-    setActiveChatId(chatId);
-    setShowRightPanel(true); // Ensure panel opens on mobile/tablet logic if applicable
-  };
-
-  const handleRetry = (id: string) => {
-    const msg = messages.find(m => m.id === id);
-    if (!msg) return;
-
-    // Remove failed message
-    setMessages(prev => prev.filter(m => m.id !== id));
-
-    // Resend
-    handleSendMessage(msg.content, msg.type, msg.duration, msg.confidenceScore, msg.thumbnailUrl, msg.style);
-  };
-
-  const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }) => {
-    if (!activeChat) return;
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      type: type,
-      content: content,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isMe: true,
-      duration: duration,
-      thumbnailUrl: thumbnailUrl,
-      isConsecutive: messages.length > 0 && messages[messages.length - 1].isMe,
-      status: isOnline ? 'sent' : 'queued',
-      confidenceScore: confidenceScore,
-      style: style,
-      replyTo: replyingTo ? {
-        messageId: replyingTo.id,
-        username: replyingTo.sender,
-        text: replyingTo.text,
-        mediaType: replyingTo.mediaType
-      } : undefined
-    };
-    setMessages((prev) => [...prev, newMessage]);
-    setReplyingTo(null); // Clear reply state
-
-    if (!isOnline) {
-      const updatedQueue = [...messageQueue, newMessage];
-      setMessageQueue(updatedQueue);
-      localStorage.setItem('privlink_message_queue', JSON.stringify(updatedQueue));
-      return; // Stop here, don't simulate network events
-    }
-
-    // Simulate "Drift" reduction on interaction
-    if (activeChat.driftLevel === 'high') {
-      const updatedChats = chats.map(c =>
-        c.id === activeChatId ? { ...c, driftLevel: 'medium' as const } : c
-      );
-      // In a real app, we'd update the store/state properly
-      // setChats(updatedChats);
-    }
-
-    // Simulate backend "Delivered" event (Receiver Socket Connected)
-    setTimeout(() => {
-      setMessages(prev => prev.map(m =>
-        m.id === newMessage.id ? { ...m, status: 'delivered', deliveredAt: new Date().toISOString() } : m
-      ));
-
-      // Simulate "Read" event (Chat Open + Bottom Scroll + Delay)
-      let baseDelay = activeChat.avgReadTime || 2000;
-
-      if (activeChat.relationshipMode === 'work') baseDelay = 500; // Instant
-      if (activeChat.relationshipMode === 'casual') baseDelay = 20000; // Slow
-
-      // Add variance: +/- 20%
-      const variance = baseDelay * 0.2;
-      const adaptiveDelay = baseDelay + (Math.random() * variance * 2 - variance);
-
-      setTimeout(() => {
-        setMessages(prev => prev.map(m =>
-          m.id === newMessage.id ? { ...m, status: 'read', readAt: new Date().toISOString() } : m
-        ));
-      }, adaptiveDelay);
-
-    }, 1500);
-  };
-
-  const handleCreateChat = (data: { type: string; name: string; description: string }) => {
-    const newChat: Chat = {
-      id: Date.now().toString(),
-      name: data.name,
-      lastMessage: `Welcome to ${data.name}!`,
-      time: 'Just now',
-      unreadCount: 0,
-      isOnline: true,
-      avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=random`,
-      // @ts-ignore - straightforward for mock purposes
-      type: data.type,
-      isArchived: false,
-    };
-
-    saveChats([newChat, ...chats]);
-    setActiveChatId(newChat.id);
-
-    // Initialize empty messages for the new chat
-    mockMessages[newChat.id] = [{
-      id: 'welcome',
-      type: 'text',
-      content: `This is the start of your new ${data.type}: ${data.name}. ${data.description ? `\n\n${data.description}` : ''}`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isMe: false,
-    }];
-    setMessages(mockMessages[newChat.id]);
-  };
-
-  const handleArchiveChat = (chatId: string) => {
-    const updated = chats.map(chat =>
-      chat.id === chatId ? { ...chat, isArchived: !chat.isArchived } : chat
-    );
-    saveChats(updated);
-  };
-
-  const handleDeleteChat = (chatId: string) => {
-    if (confirm("Are you sure you want to delete this chat?")) {
-      const updated = chats.filter(c => c.id !== chatId);
-      saveChats(updated);
-
-      if (activeChatId === chatId && updated.length > 0) {
-        setActiveChatId(updated[0].id);
-      } else if (updated.length === 0) {
-        setActiveChatId("");
-      }
-    }
-  };
-
-  if (!isMounted) return null;
+  const [currentView, setCurrentView] = useState<'chat' | 'settings'>('chat');
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans">
-      {/* Left Sidebar */}
-      <Sidebar
-        chats={chats}
-        activeChatId={activeChatId}
-        onSelectChat={handleChatSelect}
-        onCreateChat={handleCreateChat}
-        onArchiveChat={handleArchiveChat}
-        onDeleteChat={handleDeleteChat}
-      />
+    <div className="app-shell">
+      <div className="app-layout">
 
-      {/* Main Chat Area */}
-      {!activeChat ? (
-        <div className="flex flex-1 items-center justify-center bg-zinc-50 dark:bg-black text-zinc-400">
-          <p>Select a conversation to start chatting.</p>
+        {/* Left Sidebar */}
+        <div className="left-sidebar">
+          <Sidebar onNavigate={setCurrentView} />
         </div>
-      ) : (
-        <main
-          className={`flex flex-1 flex-col min-w-0 relative transition-colors duration-[120000ms] ease-linear
-            ${activeChat.permissions?.allowScreenshot === false ? 'select-none decoration-clone' : ''}
-            md:rounded-[18px] md:m-2 md:overflow-hidden shadow-sm
-          `}
-          onContextMenu={(e) => {
-            if (activeChat.permissions?.allowSaveMedia === false) {
-              e.preventDefault();
-            }
-          }}
-          style={{
-            backgroundColor:
-              activeChat.driftLevel === 'high' ? '#F4F4F5' : // Cold
-                activeChat.driftLevel === 'medium' ? '#FAFAFA' : // Neutral
-                  '#fdfbf7' // Warm tint (Cream)
-          }}
-        >
-          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none"
-            style={
-              chatBg
-                ? ({
-                  "--chat-bg":
-                    chatBg.type === "color"
-                      ? chatBg.value
-                      : `url(${chatBg.value})`,
-                  "--chat-blur": `${chatBg.blur || 0}px`,
-                  "--chat-bg-opacity": chatBg.intensity ?? 0.18
-                } as React.CSSProperties)
-                : {}
-            }
-          >
-            <div
-              className={`absolute inset-0 transition-all duration-700 chat-background-pan ${(chatBg?.type === 'texture' || (!chatBg && activeChat?.chatBackground?.type === 'texture'))
-                ? 'bg-repeat'
-                : 'bg-cover bg-center'
-                }`}
-              style={{
-                backgroundImage: chatBg ? 'var(--chat-bg)' : undefined,
-                backgroundColor: chatBg && chatBg.type === 'color' ? 'var(--chat-bg)' : 'transparent',
-                filter: chatBg ? `blur(var(--chat-blur)) saturate(1.1)` : undefined,
-                opacity: chatBg ? 'var(--chat-bg-opacity)' : undefined
-              }}
-            >
-              {/* Fallback to legacy logic if no chatBg (handled above roughly, but we might want to keep the old logic as strict fallback if local storage fails or is empty, although chatBg will be null then) */}
-              {!chatBg && (
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: activeChat.chatBackground?.type === 'image'
-                      ? `url("${activeChat.chatBackground.value}")`
-                      : activeChat.chatBackground?.type === 'texture'
-                        ? `url("${activeChat.chatBackground.value}")`
-                        : activeChat.chatBackground?.type === 'gradient'
-                          ? activeChat.chatBackground.value
-                          : 'none',
-                    // ... (Replicating complex old logic is verbose, easier to rely on chatBg being populated from loadChatWallpaper or fallback)
-                    // Actually, loadChatWallpaper returns null if nothing.
-                    // But for now, let's trust the new system entirely for "Persistent" wallpaper. 
-                    // If we want to support the OLD non-persistent object prop in `chats`, we should include it in `loadChatWallpaper` or `chatBg` initialization?
-                    // The prompt implies we want to LOAD from local storage.
-                    // Let's keep a simple fallback rendering for safety if needed, OR just replace entirely.
-                    // The user prompt specifically asked for: "LOAD WALLPAPER ON PAGE REFRESH". 
-                  }}
-                />
-              )}
-            </div>
-            {!chatBg && <div className={`absolute inset-0 transition-all duration-700 chat-background-pan ${(activeChat.chatBackground?.type === 'texture' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'texture'))
-              ? 'bg-repeat'
-              : 'bg-cover bg-center'
-              }`}
-              style={{
-                backgroundImage: (activeChat.chatBackground?.type === 'image' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'image'))
-                  ? `url("${activeChat.chatBackground?.value || userPrefs.chatBackground?.value}")`
-                  : (activeChat.chatBackground?.type === 'texture' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'texture'))
-                    ? `url("${activeChat.chatBackground?.value || userPrefs.chatBackground?.value}")`
-                    : (activeChat.chatBackground?.type === 'gradient' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'gradient'))
-                      ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
-                      : 'none',
-                backgroundColor: (activeChat.chatBackground?.type === 'color' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'color'))
-                  ? (activeChat.chatBackground?.value || userPrefs.chatBackground?.value)
-                  : 'transparent',
-                backgroundSize: (activeChat.chatBackground?.type === 'texture' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'texture')) ? 'auto' : undefined,
-                filter: `blur(${activeChat.chatBackground?.blur ?? userPrefs.chatBackground?.blur ?? 0}px) saturate(1.1)`,
-                opacity: (activeChat.chatBackground?.intensity ?? userPrefs.chatBackground?.intensity ?? (activeChat.chatBackground?.type === 'texture' || userPrefs.chatBackground?.type === 'texture' ? 0.15 : 0.45)),
-              }}
-            />}
-            <div className="absolute inset-0 bg-white/55 dark:bg-black/20 mix-blend-overlay"></div>
-          </div>
 
-          {/* Atmosphere/Weight Vignette */}
-          <div
-            className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-1000"
-            style={{
-              background: `radial-gradient(circle at center, transparent 50%, rgba(0,0,0, ${Math.max(0.02, (activeChat.conversationWeight || 0) * 0.004)}) 100%)`,
-              boxShadow: `inset 0 0 ${(activeChat.conversationWeight || 0) * 2}px rgba(0,0,0, ${(activeChat.conversationWeight || 0) * 0.0005})`
-            }}
-          />
-
-          <div className="relative z-10 w-full">
-            <ChatHeader
-              onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
-              name={activeChat.name}
-              avatarUrl={activeChat.avatarUrl}
-              isOnline={activeChat.isOnline}
-              driftLevel={activeChat.driftLevel}
-              interestScore={activeChat.interestScore}
-              interestTrend={activeChat.interestTrend}
-              gravity={activeChat.gravity}
-              persona={activeChat.persona}
-              energyBalance={activeChat.energyBalance}
-              isScrolled={isScrolledHeader}
-            />
-          </div>
-
-          {/* Messages Container */}
-          <div
-            ref={scrollContainerRef}
-            onScroll={handleScroll}
-            className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar"
-          >
-            <div className="mx-auto max-w-3xl space-y-6">
-
-              {/* Date Divider */}
-              <div className="flex items-center justify-center">
-                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                  Today
-                </span>
+        {/* Main Chat Area */}
+        <main className="chat-panel">
+          {currentView === 'chat' ? (
+            <>
+              <div className="chat-header">
+                <ChatHeader />
               </div>
 
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-zinc-500 mt-20">
-                  <p>No messages yet.</p>
-                </div>
-              ) : (
-                messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    data-message-id={msg.id}
-                    className={`flex w-full ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      handleReply(msg);
-                    }}
-                  >
-                    <MessageBubble
-                      type={msg.type || 'text'}
-                      content={msg.content || ''}
-                      timestamp={msg.timestamp}
-                      isMe={msg.isMe}
-                      duration={msg.duration}
-                      thumbnailUrl={msg.thumbnailUrl}
-                      reactions={msg.reactions}
-                      isConsecutive={msg.isConsecutive}
-                      status={msg.status}
-                      heatScore={msg.heatScore}
-                      confidenceScore={msg.confidenceScore}
-                      style={msg.style}
-                      replyTo={msg.replyTo}
-                      onReplyClick={scrollToMessage}
-                      onRetry={() => handleRetry(msg.id)}
-                    />
+              {/* Messages Container */}
+              <div className="chat-messages scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800">
+                <div className="mx-auto max-w-3xl space-y-6">
+
+                  {/* Date Divider */}
+                  <div className="flex items-center justify-center">
+                    <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                      Today
+                    </span>
                   </div>
-                ))
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
 
-          {/* Input Area */}
-          <div className="relative z-10 w-full">
-            <MessageInput
-              onSendMessage={handleSendMessage}
-              boundaryMode={activeChat.boundaryMode}
-              recentMessages={messages.filter(m => m.isMe).slice(-5).map(m => m.content || "")}
-              selfAlias={activeChat.selfAlias}
-              replyingTo={replyingTo}
-              onCancelReply={cancelReply}
-            />
-          </div>
+                  <MessageBubble
+                    content="Hey Sarah! How's the new design coming along?"
+                    timestamp="10:23 AM"
+                    isMe={true}
+                  />
+
+                  <MessageBubble
+                    content="Hi! It's going great. I just finished the initial mockups for the dashboard."
+                    timestamp="10:25 AM"
+                    isMe={false}
+                    isConsecutive={false}
+                  />
+                  <MessageBubble
+                    image="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop"
+                    timestamp="10:25 AM"
+                    isMe={false}
+                    isConsecutive={true}
+                  />
+                  <MessageBubble
+                    content="I really like the color palette you chose! vivid but professional."
+                    timestamp="10:26 AM"
+                    isMe={true}
+                    reactions={[{ emoji: "🔥", count: 2 }]}
+                  />
+                  <MessageBubble
+                    content="Thanks! I tried to follow the new brand guidelines strictly."
+                    timestamp="10:28 AM"
+                    isMe={false}
+                  />
+                  <MessageBubble
+                    content="Could you send over the Figma link when you have a sec?"
+                    timestamp="10:30 AM"
+                    isMe={true}
+                  />
+                  <MessageBubble
+                    content="Sure thing, sending it now."
+                    timestamp="10:31 AM"
+                    isMe={false}
+                  />
+                  <MessageBubble
+                    content="Here it is: https://figma.com/file/..."
+                    timestamp="10:31 AM"
+                    isMe={false}
+                    isConsecutive={true}
+                  />
+                  <MessageBubble
+                    content="Perfect, checking it out now!"
+                    timestamp="10:32 AM"
+                    isMe={true}
+                    reactions={[{ emoji: "👍", count: 1 }]}
+                  />
+                </div>
+              </div>
+
+              {/* Input Area */}
+              <div className="chat-input">
+                <MessageInput />
+              </div>
+            </>
+          ) : (
+            <SettingsView />
+          )}
         </main>
-      )}
 
-      {/* Right Sidebar */}
-      {showRightPanel && activeChat && (
-        <RightPanel
-          chat={activeChat}
-          onUpdateChat={(updated) => {
-            const newChats = chats.map(c => c.id === updated.id ? updated : c);
-            saveChats(newChats);
-            // Also update local activeChat state if needed by reference (usually covered by hook or memo but safe to rely on chats prop)
-          }}
-        />
-      )}
-    </div >
+        {/* Right Sidebar */}
+        <div className="right-sidebar">
+          {currentView === 'chat' && <RightPanel />}
+          {currentView === 'settings' && <div className="h-full w-full bg-white dark:bg-zinc-900 border-l border-zinc-100 dark:border-zinc-800 flex items-center justify-center text-sm text-zinc-400">Settings Info</div>}
+        </div>
+
+      </div>
+    </div>
   );
 }

@@ -1,192 +1,101 @@
 @import "tailwindcss";
-@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@variant dark (&:where(.dark, .dark *));
 
-:root,
-[data-theme="light"] {
-  --app-font: 'Inter', system-ui, sans-serif;
+:root {
   --background: #ffffff;
-  --foreground: 240 10% 3.9%;
-
-  /* User Requested Light Mode Tokens */
-  --header-bg: #FFFFFF;
-  --header-border: rgba(0, 0, 0, 0.06);
-  --header-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  --subtitle-text: #6F6F6F;
-  --title-text: #1F1F1F;
-  --interest-high: #2ECC71;
-  --interest-mid: #E1B12C;
-  --interest-low: #C96A5B;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
-/* Audio Waveform Animation */
-.audio-wave {
-  display: flex;
-  gap: 3px;
-  align-items: center;
-  height: 20px;
-}
-
-.audio-wave .bar {
-  width: 3px;
-  height: 6px;
-  background: currentColor;
-  /* Use text color (white or dark text) */
-  border-radius: 2px;
-  opacity: 0.8;
-}
-
-.playing .bar {
-  animation: wave 1s infinite ease-in-out;
-}
-
-.playing .bar:nth-child(2) {
-  animation-delay: 0.1s;
-}
-
-.playing .bar:nth-child(3) {
-  animation-delay: 0.2s;
-}
-
-.playing .bar:nth-child(4) {
-  animation-delay: 0.3s;
-}
-
-.playing .bar:nth-child(5) {
-  animation-delay: 0.4s;
-}
-
-@keyframes wave {
-  0% {
-    height: 6px;
-  }
-
-  50% {
-    height: 16px;
-  }
-
-  100% {
-    height: 6px;
-  }
-}
-
-/* Video Thumbnail Container */
-.video-thumb {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.play-btn-overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: rgba(0, 0, 0, 0.3);
-  transition: background 0.2s;
-}
-
-.video-thumb:hover .play-btn-overlay {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.play-btn-icon {
-  font-size: 32px;
-  color: white;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  --foreground: #171717;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--app-font);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-
-
-/* Support class-based dark mode (updated to data-theme) */
-[data-theme="dark"] {
+/* Support class-based dark mode from next-themes */
+.dark {
   --background: #0a0a0a;
   --foreground: #ededed;
 }
 
 html,
-body {
+body,
+#root {
+  margin: 0;
+  padding: 0;
   height: 100%;
   overflow: hidden;
-  /* Prevent scrolling on body, handle inside app */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--app-font);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Typing Indicator Dots */
-@keyframes blink {
-  0% {
-    opacity: .2;
-  }
-
-  20% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: .2;
-  }
+/* App Shell Layout */
+.app-shell {
+  height: 100vh;
+  padding: 16px;
+  /* outer gap */
+  background: #0e0f13;
+  /* app background */
 }
 
-.typing-dot {
-  width: 4px;
-  height: 4px;
-  background-color: #999;
-  border-radius: 50%;
-  animation: blink 1.4s infinite both;
+.app-layout {
+  display: flex;
+  height: 100%;
+  gap: 16px;
 }
 
-.typing-dot:nth-child(2) {
-  animation-delay: .2s;
+.left-sidebar {
+  width: 280px;
+  background: #ffffff;
+  border-radius: 18px;
+  /* 👈 magic */
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
-.typing-dot:nth-child(3) {
-  animation-delay: .4s;
+.chat-panel {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 22px;
+  /* 👈 extra round */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.10);
 }
 
-/* Hide scrollbar but allow scroll */
-.no-scrollbar {
-  -ms-overflow-style: none;
-  /* IE & Edge */
-  scrollbar-width: none;
-  /* Firefox */
+.chat-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #eee;
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-  /* Chrome, Safari */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
 
-/* Dynamic Chat Background Animation */
-@keyframes slow-pan {
-  0% {
-    background-position: 50% 50%;
-  }
-
-  100% {
-    background-position: 55% 45%;
-  }
+.chat-input {
+  padding: 12px;
+  border-top: 1px solid #eee;
 }
 
-.chat-background-pan {
-  animation: slow-pan 40s ease-in-out infinite alternate;
+.right-sidebar {
+  width: 300px;
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.message-input {
+  border-radius: 14px;
+  background: #f5f6fa;
 }

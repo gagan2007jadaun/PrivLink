@@ -8,10 +8,6 @@ interface ChatListItemProps {
   unreadCount?: number;
   avatarUrl?: string; // Optional for now, can use placeholders or initials
   isOnline?: boolean;
-  isLocked?: boolean;
-  onArchive?: () => void;
-  onDelete?: () => void;
-  isArchived?: boolean;
 }
 
 export default function ChatListItem({
@@ -22,34 +18,22 @@ export default function ChatListItem({
   unreadCount = 0,
   avatarUrl,
   isOnline = false,
-  isLocked = false,
-  onArchive,
-  onDelete,
-  isArchived = false,
 }: ChatListItemProps) {
   return (
     <div
-      className={`group relative flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-all duration-200 
+      className={`group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-all duration-200 
       ${isActive ? 'bg-indigo-50 dark:bg-zinc-800/50' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
     >
-      {/* Avatar */}
-      <div className="relative h-12 w-12 flex-shrink-0">
-        <div className={`h-full w-full rounded-full p-0.5 ${isActive ? 'bg-indigo-500' : 'bg-transparent'}`}>
-          {avatarUrl ? (
-            <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover bg-white" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 font-bold text-lg text-indigo-500">
-              {name.substring(0, 2).toUpperCase()}
-            </div>
-          )}
+      <div className="relative shrink-0">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-sm font-medium text-white shadow-xl shadow-indigo-500/10 ring-2 ring-white dark:ring-zinc-900">
+           {avatarUrl ? (
+               <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover" />
+           ) : (
+               name.slice(0, 2).toUpperCase()
+           )}
         </div>
-        {isLocked && (
-          <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 border-2 border-white dark:border-zinc-950 text-[10px]" title="Locked">
-            🔐
-          </div>
-        )}
-        {isOnline && !isLocked && (
-          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-950" />
+        {isOnline && (
+          <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />
         )}
       </div>
 
@@ -61,8 +45,8 @@ export default function ChatListItem({
           <span className="text-xs text-zinc-400 group-hover:text-zinc-500 dark:text-zinc-500">{time}</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <p className={`truncate text-sm ${isActive ? 'text-indigo-700/80 dark:text-indigo-300/70' : 'text-zinc-500 group-hover:text-zinc-600 dark:text-zinc-400'} ${isLocked ? 'blur-[3px] select-none opacity-50' : ''}`}>
-            {isLocked ? 'Locked Message Content' : lastMessage}
+          <p className={`truncate text-sm ${isActive ? 'text-indigo-700/80 dark:text-indigo-300/70' : 'text-zinc-500 group-hover:text-zinc-600 dark:text-zinc-400'}`}>
+            {lastMessage}
           </p>
           {unreadCount > 0 && (
             <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-bold text-white shadow-md shadow-indigo-500/20">
@@ -70,40 +54,6 @@ export default function ChatListItem({
             </span>
           )}
         </div>
-      </div>
-
-      {/* Archive Action (Visible on Group Hover) */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onArchive?.();
-          }}
-          className="rounded-lg bg-zinc-200 p-2 text-zinc-600 hover:bg-zinc-300 hover:text-zinc-900 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:hover:text-white shadow-sm"
-          title={isArchived ? "Unarchive" : "Archive"}
-        >
-          {isArchived ? (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-            </svg>
-          ) : (
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
-          )}
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete?.();
-          }}
-          className="rounded-lg bg-zinc-200 p-2 text-zinc-600 hover:bg-red-100 hover:text-red-600 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-red-900/30 dark:hover:text-red-400 shadow-sm"
-          title="Delete"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
       </div>
     </div>
   );
