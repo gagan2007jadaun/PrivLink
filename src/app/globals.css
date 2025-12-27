@@ -127,9 +127,7 @@ body {
   overflow: hidden;
 }
 
-.message-input {
-  /* float style handled by .chat-input class below */
-}
+
 
 .chat-input {
   background: #f9fafb;
