@@ -87,24 +87,7 @@ export default function Settings() {
                         <section>
                             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Typography</h2>
                             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                    {fontOptions.map((font) => (
-                                        <button
-                                            key={font.variable}
-                                            onClick={() => setFontVariable(font.variable)}
-                                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition-all text-left flex items-center justify-between ${fontVariable === font.variable
-                                                ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-400'
-                                                : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:bg-zinc-800'
-                                                }`}
-                                            style={{ fontFamily: `var(${font.variable})` }}
-                                        >
-                                            <span className="truncate">{font.name}</span>
-                                            {fontVariable === font.variable && (
-                                                <div className="h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0 ml-2" />
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
+                                <FontGrid />
                             </div>
                         </section>
 
@@ -191,10 +174,36 @@ export default function Settings() {
                             </div>
                         </section>
 
+                        {/* Account Actions */}
+                        <section>
+                            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Account</h2>
+                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                                <button
+                                    onClick={() => {
+                                        // 1. Remove auth/session
+                                        localStorage.removeItem("auth-token");
+                                        localStorage.removeItem("current-user");
+
+                                        // 2. Clear other potential session data if needed (but keeping chat-specific data)
+                                        // localStorage.removeItem("userPrefs"); 
+
+                                        // 3. Redirect (This resets in-memory state)
+                                        window.location.href = "/login";
+                                    }}
+                                    className="w-full rounded-xl bg-[#e74c3c] p-2.5 font-medium text-white transition-colors hover:bg-[#c0392b]"
+                                >
+                                    Logout
+                                </button>
+                                <p className="mt-3 text-center text-xs text-zinc-400">
+                                    This will log you out of this device. Your chat history remains on this device.
+                                </p>
+                            </div>
+                        </section>
+
                     </div>
-                </div>
-            </main>
-        </div>
+                </div >
+            </main >
+        </div >
     );
 }
 
@@ -341,6 +350,53 @@ function NotificationToggle({ title, desc, defaultChecked }: { title: string, de
             >
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
+        </div>
+    );
+}
+
+const FONTS = [
+    "Inter",
+    "Playfair Display",
+    "Roboto",
+    "Poppins",
+    "Montserrat",
+    "Rubik",
+    "Roboto Mono",
+    "Space Mono"
+];
+
+function FontGrid() {
+    const [activeFont, setActiveFont] = useState<string>('Inter');
+
+    const applyFont = (fontName: string) => {
+        document.documentElement.style.setProperty(
+            "--app-font",
+            `'${fontName}', system-ui, sans-serif`
+        );
+        localStorage.setItem("app-font", fontName);
+        setActiveFont(fontName);
+    };
+
+    useEffect(() => {
+        const saved = localStorage.getItem("app-font");
+        if (saved) setActiveFont(saved);
+    }, []);
+
+    return (
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-[10px]">
+            {FONTS.map(font => (
+                <button
+                    key={font}
+                    className={`px-[12px] py-[10px] rounded-[12px] border text-[14px] bg-white text-left whitespace-nowrap overflow-hidden text-ellipsis transition-colors ${activeFont === font
+                        ? "border-[#6c5ce7] bg-[rgba(108,92,231,0.08)] text-[#6c5ce7] dark:bg-[rgba(108,92,231,0.2)] dark:text-[#a29bfe]"
+                        : "border-[rgba(0,0,0,0.08)] text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                        }`}
+                    style={{ fontFamily: font }}
+                    onClick={() => applyFont(font)}
+                >
+                    {font}
+                </button>
+            ))}
         </div>
     );
 }

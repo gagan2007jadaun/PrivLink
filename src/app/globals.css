@@ -3,6 +3,7 @@
 
 :root,
 [data-theme="light"] {
+  --app-font: 'Inter', system-ui, sans-serif;
   --background: #ffffff;
   --foreground: 240 10% 3.9%;
 
@@ -104,7 +105,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-playfair);
+  --font-sans: var(--app-font);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -126,16 +127,24 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: var(--app-font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Typing Indicator Dots */
 @keyframes blink {
-  0% { opacity: .2; }
-  20% { opacity: 1; }
-  100% { opacity: .2; }
+  0% {
+    opacity: .2;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: .2;
+  }
 }
 
 .typing-dot {
@@ -146,22 +155,36 @@ body {
   animation: blink 1.4s infinite both;
 }
 
-.typing-dot:nth-child(2) { animation-delay: .2s; }
-.typing-dot:nth-child(3) { animation-delay: .4s; }
+.typing-dot:nth-child(2) {
+  animation-delay: .2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: .4s;
+}
+
 /* Hide scrollbar but allow scroll */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE & Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  /* IE & Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .no-scrollbar::-webkit-scrollbar {
-  display: none;             /* Chrome, Safari */
+  display: none;
+  /* Chrome, Safari */
 }
 
 /* Dynamic Chat Background Animation */
 @keyframes slow-pan {
-  0% { background-position: 50% 50%; }
-  100% { background-position: 55% 45%; }
+  0% {
+    background-position: 50% 50%;
+  }
+
+  100% {
+    background-position: 55% 45%;
+  }
 }
 
 .chat-background-pan {
