@@ -8,6 +8,16 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { fontOptions } from "@/lib/fonts";
 import { mockChats } from "@/lib/data";
 
+type Profile = {
+    name: string;
+    username: string;
+};
+
+const DEFAULT_PROFILE: Profile = {
+    name: "Sarah Wilson",
+    username: "@sarahw_design"
+};
+
 export default function Settings() {
     const { theme, setTheme } = useTheme();
     const { fontVariable, setFontVariable, silentRead, toggleSilentRead } = useSettingsStore();
@@ -53,34 +63,7 @@ export default function Settings() {
                         {/* Profile Section */}
                         <section>
                             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Profile</h2>
-                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                                <div className="flex items-center gap-6">
-                                    <div className="relative">
-                                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-2xl font-bold text-white ring-4 ring-zinc-50 dark:ring-zinc-800">
-                                            SW
-                                        </div>
-                                        <button className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-white text-zinc-600 shadow-md ring-1 ring-zinc-200 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700">
-                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div className="flex-1 space-y-4">
-                                        <div>
-                                            <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-400">Display Name</label>
-                                            <input type="text" defaultValue="Sarah Wilson" className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white" />
-                                        </div>
-                                        <div>
-                                            <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-400">Username</label>
-                                            <div className="flex items-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-800">
-                                                <span className="text-zinc-500 dark:text-zinc-500">@</span>
-                                                <input type="text" defaultValue="sarahw_design" className="w-full bg-transparent text-sm font-medium outline-none dark:text-white" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <ProfileEditor />
                         </section>
 
                         {/* Typography */}
@@ -418,6 +401,98 @@ function FontGrid() {
                     {font}
                 </button>
             ))}
+        </div>
+    );
+}
+
+function ProfileEditor() {
+    const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
+    const [editing, setEditing] = useState(false);
+
+    useEffect(() => {
+        const saved = localStorage.getItem("user-profile");
+        if (saved) {
+            setProfile(JSON.parse(saved));
+        }
+    }, []);
+
+    function saveProfile() {
+        localStorage.setItem("user-profile", JSON.stringify(profile));
+        setEditing(false);
+    }
+
+    function cancelEdit() {
+        const saved = localStorage.getItem("user-profile");
+        setProfile(saved ? JSON.parse(saved) : DEFAULT_PROFILE);
+        setEditing(false);
+    }
+
+    return (
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="flex items-center gap-6">
+                <div className="relative">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-2xl font-bold text-white ring-4 ring-zinc-50 dark:ring-zinc-800 uppercase">
+                        {profile.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    </div>
+                </div>
+                <div className="flex-1 space-y-4">
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-400">Display Name</label>
+                        <input
+                            type="text"
+                            value={profile.name}
+                            disabled={!editing}
+                            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                            className={`w-full rounded-xl border px-4 py-2 text-sm font-medium outline-none transition-all ${editing
+                                    ? "border-zinc-200 bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800"
+                                    : "border-transparent bg-transparent pl-0"
+                                } dark:text-white`}
+                        />
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-400">Username</label>
+                        <div className={`flex items-center rounded-xl border px-4 py-2 transition-all ${editing
+                                ? "border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800"
+                                : "border-transparent bg-transparent pl-0"
+                            }`}>
+                            <span className={`text-zinc-500 dark:text-zinc-500 mr-1 ${!editing && 'opacity-50'}`}>@</span>
+                            <input
+                                type="text"
+                                value={profile.username.replace('@', '')}
+                                disabled={!editing}
+                                onChange={(e) => setProfile({ ...profile, username: `@${e.target.value}` })}
+                                className="w-full bg-transparent text-sm font-medium outline-none dark:text-white"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                        {!editing ? (
+                            <button
+                                onClick={() => setEditing(true)}
+                                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+                            >
+                                Edit Profile
+                            </button>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={saveProfile}
+                                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700"
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    onClick={cancelEdit}
+                                    className="rounded-lg bg-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                                >
+                                    Cancel
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
