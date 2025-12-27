@@ -25,8 +25,8 @@ export default function MessageBubble({
                 <div
                     className={`relative px-4 py-2.5 text-sm shadow-sm
           ${isMe
-                            ? 'rounded-2xl rounded-tr-md bg-indigo-600 text-white selection:bg-indigo-800 selection:text-indigo-100'
-                            : 'rounded-2xl rounded-tl-md bg-white text-zinc-900 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700/50'
+                            ? 'rounded-[18px] rounded-tr-md bg-linear-to-br from-indigo-500 to-violet-600 text-white selection:bg-indigo-800 selection:text-indigo-100'
+                            : 'rounded-[16px] rounded-tl-md bg-[#f3f4f6] text-[#111] dark:bg-zinc-800 dark:text-zinc-100'
                         }
           ${image ? 'p-1' : ''}
           `}

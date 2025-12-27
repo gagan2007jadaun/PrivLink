@@ -21,16 +21,16 @@ export default function ChatListItem({
 }: ChatListItemProps) {
   return (
     <div
-      className={`group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-all duration-200 
-      ${isActive ? 'bg-indigo-50 dark:bg-zinc-800/50' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+      className={`group flex w-full cursor-pointer items-center gap-3 rounded-xl p-3 px-3.5 transition-all duration-200 
+      ${isActive ? 'bg-indigo-500/15 dark:bg-indigo-500/20' : 'hover:bg-indigo-500/10 dark:hover:bg-zinc-800'}`}
     >
       <div className="relative shrink-0">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-sm font-medium text-white shadow-xl shadow-indigo-500/10 ring-2 ring-white dark:ring-zinc-900">
-           {avatarUrl ? (
-               <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover" />
-           ) : (
-               name.slice(0, 2).toUpperCase()
-           )}
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover" />
+          ) : (
+            name.slice(0, 2).toUpperCase()
+          )}
         </div>
         {isOnline && (
           <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-900" />

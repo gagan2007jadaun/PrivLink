@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function ChatHeader() {
     return (
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 bg-white/50 px-6 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50">
+        <div className="flex h-full w-full items-center justify-between">
             <div className="flex items-center gap-4">
                 <div className="relative">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-sm font-bold text-white shadow-md ring-2 ring-white dark:ring-zinc-900">

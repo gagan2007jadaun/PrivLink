@@ -7,8 +7,8 @@ export default function RightPanel() {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-none">
 
-                {/* Profile */}
-                <div className="flex flex-col items-center">
+                {/* Profile Card */}
+                <div className="flex flex-col items-center bg-[#f9fafb] dark:bg-zinc-800/50 rounded-[16px] p-6 mb-8">
                     <div className="relative mb-4">
                         <div className="h-24 w-24 rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 p-0.5 ring-4 ring-white dark:ring-zinc-900">
                             <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 font-bold text-2xl text-indigo-500">
@@ -21,10 +21,10 @@ export default function RightPanel() {
                     <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">@sarahw_design</p>
 
                     <div className="mt-6 flex w-full gap-2">
-                        <button className="flex-1 rounded-xl bg-zinc-100 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700">
+                        <button className="flex-1 rounded-xl bg-white shadow-sm py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600 border border-zinc-200 dark:border-zinc-600">
                             Profile
                         </button>
-                        <button className="flex-1 rounded-xl border border-zinc-200 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-800">
+                        <button className="flex-1 rounded-xl border border-zinc-200 bg-white shadow-sm py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white dark:hover:bg-zinc-600">
                             Mute
                         </button>
                     </div>
@@ -41,7 +41,7 @@ export default function RightPanel() {
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                             {[1, 2, 3, 4, 5, 6].map((i) => (
-                                <div key={i} className="aspect-square relative overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                                <div key={i} className="aspect-square relative overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
                                     {/* Placeholder for media */}
                                     <div className="absolute inset-0 bg-linear-to-br from-indigo-500/10 to-purple-500/10 hover:opacity-75 transition-opacity" />
                                 </div>

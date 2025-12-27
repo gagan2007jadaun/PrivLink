@@ -1,16 +1,41 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-export default function SettingsView() {
+interface SettingsViewProps {
+    onClose: () => void;
+}
+
+export default function SettingsView({ onClose }: SettingsViewProps) {
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+
+        window.addEventListener("keydown", handleEsc);
+        return () => window.removeEventListener("keydown", handleEsc);
+    }, [onClose]);
+
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-zinc-900">
-            {/* Header */}
-            <div className="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800">
-                <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Settings</h2>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">Manage your preferences and account details</p>
+        <div className="flex flex-col h-full bg-white dark:bg-zinc-900 relative">
+            {/* Contextual Header with Back Button */}
+            <div className="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 z-10">
+                <div className="settings-header !mb-0">
+                    <button className="settings-back text-zinc-900 dark:text-white" onClick={onClose}>
+                        ←
+                    </button>
+                    <div>
+                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Settings</h2>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Manage your preferences and account details</p>
+                    </div>
+                </div>
+
+                {/* Top-Right Close Button */}
+                <button className="settings-close text-zinc-500 dark:text-white hover:bg-zinc-100 dark:hover:bg-white/10" onClick={onClose}>
+                    ✕
+                </button>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 text-zinc-900 dark:text-zinc-100">
                 <div className="max-w-2xl space-y-8">
 
                     {/* Section: Appearance */}

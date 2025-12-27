@@ -98,7 +98,7 @@ export default function Home() {
               </div>
             </>
           ) : (
-            <SettingsView />
+            <SettingsView onClose={() => setCurrentView('chat')} />
           )}
         </main>
 
