@@ -358,11 +358,32 @@ const FONTS = [
     "Inter",
     "Playfair Display",
     "Roboto",
+    "Open Sans",
+    "Lato",
     "Poppins",
     "Montserrat",
+    "Raleway",
+    "Nunito",
+    "Ubuntu",
+    "Quicksand",
     "Rubik",
+    "Mulish",
+    "Work Sans",
+    "Kanit",
+    "Titillium Web",
+    "Exo 2",
+    "Josefin Sans",
+    "Lora",
+    "Merriweather",
+    "Abril Fatface",
+    "Bebas Neue",
+    "Anton",
     "Roboto Mono",
-    "Space Mono"
+    "Space Mono",
+    "Source Code Pro",
+    "IBM Plex Sans",
+    "IBM Plex Mono",
+    "Manrope"
 ];
 
 function FontGrid() {
