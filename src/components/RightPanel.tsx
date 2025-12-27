@@ -8,7 +8,7 @@ export default function RightPanel() {
             <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-none">
 
                 {/* Profile Card */}
-                <div className="flex flex-col items-center bg-[#f9fafb] dark:bg-zinc-800/50 rounded-[16px] p-6 mb-8">
+                <div className="flex flex-col items-center profile-header p-6 mb-8">
                     <div className="relative mb-4">
                         <div className="h-24 w-24 rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 p-0.5 ring-4 ring-white dark:ring-zinc-900">
                             <div className="flex h-full w-full items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 font-bold text-2xl text-indigo-500">
