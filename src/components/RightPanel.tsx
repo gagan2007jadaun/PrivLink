@@ -1,5 +1,6 @@
 import React from 'react';
 import { Chat } from '@/lib/data';
+import { saveChatWallpaper, removeChatWallpaper, compressImage } from '@/lib/wallpaperUtils';
 
 interface RightPanelProps {
     chat?: Chat;
@@ -161,7 +162,7 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                     {chat.chatBackground && (
                                         <button
                                             onClick={() => {
-                                                localStorage.removeItem(`chat-bg-${chat.id}`);
+                                                removeChatWallpaper(chat.id);
                                                 onUpdateChat?.({ ...chat, chatBackground: undefined });
                                             }}
                                             className="text-[10px] font-medium text-red-500 hover:text-red-700 transition-colors"
@@ -186,16 +187,19 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                             type="file"
                                             accept="image/*"
                                             className="hidden"
-                                            onChange={(e) => {
+                                            onChange={async (e) => {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
-                                                const reader = new FileReader();
-                                                reader.onload = () => {
-                                                    const bg = { type: "image", value: reader.result as string, blur: 10, intensity: 0.45 };
-                                                    localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
+
+                                                try {
+                                                    const compressedBase64 = await compressImage(file);
+                                                    const bg = { type: "image", value: compressedBase64, blur: 10, intensity: 0.45 };
+                                                    saveChatWallpaper(chat.id, bg as any);
                                                     onUpdateChat?.({ ...chat, chatBackground: bg as any });
-                                                };
-                                                reader.readAsDataURL(file);
+                                                } catch (error) {
+                                                    console.error("Failed to process image", error);
+                                                    alert("Failed to load image. It might be too large.");
+                                                }
                                             }}
                                         />
                                     </label>
@@ -215,7 +219,7 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                                     key={t.id}
                                                     onClick={() => {
                                                         const bg = { type: "texture", value: t.value, blur: 0, intensity: 0.15 };
-                                                        localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
+                                                        saveChatWallpaper(chat.id, bg as any);
                                                         onUpdateChat?.({ ...chat, chatBackground: bg as any });
                                                     }}
                                                     className={`h-10 w-full rounded-xl border-2 bg-center bg-no-repeat transition-all hover:border-indigo-500 overflow-hidden relative flex items-center justify-center ${chat.chatBackground?.value === t.value ? 'border-indigo-500 shadow-lg scale-105' : 'border-zinc-100 dark:border-zinc-800'}`}
@@ -244,7 +248,7 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                                     onChange={(e) => {
                                                         const val = parseFloat(e.target.value);
                                                         const newBg = { ...chat.chatBackground!, intensity: val };
-                                                        localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(newBg));
+                                                        saveChatWallpaper(chat.id, newBg);
                                                         onUpdateChat?.({ ...chat, chatBackground: newBg as any });
                                                     }}
                                                     className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer dark:bg-zinc-800 accent-indigo-500"
@@ -265,7 +269,7 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                                     onChange={(e) => {
                                                         const val = parseInt(e.target.value);
                                                         const newBg = { ...chat.chatBackground!, blur: val };
-                                                        localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(newBg));
+                                                        saveChatWallpaper(chat.id, newBg);
                                                         onUpdateChat?.({ ...chat, chatBackground: newBg as any });
                                                     }}
                                                     className="w-full h-1.5 bg-zinc-100 rounded-lg appearance-none cursor-pointer dark:bg-zinc-800 accent-indigo-500"

@@ -29,6 +29,14 @@ export interface Message {
     };
 }
 
+export interface ChatBackground {
+    type: "image" | "texture" | "gradient" | "color";
+    value: string; // image url / gradient css / hex / texture path
+    blur?: number;  // px
+    intensity?: number; // 0.05 - 0.35
+    opacity?: number; // New: fallback opacity
+}
+
 export interface Chat {
     id: string;
     name: string;
@@ -69,12 +77,7 @@ export interface Chat {
     hasSharedLinks?: boolean;
 
     // Customization
-    chatBackground?: {
-        type: "image" | "texture" | "gradient" | "color";
-        value: string; // image url / gradient css / hex / texture path
-        blur?: number;  // px
-        intensity?: number; // 0.05 - 0.35
-    };
+    chatBackground?: ChatBackground;
 }
 
 export const mockChats: Chat[] = [

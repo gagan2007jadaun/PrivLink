@@ -9,6 +9,8 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { mockChats, mockMessages, Message, Chat } from "@/lib/data";
 
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { loadChatWallpaper } from "@/lib/wallpaperUtils";
+import { ChatBackground } from "@/lib/data";
 
 // Hook: Track User Attention
 function useAttention() {
@@ -58,6 +60,7 @@ export default function Home() {
   // Initialize state from Local Storage or Mocks
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState("");
+  const [chatBg, setChatBg] = useState<ChatBackground | null>(null);
   const [userPrefs, setUserPrefs] = useState<any>({});
 
   useEffect(() => {
@@ -523,6 +526,16 @@ export default function Home() {
     }
   }, [activeChatId]);
 
+  // Load Wallpaper Effect
+  useEffect(() => {
+    if (!activeChatId) {
+      setChatBg(null);
+      return;
+    }
+    const savedBg = loadChatWallpaper(activeChatId);
+    setChatBg(savedBg);
+  }, [activeChatId]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -717,13 +730,59 @@ export default function Home() {
                   '#fdfbf7' // Warm tint (Cream)
           }}
         >
-          {/* Dynamic Wallpaper Layer (Z-0) */}
-          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none"
+            style={
+              chatBg
+                ? ({
+                  "--chat-bg":
+                    chatBg.type === "color"
+                      ? chatBg.value
+                      : `url(${chatBg.value})`,
+                  "--chat-blur": `${chatBg.blur || 0}px`,
+                  "--chat-bg-opacity": chatBg.intensity ?? 0.18
+                } as React.CSSProperties)
+                : {}
+            }
+          >
             <div
-              className={`absolute inset-0 transition-all duration-700 chat-background-pan ${(activeChat.chatBackground?.type === 'texture' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'texture'))
+              className={`absolute inset-0 transition-all duration-700 chat-background-pan ${(chatBg?.type === 'texture' || (!chatBg && activeChat?.chatBackground?.type === 'texture'))
                 ? 'bg-repeat'
                 : 'bg-cover bg-center'
                 }`}
+              style={{
+                backgroundImage: chatBg ? 'var(--chat-bg)' : undefined,
+                backgroundColor: chatBg && chatBg.type === 'color' ? 'var(--chat-bg)' : 'transparent',
+                filter: chatBg ? `blur(var(--chat-blur)) saturate(1.1)` : undefined,
+                opacity: chatBg ? 'var(--chat-bg-opacity)' : undefined
+              }}
+            >
+              {/* Fallback to legacy logic if no chatBg (handled above roughly, but we might want to keep the old logic as strict fallback if local storage fails or is empty, although chatBg will be null then) */}
+              {!chatBg && (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: activeChat.chatBackground?.type === 'image'
+                      ? `url("${activeChat.chatBackground.value}")`
+                      : activeChat.chatBackground?.type === 'texture'
+                        ? `url("${activeChat.chatBackground.value}")`
+                        : activeChat.chatBackground?.type === 'gradient'
+                          ? activeChat.chatBackground.value
+                          : 'none',
+                    // ... (Replicating complex old logic is verbose, easier to rely on chatBg being populated from loadChatWallpaper or fallback)
+                    // Actually, loadChatWallpaper returns null if nothing.
+                    // But for now, let's trust the new system entirely for "Persistent" wallpaper. 
+                    // If we want to support the OLD non-persistent object prop in `chats`, we should include it in `loadChatWallpaper` or `chatBg` initialization?
+                    // The prompt implies we want to LOAD from local storage.
+                    // Let's keep a simple fallback rendering for safety if needed, OR just replace entirely.
+                    // The user prompt specifically asked for: "LOAD WALLPAPER ON PAGE REFRESH". 
+                  }}
+                />
+              )}
+            </div>
+            {!chatBg && <div className={`absolute inset-0 transition-all duration-700 chat-background-pan ${(activeChat.chatBackground?.type === 'texture' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'texture'))
+              ? 'bg-repeat'
+              : 'bg-cover bg-center'
+              }`}
               style={{
                 backgroundImage: (activeChat.chatBackground?.type === 'image' || (!activeChat.chatBackground && userPrefs.chatBackground?.type === 'image'))
                   ? `url("${activeChat.chatBackground?.value || userPrefs.chatBackground?.value}")`
@@ -739,7 +798,7 @@ export default function Home() {
                 filter: `blur(${activeChat.chatBackground?.blur ?? userPrefs.chatBackground?.blur ?? 0}px) saturate(1.1)`,
                 opacity: (activeChat.chatBackground?.intensity ?? userPrefs.chatBackground?.intensity ?? (activeChat.chatBackground?.type === 'texture' || userPrefs.chatBackground?.type === 'texture' ? 0.15 : 0.45)),
               }}
-            />
+            />}
             <div className="absolute inset-0 bg-white/55 dark:bg-black/20 mix-blend-overlay"></div>
           </div>
 
