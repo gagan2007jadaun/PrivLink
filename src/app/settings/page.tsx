@@ -10,8 +10,49 @@ import { mockChats } from "@/lib/data";
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
-    const { fontVariable, setFontVariable, silentRead, toggleSilentRead } = useSettingsStore();
+    const { fontVariable, setFontVariable, silentRead, toggleSilentRead, profile, updateProfile } = useSettingsStore();
     const [mounted, setMounted] = useState(false);
+
+    // Profile Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({
+        displayName: "",
+        username: "",
+        bio: ""
+    });
+
+    // Sync form with store on mount/update
+    useEffect(() => {
+        if (profile) {
+            setEditForm({
+                displayName: profile.displayName,
+                username: profile.username,
+                bio: profile.bio
+            });
+        }
+    }, [profile]);
+
+    const handleSaveProfile = () => {
+        updateProfile(editForm);
+        setIsEditing(false);
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Limit size to 2MB to prevent LocalStorage quota errors
+        if (file.size > 2 * 1024 * 1024) {
+            alert("Image is too large. Please choose an image under 2MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            updateProfile({ avatarUrl: reader.result as string });
+        };
+        reader.readAsDataURL(file);
+    };
 
     // Prevent hydration mismatch
     useEffect(() => {
@@ -52,31 +93,89 @@ export default function Settings() {
 
                         {/* Profile Section */}
                         <section>
-                            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Profile</h2>
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Profile</h2>
+                                <button
+                                    onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
+                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${isEditing
+                                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-500/20'
+                                        : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                                        }`}
+                                >
+                                    {isEditing ? 'Save Changes' : 'Edit Profile'}
+                                </button>
+                            </div>
                             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                                 <div className="flex items-center gap-6">
-                                    <div className="relative">
-                                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-2xl font-bold text-white ring-4 ring-zinc-50 dark:ring-zinc-800">
-                                            SW
+                                    <div className="relative group">
+                                        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-3xl font-bold text-white ring-4 ring-zinc-50 dark:ring-zinc-800 overflow-hidden">
+                                            {profile.avatarUrl ? (
+                                                <img src={profile.avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+                                            ) : (
+                                                profile.displayName.substring(0, 2).toUpperCase()
+                                            )}
                                         </div>
-                                        <button className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-white text-zinc-600 shadow-md ring-1 ring-zinc-200 hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700">
-                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+                                        {/* Image Upload Overlay */}
+                                        <label className={`absolute inset-0 flex items-center justify-center bg-black/50 rounded-full cursor-pointer transition-opacity ${isEditing ? 'opacity-0 group-hover:opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                disabled={!isEditing}
+                                                onChange={handleImageUpload}
+                                            />
+                                            <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
-                                        </button>
+                                        </label>
                                     </div>
+
                                     <div className="flex-1 space-y-4">
-                                        <div>
-                                            <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-400">Display Name</label>
-                                            <input type="text" defaultValue="Sarah Wilson" className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white" />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Display Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={editForm.displayName}
+                                                    onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
+                                                    disabled={!isEditing}
+                                                    className={`w-full rounded-xl border px-4 py-2 text-sm font-medium outline-none transition-all ${isEditing
+                                                        ? 'border-zinc-300 bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white'
+                                                        : 'border-transparent bg-transparent text-zinc-900 dark:text-white px-0'
+                                                        }`}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Username</label>
+                                                <div className={`flex items-center rounded-xl border px-4 py-2 transition-all ${isEditing
+                                                    ? 'border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800'
+                                                    : 'border-transparent bg-transparent px-0'
+                                                    }`}>
+                                                    <span className="text-zinc-500 dark:text-zinc-500 mr-1">@</span>
+                                                    <input
+                                                        type="text"
+                                                        value={editForm.username}
+                                                        onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                                                        disabled={!isEditing}
+                                                        className={`w-full bg-transparent text-sm font-medium outline-none dark:text-white ${!isEditing && 'pointer-events-none'}`}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                         <div>
-                                            <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-400">Username</label>
-                                            <div className="flex items-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-800">
-                                                <span className="text-zinc-500 dark:text-zinc-500">@</span>
-                                                <input type="text" defaultValue="sarahw_design" className="w-full bg-transparent text-sm font-medium outline-none dark:text-white" />
-                                            </div>
+                                            <label className="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Bio</label>
+                                            <input
+                                                type="text"
+                                                value={editForm.bio}
+                                                onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                                                disabled={!isEditing}
+                                                className={`w-full rounded-xl border px-4 py-2 text-sm font-medium outline-none transition-all ${isEditing
+                                                    ? 'border-zinc-300 bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white'
+                                                    : 'border-transparent bg-transparent text-zinc-600 dark:text-zinc-300 px-0'
+                                                    }`}
+                                            />
                                         </div>
                                     </div>
                                 </div>
