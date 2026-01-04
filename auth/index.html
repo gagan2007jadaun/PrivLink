@@ -2,14 +2,63 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <title>PrivLink — Access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <h1>Login / Sign Up</h1>
+
+    <div class="auth-shell">
+
+        <div class="auth-box">
+
+            <h1>Enter PrivLink</h1>
+            <p class="subtitle">
+                No phone. No email. No tracking.
+            </p>
+
+            <!-- USERNAME -->
+            <div class="field">
+                <label>Choose an alias</label>
+                <input type="text" placeholder="e.g. silentwave" />
+            </div>
+
+            <!-- PASSPHRASE -->
+            <div class="field">
+                <label>
+                    Secure phrase
+                    <span>(optional)</span>
+                </label>
+                <input type="password" placeholder="something only you know" />
+            </div>
+
+            <!-- PRIMARY ACTION -->
+            <button class="primary-btn">
+                Enter Securely
+            </button>
+
+            <!-- DIVIDER -->
+            <div class="divider">
+                <span>or</span>
+            </div>
+
+            <!-- ANONYMOUS -->
+            <button class="ghost-btn">
+                Continue anonymously
+            </button>
+
+            <!-- FOOTNOTE -->
+            <p class="footnote">
+                Your identity stays on this device.
+            </p>
+
+        </div>
+
+    </div>
+
     <script src="script.js"></script>
 </body>
 
