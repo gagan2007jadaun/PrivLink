@@ -1,12 +1,14 @@
-// Frontend-only placeholder
-// Redirects to main app
+const goToApp = () => {
+    document.body.classList.add("fade-out");
 
-document.querySelector(".primary-btn").onclick = () => {
-    // In a real app, this would validate credentials
-    window.location.href = '/';
+    setTimeout(() => {
+        // Redirect to main app root
+        window.location.href = "/";
+    }, 350); // animation duration
 };
 
-document.querySelector(".ghost-btn").onclick = () => {
-    // Anonymous entry
-    window.location.href = '/';
-};
+const enterBtn = document.getElementById("enterBtn");
+const anonBtn = document.getElementById("anonBtn");
+
+if (enterBtn) enterBtn.onclick = goToApp;
+if (anonBtn) anonBtn.onclick = goToApp;
