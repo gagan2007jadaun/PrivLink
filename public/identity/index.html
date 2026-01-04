@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Confirm Identity</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div class="identity-shell">
+
+        <div class="identity-box">
+
+            <h1>Your identity</h1>
+            <p class="subtitle">
+                This is how others will see you.
+                You can change it anytime.
+            </p>
+
+            <!-- USERNAME PREVIEW -->
+            <div class="preview">
+                <span class="at">@</span>
+                <input id="aliasInput" type="text" />
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="actions">
+                <button id="regenBtn" class="ghost">
+                    Regenerate
+                </button>
+
+                <button id="continueBtn" class="primary">
+                    Continue
+                </button>
+            </div>
+
+            <p class="note">
+                No email. No phone. Stored only on this device.
+            </p>
+
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
