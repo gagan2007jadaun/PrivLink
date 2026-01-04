@@ -56,6 +56,22 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
 
   // Initialize state from Local Storage or Mocks
+  // Identity Integration
+  const { updateProfile } = useSettingsStore();
+
+  useEffect(() => {
+    // Check for alias from Identity Page
+    const alias = sessionStorage.getItem("alias");
+    if (alias) {
+      updateProfile({
+        displayName: alias,
+        username: alias.toLowerCase().replace(/\s+/g, '_'),
+      });
+      // Clear it so it doesn't overwrite if the user later changes it manually and refreshes
+      sessionStorage.removeItem("alias");
+    }
+  }, [updateProfile]);
+
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState("");
   const [userPrefs, setUserPrefs] = useState<any>({});
