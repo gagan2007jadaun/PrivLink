@@ -1,0 +1,11 @@
+/* Identity Page Styles */
+body {
+    background-color: #1a1a1a;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
