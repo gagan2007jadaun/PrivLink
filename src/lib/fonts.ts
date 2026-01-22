@@ -62,40 +62,7 @@ export const josefinSans = Josefin_Sans({ subsets: ["latin"], variable: "--font-
 export const bebasNeue = Bebas_Neue({ weight: ["400"], subsets: ["latin"], variable: "--font-bebas-neue" });
 export const abrilFatface = Abril_Fatface({ weight: ["400"], subsets: ["latin"], variable: "--font-abril-fatface" });
 
-export const fontOptions = [
-    { name: "Inter", variable: "--font-inter" },
-    { name: "Playfair Display", variable: "--font-playfair" },
-    { name: "Roboto", variable: "--font-roboto" },
-    { name: "Lato", variable: "--font-lato" },
-    { name: "Montserrat", variable: "--font-montserrat" },
-    { name: "Open Sans", variable: "--font-open-sans" },
-    { name: "Poppins", variable: "--font-poppins" },
-    { name: "Raleway", variable: "--font-raleway" },
-    { name: "Oswald", variable: "--font-oswald" },
-    { name: "Merriweather", variable: "--font-merriweather" },
-    { name: "Nunito", variable: "--font-nunito" },
-    { name: "Ubuntu", variable: "--font-ubuntu" },
-    // New Fonts
-    { name: "Quicksand", variable: "--font-quicksand" },
-    { name: "Rubik", variable: "--font-rubik" },
-    { name: "Work Sans", variable: "--font-work-sans" },
-    { name: "Mulish", variable: "--font-mulish" },
-    { name: "Lora", variable: "--font-lora" },
-    { name: "Kanit", variable: "--font-kanit" },
-    { name: "Josefin Sans", variable: "--font-josefin-sans" },
-    { name: "Titillium Web", variable: "--font-titillium-web" },
-    { name: "Exo 2", variable: "--font-exo-2" },
-    { name: "Space Mono", variable: "--font-space-mono" },
-    { name: "Roboto Mono", variable: "--font-roboto-mono" },
-    { name: "Source Code Pro", variable: "--font-source-code-pro" },
-    // Display/Fun
-    { name: "Anton", variable: "--font-anton" },
-    { name: "Bebas Neue", variable: "--font-bebas-neue" },
-    { name: "Abril Fatface", variable: "--font-abril-fatface" },
-    { name: "Dancing Script", variable: "--font-dancing-script" },
-    { name: "Lobster", variable: "--font-lobster" },
-    { name: "Pacifico", variable: "--font-pacifico" },
-];
+
 
 export const allFonts = [
     inter,

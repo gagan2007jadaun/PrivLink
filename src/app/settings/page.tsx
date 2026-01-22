@@ -5,12 +5,11 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { fontOptions } from "@/lib/fonts";
 import { mockChats } from "@/lib/data";
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
-    const { fontVariable, setFontVariable, silentRead, toggleSilentRead, profile, updateProfile } = useSettingsStore();
+    const { silentRead, toggleSilentRead, profile, updateProfile } = useSettingsStore();
     const [mounted, setMounted] = useState(false);
 
     // Profile Edit State
@@ -182,30 +181,7 @@ export default function Settings() {
                             </div>
                         </section>
 
-                        {/* Typography */}
-                        <section>
-                            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Typography</h2>
-                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                    {fontOptions.map((font) => (
-                                        <button
-                                            key={font.variable}
-                                            onClick={() => setFontVariable(font.variable)}
-                                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition-all text-left flex items-center justify-between ${fontVariable === font.variable
-                                                ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-400'
-                                                : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:bg-zinc-800'
-                                                }`}
-                                            style={{ fontFamily: `var(${font.variable})` }}
-                                        >
-                                            <span className="truncate">{font.name}</span>
-                                            {fontVariable === font.variable && (
-                                                <div className="h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0 ml-2" />
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </section>
+
 
                         {/* Appearance settings */}
                         <section>
