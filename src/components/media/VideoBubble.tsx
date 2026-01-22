@@ -53,7 +53,7 @@ const VideoBubble: React.FC<VideoBubbleProps> = ({ src, thumbnailUrl, duration }
     };
 
     return (
-        <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black group">
+        <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black group">
             <video
                 ref={videoRef}
                 src={src}

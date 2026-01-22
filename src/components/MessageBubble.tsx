@@ -53,12 +53,12 @@ export default function MessageBubble({
 
                 {/* Main Bubble */}
                 <div
-                    className={`relative px-4 py-2.5 text-sm shadow-sm overflow-visible
+                    className={`relative px-5 py-3 text-sm overflow-visible transition-all duration-300
           ${isMe
-                            ? 'rounded-2xl rounded-tr-md bg-indigo-600 text-white selection:bg-indigo-800 selection:text-indigo-100'
-                            : 'rounded-2xl rounded-tl-md bg-white text-zinc-900 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:ring-zinc-700/50'
+                            ? 'rounded-[26px] rounded-tr-lg bg-linear-to-tr from-indigo-500 via-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 selection:bg-indigo-800 selection:text-indigo-100'
+                            : 'rounded-[26px] rounded-tl-lg bg-white/90 backdrop-blur-sm text-zinc-900 shadow-md shadow-zinc-200/50 dark:bg-zinc-800/90 dark:text-zinc-100 dark:shadow-zinc-900/50'
                         }
-          ${type !== 'text' ? 'p-1' : ''}
+          ${type !== 'text' ? 'p-1.5' : ''}
           ${confidenceScore !== undefined ? (confidenceScore < 70 ? 'border-b-[3px] border-dotted border-white/40' : 'border-b-[3px] border-solid border-white/20') : ''}
           `}
                 >
@@ -82,7 +82,7 @@ export default function MessageBubble({
                     )}
 
                     {type === 'image' && (
-                        <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
+                        <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
                             <img src={content} alt="Attached" className="h-full w-full object-cover transition-transform hover:scale-105" />
                         </div>
                     )}
