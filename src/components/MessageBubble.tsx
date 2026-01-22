@@ -98,12 +98,10 @@ export default function MessageBubble({
                     )}
 
                     {type === 'text' && content && (
-                        <p className={`leading-relaxed ${confidenceScore !== undefined && confidenceScore < 80 ? 'opacity-90' : ''}`}
-                            style={{
-                                fontWeight: (propsStyle?.bold ? 700 : 400),
-                                fontStyle: (propsStyle?.italic ? 'italic' : 'normal'),
-                                textDecoration: (propsStyle?.underline ? 'underline' : 'none'),
-                            }}
+                        <p className={`leading-relaxed ${confidenceScore !== undefined && confidenceScore < 80 ? 'opacity-90' : ''} 
+                        ${propsStyle?.bold ? 'font-bold' : ''} 
+                        ${propsStyle?.italic ? 'italic' : ''} 
+                        ${propsStyle?.underline ? 'underline underline-offset-4' : ''}`}
                         >
                             {content}
                         </p>

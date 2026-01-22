@@ -294,7 +294,7 @@ export default function MessageInput({
 
             {/* Font Toolbar */}
             {showFontToolbar && !isRecording && (
-                <div className="absolute -top-12 left-4 flex items-center gap-1 rounded-xl bg-white p-1 shadow-lg ring-1 ring-black/5 dark:bg-zinc-800 dark:ring-white/10 animate-fade-in-up">
+                <div className="absolute -top-12 left-4 z-50 flex items-center gap-1 rounded-xl bg-white p-1 shadow-lg ring-1 ring-black/5 dark:bg-zinc-800 dark:ring-white/10 animate-fade-in-up">
                     <button
                         onClick={() => toggleStyle('bold')}
                         className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${messageStyle.bold ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800/50'}`}
