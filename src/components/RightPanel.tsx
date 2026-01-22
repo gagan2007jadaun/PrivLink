@@ -54,20 +54,73 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                     <h2 className="text-lg font-bold text-zinc-900 dark:text-white text-center">{chat.name}</h2>
                     <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">@username</p>
 
-                    {/* Interest Score Badge */}
-                    <div className="mt-4 flex flex-col items-center gap-1 rounded-2xl bg-zinc-50 px-4 py-3 dark:bg-zinc-800/50">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Interest Score</span>
-                        <div className="flex items-baseline gap-1">
-                            <span
-                                className={`text-2xl font-bold transition-all duration-300 ease-out`}
-                                style={{
-                                    color: scoreColorStyle,
-                                    transform: isPulsing ? 'scale(1.03)' : 'scale(1)'
-                                }}
-                            >
-                                {score}
-                            </span>
-                            <span className="text-xs font-medium text-zinc-400 opacity-[0.35]">/100</span>
+                    {/* Interest Score Gauge */}
+                    <div className="mt-4 flex flex-col items-center justify-center relative group">
+                        <div className="relative h-32 w-32 flex items-center justify-center">
+                            {/* SVG Gauge */}
+                            <svg className="h-full w-full rotate-[-90deg]" viewBox="0 0 100 100">
+                                {/* Defs for Gradients */}
+                                <defs>
+                                    <linearGradient id="scoreGradientHigh" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stopColor="#10B981" /> {/* Emerald-500 */}
+                                        <stop offset="100%" stopColor="#34D399" /> {/* Emerald-400 */}
+                                    </linearGradient>
+                                    <linearGradient id="scoreGradientMid" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stopColor="#6366F1" /> {/* Indigo-500 */}
+                                        <stop offset="100%" stopColor="#818CF8" /> {/* Indigo-400 */}
+                                    </linearGradient>
+                                    <linearGradient id="scoreGradientLow" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stopColor="#F59E0B" /> {/* Amber-500 */}
+                                        <stop offset="100%" stopColor="#FBBF24" /> {/* Amber-400 */}
+                                    </linearGradient>
+                                </defs>
+
+                                {/* Background Circle */}
+                                <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="45"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    className="text-zinc-100 dark:text-zinc-800"
+                                    strokeWidth="8"
+                                    strokeLinecap="round"
+                                />
+
+                                {/* Progress Circle */}
+                                <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="45"
+                                    fill="none"
+                                    stroke={`url(#${score >= 80 ? 'scoreGradientHigh' : score >= 50 ? 'scoreGradientMid' : 'scoreGradientLow'})`}
+                                    strokeWidth="8"
+                                    strokeLinecap="round"
+                                    strokeDasharray="283" // 2 * pi * 45 ≈ 282.7
+                                    strokeDashoffset={283 - (283 * score) / 100}
+                                    className="transition-all duration-1000 ease-out"
+                                    style={{
+                                        filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.1))'
+                                    }}
+                                />
+                            </svg>
+
+                            {/* Center Text */}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-[-2px]">Score</span>
+                                <div className="flex items-baseline gap-0.5">
+                                    <span
+                                        className={`text-3xl font-bold transition-all duration-300 ease-out`}
+                                        style={{
+                                            color: score >= 80 ? '#10B981' : score >= 50 ? '#6366F1' : '#F59E0B',
+                                            transform: isPulsing ? 'scale(1.1)' : 'scale(1)'
+                                        }}
+                                    >
+                                        {score}
+                                    </span>
+                                    <span className="text-[10px] font-medium text-zinc-300 dark:text-zinc-600">/100</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
