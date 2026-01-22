@@ -189,13 +189,66 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
-                                                const reader = new FileReader();
-                                                reader.onload = () => {
-                                                    const bg = { type: "image", value: reader.result as string, blur: 10, intensity: 0.45 };
-                                                    localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
-                                                    onUpdateChat?.({ ...chat, chatBackground: bg as any });
+
+                                                const compressImage = (file: File): Promise<string> => {
+                                                    return new Promise((resolve, reject) => {
+                                                        const reader = new FileReader();
+                                                        reader.readAsDataURL(file);
+                                                        reader.onload = (event) => {
+                                                            const img = new Image();
+                                                            img.src = event.target?.result as string;
+                                                            img.onload = () => {
+                                                                const canvas = document.createElement('canvas');
+                                                                const MAX_WIDTH = 1280;
+                                                                const MAX_HEIGHT = 1280;
+                                                                let width = img.width;
+                                                                let height = img.height;
+
+                                                                if (width > height) {
+                                                                    if (width > MAX_WIDTH) {
+                                                                        height *= MAX_WIDTH / width;
+                                                                        width = MAX_WIDTH;
+                                                                    }
+                                                                } else {
+                                                                    if (height > MAX_HEIGHT) {
+                                                                        width *= MAX_HEIGHT / height;
+                                                                        height = MAX_HEIGHT;
+                                                                    }
+                                                                }
+
+                                                                canvas.width = width;
+                                                                canvas.height = height;
+                                                                const ctx = canvas.getContext('2d');
+                                                                ctx?.drawImage(img, 0, 0, width, height);
+
+                                                                // Compress to JPEG with 0.7 quality
+                                                                resolve(canvas.toDataURL('image/jpeg', 0.7));
+                                                            };
+                                                            img.onerror = (err) => reject(err);
+                                                        };
+                                                        reader.onerror = (err) => reject(err);
+                                                    });
                                                 };
-                                                reader.readAsDataURL(file);
+
+                                                compressImage(file)
+                                                    .then((compressedBase64) => {
+                                                        const bg = { type: "image", value: compressedBase64, blur: 10, intensity: 0.45 };
+                                                        try {
+                                                            localStorage.setItem(`chat-bg-${chat.id}`, JSON.stringify(bg));
+                                                            onUpdateChat?.({ ...chat, chatBackground: bg as any });
+                                                        } catch (error) {
+                                                            if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+                                                                alert('Image is too large to save. Please choose a smaller image.');
+                                                            } else {
+                                                                console.error("Failed to save wallpaper:", error);
+                                                                alert('Failed to save wallpaper.');
+                                                            }
+                                                        }
+                                                    })
+                                                    .catch((err) => {
+                                                        console.error("Compression failed:", err);
+                                                        alert('Failed to process image.');
+                                                    });
                                             }}
                                         />
                                     </label>
