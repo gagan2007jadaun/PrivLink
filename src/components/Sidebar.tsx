@@ -68,7 +68,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
     };
 
     return (
-        <aside className="hidden w-80 flex-col border-r border-zinc-200 bg-white/50 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50 md:flex md:m-2 md:rounded-2xl md:border md:h-[calc(100vh-16px)] overflow-hidden shadow-sm">
+        <aside className="hidden w-80 flex-col border-r border-zinc-100 bg-white/50 backdrop-blur-xl dark:border-zinc-800/50 dark:bg-zinc-900/50 md:flex md:m-2 md:rounded-2xl md:border md:h-[calc(100vh-16px)] overflow-hidden shadow-sm">
             {/* Header */}
             <div className="flex flex-col gap-4 p-4 pb-2">
                 <div className="flex items-center justify-between px-1">
