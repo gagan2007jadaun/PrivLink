@@ -5,9 +5,10 @@ interface RightPanelProps {
     chat?: Chat;
     messages?: Message[];
     onUpdateChat?: (updatedChat: Chat) => void;
+    onImageClick?: (url: string) => void;
 }
 
-export default function RightPanel({ chat, messages = [], onUpdateChat }: RightPanelProps) {
+export default function RightPanel({ chat, messages = [], onUpdateChat, onImageClick }: RightPanelProps) {
     const [isPulsing, setIsPulsing] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState<'media' | 'docs' | 'links' | 'settings'>('media');
 

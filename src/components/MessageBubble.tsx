@@ -27,6 +27,7 @@ interface MessageBubbleProps {
         mediaType?: 'image' | 'video' | 'audio';
     };
     onReplyClick?: (messageId: string) => void;
+    onImageClick?: (url: string) => void;
     onRetry?: () => void;
 }
 
@@ -45,6 +46,7 @@ export default function MessageBubble({
     style: propsStyle,
     replyTo,
     onReplyClick,
+    onImageClick,
     onRetry,
 }: MessageBubbleProps) {
     return (
@@ -82,8 +84,13 @@ export default function MessageBubble({
                     )}
 
                     {type === 'image' && (
-                        <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
-                            <img src={content} alt="Attached" className="h-full w-full object-cover transition-transform hover:scale-105" />
+                        <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900 group">
+                            <img
+                                src={content}
+                                alt="Attached"
+                                onClick={() => onImageClick?.(content)}
+                                className="h-full w-full object-cover transition-transform hover:scale-105 cursor-zoom-in"
+                            />
                         </div>
                     )}
 

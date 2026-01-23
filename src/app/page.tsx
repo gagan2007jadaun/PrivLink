@@ -54,6 +54,7 @@ function useAttention() {
 export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Initialize state from Local Storage or Mocks
   // Identity Integration
@@ -829,6 +830,7 @@ export default function Home() {
                       style={msg.style}
                       replyTo={msg.replyTo}
                       onReplyClick={scrollToMessage}
+                      onImageClick={(url) => setSelectedImage(url)}
                       onRetry={() => handleRetry(msg.id)}
                     />
                   </div>
@@ -857,12 +859,39 @@ export default function Home() {
         <RightPanel
           chat={activeChat}
           messages={messages}
+          onImageClick={(url) => setSelectedImage(url)}
           onUpdateChat={(updated) => {
             const newChats = chats.map(c => c.id === updated.id ? updated : c);
             saveChats(newChats);
             // Also update local activeChat state if needed by reference (usually covered by hook or memo but safe to rely on chats prop)
           }}
         />
+      )}
+      {/* Lightbox Overlay */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fade-in"
+          onClick={() => setSelectedImage(null)}
+        >
+          {/* Close Button */}
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 p-2 text-white/70 hover:text-white transition-colors"
+          >
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Image */}
+          <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={selectedImage}
+              alt="Full screen"
+              className="max-h-[90vh] max-w-full object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
       )}
     </div >
   );
