@@ -856,6 +856,7 @@ export default function Home() {
       {showRightPanel && activeChat && (
         <RightPanel
           chat={activeChat}
+          messages={messages}
           onUpdateChat={(updated) => {
             const newChats = chats.map(c => c.id === updated.id ? updated : c);
             saveChats(newChats);

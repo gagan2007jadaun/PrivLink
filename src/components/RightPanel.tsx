@@ -1,12 +1,13 @@
 import React from 'react';
-import { Chat } from '@/lib/data';
+import { Chat, Message } from '@/lib/data';
 
 interface RightPanelProps {
     chat?: Chat;
+    messages?: Message[];
     onUpdateChat?: (updatedChat: Chat) => void;
 }
 
-export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
+export default function RightPanel({ chat, messages = [], onUpdateChat }: RightPanelProps) {
     const [isPulsing, setIsPulsing] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState<'media' | 'docs' | 'links' | 'settings'>('media');
 
@@ -14,12 +15,19 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
 
     const score = chat.interestScore || 100;
 
+    // Derived Data
+    const sharedImages = React.useMemo(() =>
+        messages.filter(m => m.type === 'image' && m.content).reverse(),
+        [messages]);
+
     // Pulse animation on score change
     React.useEffect(() => {
         setIsPulsing(true);
         const timer = setTimeout(() => setIsPulsing(false), 300);
         return () => clearTimeout(timer);
     }, [score]);
+    // ... (lines 24-160 are mostly same, skipping to render logic)
+
 
     const getScoreColorStyle = (score: number) => {
         if (score >= 80) return 'var(--interest-high)';
@@ -159,7 +167,24 @@ export default function RightPanel({ chat, onUpdateChat }: RightPanelProps) {
                 <div className="mt-6 flex-1 min-h-0 flex flex-col">
 
                     {/* MEDIA TAB */}
-                    {activeTab === 'media' && <ProfileEmptyState type="media" />}
+                    {activeTab === 'media' && (
+                        sharedImages.length > 0 ? (
+                            <div className="grid grid-cols-3 gap-2 animate-fade-in-up">
+                                {sharedImages.map((msg) => (
+                                    <div key={msg.id} className="aspect-square relative group overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 cursor-pointer">
+                                        <img
+                                            src={msg.content}
+                                            alt="Shared media"
+                                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <ProfileEmptyState type="media" />
+                        )
+                    )}
 
                     {/* DOCS TAB */}
                     {activeTab === 'docs' && <ProfileEmptyState type="docs" />}
