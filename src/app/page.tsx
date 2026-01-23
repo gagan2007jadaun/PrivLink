@@ -56,9 +56,22 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // Initialize state from Local Storage or Mocks
   // Identity Integration
   const { updateProfile } = useSettingsStore();
+
+  // FIX: Blur input on zoom to prevent jump
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+          (active as HTMLElement).blur();
+        }
+      }
+    };
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, []);
 
   useEffect(() => {
     // Check for alias from Identity Page
@@ -789,7 +802,7 @@ export default function Home() {
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar"
+            className="chat-center relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar"
           >
             <div className="mx-auto max-w-3xl space-y-6">
 

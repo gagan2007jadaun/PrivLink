@@ -269,7 +269,7 @@ export default function MessageInput({
     const isRecording = isRecordingAudio || isRecordingVideo;
 
     return (
-        <div className="relative px-3 py-2 bg-white/65 backdrop-blur-xl dark:bg-zinc-900/75 border border-white/25 dark:border-white/10 rounded-[24px] m-[10px] shadow-[0_6px_16px_rgba(0,0,0,0.18)]">
+        <div className="chat-input relative px-3 py-2 bg-white/65 backdrop-blur-xl dark:bg-zinc-900/75 border border-white/25 dark:border-white/10 rounded-[24px] m-[10px] shadow-[0_6px_16px_rgba(0,0,0,0.18)]">
             {/* Reply Bar */}
             {replyingTo && (
                 <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-zinc-100 p-2 dark:bg-zinc-800/80 animate-fade-in-up">

@@ -133,9 +133,17 @@ body {
 
 /* Typing Indicator Dots */
 @keyframes blink {
-  0% { opacity: .2; }
-  20% { opacity: 1; }
-  100% { opacity: .2; }
+  0% {
+    opacity: .2;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: .2;
+  }
 }
 
 .typing-dot {
@@ -146,24 +154,45 @@ body {
   animation: blink 1.4s infinite both;
 }
 
-.typing-dot:nth-child(2) { animation-delay: .2s; }
-.typing-dot:nth-child(3) { animation-delay: .4s; }
+.typing-dot:nth-child(2) {
+  animation-delay: .2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: .4s;
+}
+
 /* Hide scrollbar but allow scroll */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE & Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  /* IE & Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .no-scrollbar::-webkit-scrollbar {
-  display: none;             /* Chrome, Safari */
+  display: none;
+  /* Chrome, Safari */
 }
 
 /* Dynamic Chat Background Animation */
 @keyframes slow-pan {
-  0% { background-position: 50% 50%; }
-  100% { background-position: 55% 45%; }
+  0% {
+    background-position: 50% 50%;
+  }
+
+  100% {
+    background-position: 55% 45%;
+  }
 }
 
-.chat-background-pan {
-  animation: slow-pan 40s ease-in-out infinite alternate;
+
+/* Fix Input Scroll Jumping */
+.chat-input textarea,
+.chat-input input {
+  scroll-margin: 0 !important;
+}
+
+.chat-center {
+  scroll-behavior: auto;
 }
