@@ -562,6 +562,7 @@ export default function MessageInput({
                             target.style.height = 'auto';
                             target.style.height = Math.min(target.scrollHeight, 120) + 'px';
                         }}
+                        autoFocus={false}
                         disabled={isRecording}
                         placeholder={
                             boundaryMode

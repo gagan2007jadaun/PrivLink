@@ -120,6 +120,7 @@ html,
 body {
   height: 100%;
   overflow: hidden;
+  overflow-anchor: none;
   /* Prevent scrolling on body, handle inside app */
 }
 

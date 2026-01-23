@@ -59,8 +59,11 @@ export default function Home() {
   // Identity Integration
   const { updateProfile } = useSettingsStore();
 
-  // FIX: Blur input on zoom to prevent jump
+  // FIX: Blur input on zoom to prevent jump (Refined)
+  // FIX: Blur input on zoom to prevent jump (Refined with VisualViewport)
   useEffect(() => {
+    let zoomTimeout: NodeJS.Timeout;
+
     const handleWheel = (e: WheelEvent) => {
       if (e.ctrlKey) {
         const active = document.activeElement;
@@ -69,8 +72,28 @@ export default function Home() {
         }
       }
     };
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
+
+    const handleResize = () => {
+      // If visual viewport scale > 1, it means we are zoomed in
+      if (window.visualViewport && window.visualViewport.scale > 1) {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+          (active as HTMLElement).blur();
+        }
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+    }
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+      }
+    };
   }, []);
 
   useEffect(() => {
