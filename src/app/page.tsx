@@ -569,10 +569,20 @@ export default function Home() {
 
   // Load messages when active chat changes
   useEffect(() => {
-    if (mockMessages[activeChatId]) {
-      setMessages(mockMessages[activeChatId]);
+    if (!activeChatId) return;
+
+    const storageKey = `privlink_messages_${activeChatId}`;
+    const stored = localStorage.getItem(storageKey);
+
+    if (stored) {
+      try {
+        setMessages(JSON.parse(stored));
+      } catch (e) {
+        console.error("Failed to parse messages", e);
+        setMessages(mockMessages[activeChatId] || []);
+      }
     } else {
-      setMessages([]);
+      setMessages(mockMessages[activeChatId] || []);
     }
   }, [activeChatId]);
 
@@ -641,7 +651,12 @@ export default function Home() {
         mediaType: replyingTo.mediaType
       } : undefined
     };
-    setMessages((prev) => [...prev, newMessage]);
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
+
+    // Save to LocalStorage
+    localStorage.setItem(`privlink_messages_${activeChatId}`, JSON.stringify(updatedMessages));
+
     setReplyingTo(null); // Clear reply state
 
     // UPDATE SIDEBAR ("You: ...")
