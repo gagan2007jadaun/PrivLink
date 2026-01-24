@@ -715,7 +715,14 @@ export default function Home() {
     setMessages(updatedMessages);
 
     // Save to LocalStorage
-    localStorage.setItem(`privlink_messages_${activeChatId}`, JSON.stringify(updatedMessages));
+    try {
+      localStorage.setItem(`privlink_messages_${activeChatId}`, JSON.stringify(updatedMessages));
+    } catch (e) {
+      console.error("Failed to save messages:", e);
+      if ((e as any).name === 'QuotaExceededError') {
+        alert("⚠️ Storage Limit Reached! Old messages may be lost. Please clear some chats settings.");
+      }
+    }
 
     setReplyingTo(null); // Clear reply state
 
@@ -743,7 +750,11 @@ export default function Home() {
 
     setChats(updatedChats);
     if (!isIncognito) {
-      localStorage.setItem("privlink_chats", JSON.stringify(updatedChats));
+      try {
+        localStorage.setItem("privlink_chats", JSON.stringify(updatedChats));
+      } catch (e) {
+        console.error("Failed to save chats:", e);
+      }
     }
 
 
@@ -751,7 +762,11 @@ export default function Home() {
       const updatedQueue = [...messageQueue, newMessage];
       setMessageQueue(updatedQueue);
       if (!isIncognito) {
-        localStorage.setItem('privlink_message_queue', JSON.stringify(updatedQueue));
+        try {
+          localStorage.setItem('privlink_message_queue', JSON.stringify(updatedQueue));
+        } catch (e) {
+          console.error("Failed to save queue:", e);
+        }
       }
       return; // Stop here, don't simulate network events
     }
