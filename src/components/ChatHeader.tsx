@@ -14,6 +14,7 @@ interface ChatHeaderProps {
     isScrolled?: boolean;
     isIncognito?: boolean;
     onToggleIncognito?: () => void;
+    isTyping?: boolean;
 }
 
 export default function ChatHeader({
@@ -29,7 +30,8 @@ export default function ChatHeader({
     energyBalance = 0,
     isScrolled = false,
     isIncognito = false,
-    onToggleIncognito
+    onToggleIncognito,
+    isTyping = false
 }: ChatHeaderProps) {
     const [isActive, setIsActive] = useState(false);
     const [showTrend, setShowTrend] = useState(false);
@@ -56,6 +58,11 @@ export default function ChatHeader({
     let moodText = "conversation stays steady";
     if (driftLevel === 'medium') moodText = "conversation slowing down";
     if (driftLevel === 'high') moodText = "conversation feels distant";
+
+    // Override with typing indicator
+    if (isTyping) {
+        moodText = "Ghost is typing...";
+    }
 
     // Mood Line Color (Interest Logic)
     const getMoodColor = (score: number) => {
@@ -142,51 +149,63 @@ export default function ChatHeader({
                         <span
                             className="header-title transition-colors duration-1000"
                             style={{
-                                color: 'var(--subtitle-text)',
+                                color: isTyping ? '#6366f1' : 'var(--subtitle-text)', // Indigo if typing
                                 fontSize: '11.5px',
-                                fontWeight: 400,
+                                fontWeight: isTyping ? 600 : 400,
                                 letterSpacing: '0.4px',
                             }}
                         >
                             {moodText}
                         </span>
 
-                        {/* Pace Indicator: Dot Wave */}
-                        <div className="flex space-x-[1px] h-2 items-end pb-[2px]" title="Conversation Pace">
-                            <div className="w-[2px] h-[2px] bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                            <div className="w-[2px] h-[2px] bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                        </div>
-
-                        {/* Gravity Arrow */}
-                        <span
-                            className="ml-1 text-xs text-zinc-400 opacity-60 hover:opacity-100 transition-opacity cursor-help"
-                            title={`Initiation Balance: ${gravity.replace(/-/g, ' ')}`}
-                        >
-                            {gravity === 'balanced' ? '→' : gravity === 'one-sided-me' ? '↗' : '↙'}
-                        </span>
-
-                        {/* Persona Icon (Morning/Night) */}
-                        {persona && persona !== 'balanced' && (
-                            <span
-                                className="ml-0.5 text-xs opacity-60 hover:opacity-100 transition-opacity cursor-help"
-                                title={`${name} is a ${persona} person`}
-                            >
-                                {persona === 'morning' ? '☀️' : '🌙'}
-                            </span>
+                        {isTyping && (
+                            <div className="flex space-x-[1px] h-2 items-end pb-[2px] ml-1">
+                                <div className="typing-dot" style={{ width: '3px', height: '3px', backgroundColor: '#6366f1' }}></div>
+                                <div className="typing-dot" style={{ width: '3px', height: '3px', backgroundColor: '#6366f1' }}></div>
+                                <div className="typing-dot" style={{ width: '3px', height: '3px', backgroundColor: '#6366f1' }}></div>
+                            </div>
                         )}
 
-                        {/* Energy Balance Mini-Bar */}
-                        <div
-                            className="ml-1 flex h-1.5 w-6 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700 opacity-60 hover:opacity-100 transition-opacity cursor-help"
-                            title={`Message Energy: ${energyBalance > 0 ? `You +${energyBalance}%` : `Them +${Math.abs(energyBalance)}%`}`}
-                        >
-                            {/* My Energy (Indigo) */}
-                            <div
-                                className="h-full bg-indigo-400"
-                                style={{ width: `${50 + (energyBalance / 2)}%` }} // Map -100..100 to 0..100%
-                            />
-                            {/* Their Energy (Gray/Base) - Automatically fills the rest if we just set width of first div? No, flex. */}
-                        </div>
+                        {!isTyping && (
+                            <>
+                                {/* Pace Indicator: Dot Wave */}
+                                <div className="flex space-x-[1px] h-2 items-end pb-[2px]" title="Conversation Pace">
+                                    <div className="w-[2px] h-[2px] bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                    <div className="w-[2px] h-[2px] bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                </div>
+
+                                {/* Gravity Arrow */}
+                                <span
+                                    className="ml-1 text-xs text-zinc-400 opacity-60 hover:opacity-100 transition-opacity cursor-help"
+                                    title={`Initiation Balance: ${gravity.replace(/-/g, ' ')}`}
+                                >
+                                    {gravity === 'balanced' ? '→' : gravity === 'one-sided-me' ? '↗' : '↙'}
+                                </span>
+
+                                {/* Persona Icon (Morning/Night) */}
+                                {persona && persona !== 'balanced' && (
+                                    <span
+                                        className="ml-0.5 text-xs opacity-60 hover:opacity-100 transition-opacity cursor-help"
+                                        title={`${name} is a ${persona} person`}
+                                    >
+                                        {persona === 'morning' ? '☀️' : '🌙'}
+                                    </span>
+                                )}
+
+                                {/* Energy Balance Mini-Bar */}
+                                <div
+                                    className="ml-1 flex h-1.5 w-6 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700 opacity-60 hover:opacity-100 transition-opacity cursor-help"
+                                    title={`Message Energy: ${energyBalance > 0 ? `You +${energyBalance}%` : `Them +${Math.abs(energyBalance)}%`}`}
+                                >
+                                    {/* My Energy (Indigo) */}
+                                    <div
+                                        className="h-full bg-indigo-400"
+                                        style={{ width: `${50 + (energyBalance / 2)}%` }} // Map -100..100 to 0..100%
+                                    />
+                                    {/* Their Energy (Gray/Base) - Automatically fills the rest if we just set width of first div? No, flex. */}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

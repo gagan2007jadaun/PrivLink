@@ -56,9 +56,66 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isIncognito, setIsIncognito] = useState(false);
+  const [isGhostTyping, setIsGhostTyping] = useState(false);
+  const { updateProfile, silentRead, experiments } = useSettingsStore();
 
-  // Identity Integration
-  const { updateProfile } = useSettingsStore();
+  // 🧪 Experiment: Neon Mode
+  useEffect(() => {
+    if (experiments.neonMode) {
+      document.body.classList.add('neon-mode');
+    } else {
+      document.body.classList.remove('neon-mode');
+    }
+  }, [experiments.neonMode]);
+
+  // 🧪 Experiment: Ghost Typing Simulation
+  useEffect(() => {
+    if (!experiments.ghostTyping) {
+      setIsGhostTyping(false);
+      return;
+    }
+
+    // Randomly show typing every 10-25 seconds
+    const loop = () => {
+      const delay = Math.random() * 15000 + 10000;
+      setTimeout(() => {
+        if (experiments.ghostTyping) {
+          setIsGhostTyping(true);
+          // Stop typing after 3-5 seconds
+          setTimeout(() => {
+            setIsGhostTyping(false);
+            loop(); // Schedule next
+          }, Math.random() * 2000 + 3000);
+        }
+      }, delay);
+    };
+
+    loop();
+    return () => setIsGhostTyping(false); // Cleanup isn't perfect here but good enough for experiment
+  }, [experiments.ghostTyping]);
+
+  // 🧪 Experiment: UI Sounds Helper
+  const playInteractionSound = () => {
+    if (!experiments.uiSounds) return;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      // Subtle "pop"
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } catch (e) {
+      console.error("Audio play failed", e);
+    }
+  };
 
   // FIX: Blur input on zoom to prevent jump (Refined)
   // FIX: Blur input on zoom to prevent jump (Refined with VisualViewport)
@@ -274,7 +331,6 @@ export default function Home() {
   };
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
   const [isScrolledHeader, setIsScrolledHeader] = useState(false); // Header calm-down state
-  const { silentRead } = useSettingsStore();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -633,6 +689,9 @@ export default function Home() {
   const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }) => {
     if (!activeChat) return;
 
+    // 🧪 Experiment: Play Sound
+    playInteractionSound();
+
     const newMessage: Message = {
       id: Date.now().toString(),
       type: type,
@@ -866,6 +925,7 @@ export default function Home() {
               isScrolled={isScrolledHeader}
               isIncognito={isIncognito}
               onToggleIncognito={() => setIsIncognito(!isIncognito)}
+              isTyping={isGhostTyping}
             />
           </div>
 

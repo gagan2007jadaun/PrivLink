@@ -6,6 +6,7 @@ interface UserProfile {
     username: string;
     bio: string;
     avatarUrl?: string; // Base64 or URL
+    email?: string;
 }
 
 interface SettingsState {
@@ -15,6 +16,12 @@ interface SettingsState {
     toggleSilentRead: () => void;
     profile: UserProfile;
     updateProfile: (profile: Partial<UserProfile>) => void;
+    experiments: {
+        neonMode: boolean;
+        uiSounds: boolean;
+        ghostTyping: boolean;
+    };
+    toggleExperiment: (key: 'neonMode' | 'uiSounds' | 'ghostTyping') => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -27,10 +34,22 @@ export const useSettingsStore = create<SettingsState>()(
             profile: {
                 displayName: "Guest User",
                 username: "guest_user",
-                bio: "Available"
+                bio: "Available",
+                email: ""
             },
             updateProfile: (updates) => set((state) => ({
                 profile: { ...state.profile, ...updates }
+            })),
+            experiments: {
+                neonMode: false,
+                uiSounds: false,
+                ghostTyping: false
+            },
+            toggleExperiment: (key) => set((state) => ({
+                experiments: {
+                    ...state.experiments,
+                    [key]: !state.experiments[key]
+                }
             })),
         }),
         {

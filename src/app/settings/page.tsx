@@ -9,7 +9,7 @@ import { mockChats } from "@/lib/data";
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
-    const { silentRead, toggleSilentRead, profile, updateProfile } = useSettingsStore();
+    const { silentRead, toggleSilentRead, profile, updateProfile, experiments, toggleExperiment } = useSettingsStore();
     const [mounted, setMounted] = useState(false);
 
     // Profile Edit State
@@ -177,6 +177,136 @@ export default function Settings() {
                                             />
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Account Security */}
+                        <section>
+                            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Account Security</h2>
+                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-6">
+                                {/* Email */}
+                                <div>
+                                    <label className="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Recovery Email</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="email"
+                                            value={profile.email || ""}
+                                            onChange={(e) => updateProfile({ email: e.target.value })}
+                                            placeholder="your@email.com"
+                                            className="flex-1 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:bg-zinc-900 transition-all"
+                                        />
+                                        <button className="px-4 py-2 rounded-xl bg-zinc-100 text-zinc-600 font-medium text-sm hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors">
+                                            Verify
+                                        </button>
+                                    </div>
+                                    <p className="mt-1 text-[10px] text-zinc-400">Used for account recovery only. Never shared.</p>
+                                </div>
+
+                                <div className="h-px bg-zinc-100 dark:bg-zinc-800" />
+
+                                {/* Password & 2FA */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="font-medium text-zinc-900 dark:text-white">Password</div>
+                                            <div className="text-xs text-zinc-500 dark:text-zinc-400">Last changed 3 months ago</div>
+                                        </div>
+                                        <button className="px-4 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors">
+                                            Change
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="font-medium text-zinc-900 dark:text-white">Two-Factor Authentication</div>
+                                            <div className="text-xs text-zinc-500 dark:text-zinc-400">Add an extra layer of security</div>
+                                        </div>
+                                        <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-zinc-200 transition-colors dark:bg-zinc-700">
+                                            <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+
+                        {/* Experimental Labs */}
+                        <section>
+                            <div className="mb-4 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Experimental Labs 🧪</h2>
+                                    <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">Test potential new features. These may be unstable.</p>
+                                </div>
+                            </div>
+                            <div className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white shadow-sm dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
+                                <div className="flex items-center justify-between p-4">
+                                    <div>
+                                        <div className="font-medium text-zinc-900 dark:text-white">Neon Mode</div>
+                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">Add a futuristic glow to the interface</div>
+                                    </div>
+                                    <button
+                                        onClick={() => toggleExperiment('neonMode')}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${experiments?.neonMode ? 'bg-indigo-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${experiments?.neonMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
+                                <div className="flex items-center justify-between p-4">
+                                    <div>
+                                        <div className="font-medium text-zinc-900 dark:text-white">UI Sounds</div>
+                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">Play subtle sounds for interactions</div>
+                                    </div>
+                                    <button
+                                        onClick={() => toggleExperiment('uiSounds')}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${experiments?.uiSounds ? 'bg-indigo-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${experiments?.uiSounds ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
+                                <div className="flex items-center justify-between p-4">
+                                    <div>
+                                        <div className="font-medium text-zinc-900 dark:text-white">Ghost Typing</div>
+                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">See "ghost" typing indicators (Simulated)</div>
+                                    </div>
+                                    <button
+                                        onClick={() => toggleExperiment('ghostTyping')}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${experiments?.ghostTyping ? 'bg-indigo-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${experiments?.ghostTyping ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Danger Zone */}
+                        <section>
+                            <h2 className="mb-4 text-lg font-semibold text-red-600 dark:text-red-500">Danger Zone</h2>
+                            <div className="rounded-2xl border border-red-100 bg-red-50/50 p-6 dark:border-red-900/30 dark:bg-red-900/10 dark:text-white">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <div className="font-medium text-zinc-900 dark:text-white">Log Out</div>
+                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">End your session on this device</div>
+                                    </div>
+                                    <button
+                                        onClick={() => alert("Logging out... (Simulated)")}
+                                        className="px-4 py-1.5 rounded-lg border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors shadow-sm"
+                                    >
+                                        Log Out
+                                    </button>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-medium text-red-600 dark:text-red-400">Delete Account</div>
+                                        <div className="text-xs text-red-600/70 dark:text-red-400/70">Permanently delete your account and all data</div>
+                                    </div>
+                                    <button
+                                        onClick={() => confirm("Are you sure? This action cannot be undone.") && alert("Account deletion initiated (Simulated)")}
+                                        className="px-4 py-1.5 rounded-lg bg-red-600 text-sm font-medium text-white hover:bg-red-700 shadow-sm shadow-red-500/20 transition-colors"
+                                    >
+                                        Delete Account
+                                    </button>
                                 </div>
                             </div>
                         </section>

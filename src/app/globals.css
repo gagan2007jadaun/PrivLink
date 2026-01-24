@@ -197,3 +197,28 @@ body {
 .chat-center {
   scroll-behavior: auto;
 }
+
+/* Neon Mode Experiment */
+body.neon-mode {
+  --neon-primary: #0ff;
+  --neon-secondary: #f0f;
+  --neon-glow: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+body.neon-mode .bg-white\/50,
+body.neon-mode .dark\:bg-zinc-900\/50 {
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.05), 0 0 15px rgba(0, 255, 255, 0.1);
+}
+
+body.neon-mode .chat-input textarea {
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+  border-color: rgba(0, 255, 255, 0.4);
+}
+
+body.neon-mode h1,
+body.neon-mode h2,
+body.neon-mode h3 {
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+  color: #fff !important;
+}
