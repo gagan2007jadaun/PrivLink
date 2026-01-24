@@ -54,6 +54,21 @@ export const useSettingsStore = create<SettingsState>()(
         }),
         {
             name: 'settings-storage',
+            storage: {
+                getItem: (name) => {
+                    const str = localStorage.getItem(name);
+                    return str ? JSON.parse(str) : null;
+                },
+                setItem: (name, value) => {
+                    try {
+                        localStorage.setItem(name, JSON.stringify(value));
+                    } catch (e) {
+                        console.error("Settings storage failed:", e);
+                        // Optional: alert user if critical settings fail
+                    }
+                },
+                removeItem: (name) => localStorage.removeItem(name),
+            },
         }
     )
 );
