@@ -18,6 +18,7 @@ interface MessageInputProps {
     selfAlias?: string;
     replyingTo?: { sender: string; text: string; mediaType?: string } | null;
     onCancelReply?: () => void;
+    isIncognito?: boolean;
 }
 
 export default function MessageInput({
@@ -26,7 +27,8 @@ export default function MessageInput({
     recentMessages = [],
     selfAlias,
     replyingTo,
-    onCancelReply
+    onCancelReply,
+    isIncognito = false
 }: MessageInputProps) {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [message, setMessage] = useState("");
@@ -269,7 +271,7 @@ export default function MessageInput({
     const isRecording = isRecordingAudio || isRecordingVideo;
 
     return (
-        <div className="chat-input relative px-3 py-2 bg-white/65 backdrop-blur-xl dark:bg-zinc-900/75 border border-white/25 dark:border-white/10 rounded-[24px] m-[10px] shadow-[0_6px_16px_rgba(0,0,0,0.18)]">
+        <div className={`chat-input relative px-3 py-2 border rounded-[24px] m-[10px] shadow-[0_6px_16px_rgba(0,0,0,0.18)] transition-colors duration-300 ${isIncognito ? 'bg-zinc-800 border-zinc-700' : 'bg-white/65 backdrop-blur-xl dark:bg-zinc-900/75 border-white/25 dark:border-white/10'}`}>
             {/* Reply Bar */}
             {replyingTo && (
                 <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-zinc-100 p-2 dark:bg-zinc-800/80 animate-fade-in-up">
@@ -565,15 +567,17 @@ export default function MessageInput({
                         autoFocus={false}
                         disabled={isRecording}
                         placeholder={
-                            boundaryMode
-                                ? "Type privately..."
-                                : isRecording
-                                    ? ""
-                                    : selfAlias
-                                        ? `Message as ${selfAlias}...`
-                                        : "Type a message..."
+                            isIncognito
+                                ? "Message (Incognito)..."
+                                : boundaryMode
+                                    ? "Type privately..."
+                                    : isRecording
+                                        ? ""
+                                        : selfAlias
+                                            ? `Message as ${selfAlias}...`
+                                            : "Type a message..."
                         }
-                        className={`w-full bg-transparent text-sm font-medium text-zinc-900 placeholder:text-zinc-500 focus:outline-none dark:text-zinc-100 disabled:opacity-50 resize-none overflow-y-auto no-scrollbar transition-[height] duration-150 ease-out leading-[1.4] caret-indigo-500`}
+                        className={`w-full bg-transparent text-sm font-medium ${isIncognito ? 'text-zinc-200 placeholder:text-zinc-400' : 'text-zinc-900 placeholder:text-zinc-500 dark:text-zinc-100'} focus:outline-none disabled:opacity-50 resize-none overflow-y-auto no-scrollbar transition-[height] duration-150 ease-out leading-[1.4] caret-indigo-500`}
                         style={{
                             fontWeight: messageStyle.bold ? 700 : 400,
                             fontStyle: messageStyle.italic ? 'italic' : 'normal',

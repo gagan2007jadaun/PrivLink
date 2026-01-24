@@ -55,6 +55,7 @@ export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isIncognito, setIsIncognito] = useState(false);
 
   // Identity Integration
   const { updateProfile } = useSettingsStore();
@@ -663,9 +664,10 @@ export default function Home() {
     const updatedChats = chats.map(c => {
       if (c.id === activeChatId) {
         let preview = content;
-        if (type === 'image') preview = '📷 Photo';
-        if (type === 'video') preview = '📹 Video';
-        if (type === 'audio') preview = '🎤 Audio';
+        if (isIncognito) preview = '🔒 Incognito Message';
+        else if (type === 'image') preview = '📷 Photo';
+        else if (type === 'video') preview = '📹 Video';
+        else if (type === 'audio') preview = '🎤 Audio';
 
         return {
           ...c,
@@ -681,13 +683,17 @@ export default function Home() {
     updatedChats.sort((a, b) => a.id === activeChatId ? -1 : b.id === activeChatId ? 1 : 0);
 
     setChats(updatedChats);
-    localStorage.setItem("privlink_chats", JSON.stringify(updatedChats));
+    if (!isIncognito) {
+      localStorage.setItem("privlink_chats", JSON.stringify(updatedChats));
+    }
 
 
     if (!isOnline) {
       const updatedQueue = [...messageQueue, newMessage];
       setMessageQueue(updatedQueue);
-      localStorage.setItem('privlink_message_queue', JSON.stringify(updatedQueue));
+      if (!isIncognito) {
+        localStorage.setItem('privlink_message_queue', JSON.stringify(updatedQueue));
+      }
       return; // Stop here, don't simulate network events
     }
 
@@ -858,6 +864,8 @@ export default function Home() {
               persona={activeChat.persona}
               energyBalance={activeChat.energyBalance}
               isScrolled={isScrolledHeader}
+              isIncognito={isIncognito}
+              onToggleIncognito={() => setIsIncognito(!isIncognito)}
             />
           </div>
 
@@ -921,6 +929,7 @@ export default function Home() {
             <MessageInput
               onSendMessage={handleSendMessage}
               boundaryMode={activeChat.boundaryMode}
+              isIncognito={isIncognito}
               recentMessages={messages.filter(m => m.isMe).slice(-5).map(m => m.content || "")}
               selfAlias={activeChat.selfAlias}
               replyingTo={replyingTo}

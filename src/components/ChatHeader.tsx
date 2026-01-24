@@ -12,6 +12,8 @@ interface ChatHeaderProps {
     persona?: 'morning' | 'night' | 'balanced';
     energyBalance?: number; // -100 to 100
     isScrolled?: boolean;
+    isIncognito?: boolean;
+    onToggleIncognito?: () => void;
 }
 
 export default function ChatHeader({
@@ -25,7 +27,9 @@ export default function ChatHeader({
     gravity = 'balanced',
     persona,
     energyBalance = 0,
-    isScrolled = false
+    isScrolled = false,
+    isIncognito = false,
+    onToggleIncognito
 }: ChatHeaderProps) {
     const [isActive, setIsActive] = useState(false);
     const [showTrend, setShowTrend] = useState(false);
@@ -96,18 +100,27 @@ export default function ChatHeader({
                 style={{ background: accentGradient }}
             />
 
+            {/* Incognito Indicator Overlay */}
+            {isIncognito && (
+                <div className="absolute inset-0 z-0 bg-zinc-900/90 backdrop-blur-md pointer-events-none transition-opacity duration-500" />
+            )}
+
             <div className="relative z-10 flex items-center gap-4">
                 <div className="relative cursor-pointer" onClick={handleInterestClick}>
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-sm font-bold text-white shadow-md ring-2 ring-white dark:ring-zinc-900 transition-transform hover:scale-105">
-                        {showTrend ? (
-                            <span className="text-lg">
-                                {interestTrend === 'rising' ? '↑' : interestTrend === 'falling' ? '↓' : '→'}
-                            </span>
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white shadow-md ring-2 ring-white dark:ring-zinc-900 transition-transform hover:scale-105 ${isIncognito ? 'bg-zinc-800' : 'bg-linear-to-tr from-purple-400 to-indigo-500'}`}>
+                        {isIncognito ? (
+                            <span className="text-xl">🕵️‍♂️</span>
                         ) : (
-                            avatarUrl ? (
-                                <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover" />
+                            showTrend ? (
+                                <span className="text-lg">
+                                    {interestTrend === 'rising' ? '↑' : interestTrend === 'falling' ? '↓' : '→'}
+                                </span>
                             ) : (
-                                name.slice(0, 2).toUpperCase()
+                                avatarUrl ? (
+                                    <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover" />
+                                ) : (
+                                    name.slice(0, 2).toUpperCase()
+                                )
                             )
                         )}
                     </div>
@@ -179,6 +192,15 @@ export default function ChatHeader({
             </div>
 
             <div className="relative z-10 flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
+                {/* Incognito Toggle */}
+                <button
+                    onClick={onToggleIncognito}
+                    className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${isIncognito ? 'bg-zinc-800 text-white shadow-inner ring-1 ring-white/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                    title={isIncognito ? "Disable Incognito Mode" : "Enable Incognito Mode"}
+                >
+                    <span className="text-lg">🕵️‍♂️</span>
+                </button>
+
                 {/* Search Button */}
                 <button className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 hover:text-indigo-600 dark:hover:bg-zinc-800">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
