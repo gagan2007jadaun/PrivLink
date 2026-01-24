@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id          String    @id @default(uuid())
+  username    String    @unique
+  displayName String?
+  email       String?   @unique
+  avatarUrl   String?
+  bio         String?
+  isOnline    Boolean   @default(false)
+  lastSeen    DateTime  @default(now())
+  
+  status      String    @default("offline") // online, busy, away
+
+  // Relations
+  messages    Message[]
+  chats       Chat[]    @relation("ChatParticipants")
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Chat {
+  id              String    @id @default(uuid())
+  name            String?
+  isGroup         Boolean   @default(false)
+  icon            String?
+  
+  // Settings
+  wallpaper       String? // Base64 or URL
+  wallpaperType   String? // image, texture
+  wallpaperBlur   Int     @default(0)
+  themeColor      String?
+  
+  // Privacy
+  isLocked        Boolean @default(false)
+  isIncognito     Boolean @default(false)
+  boundaryMode    Boolean @default(false)
+  
+  // Participants
+  participants    User[]  @relation("ChatParticipants")
+  
+  // Messages
+  messages        Message[]
+
+  lastMessage     String?
+  lastMessageTime DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  content         String
+  type            String   @default("text") // text, image, video, audio
+  
+  // Media Utils
+  mediaUrl        String?
+  thumbnailUrl    String?
+  duration        Int?     @default(0)
+  
+  // Style
+  fontStyle       String? // JSON string for bold, italic etc.
+  
+  senderId        String
+  sender          User     @relation(fields: [senderId], references: [id])
+  
+  chatId          String
+  chat            Chat     @relation(fields: [chatId], references: [id])
+  
+  // Status
+  status          String   @default("sent") // sent, delivered, read
+  readBy          String?  // JSON array of user IDs
+  
+  createdAt       DateTime @default(now())
+}

@@ -51,6 +51,8 @@ function useAttention() {
   return isAttentionActive;
 }
 
+import { useSocket } from "@/hooks/useSocket";
+
 export default function Home() {
   const [showRightPanel, setShowRightPanel] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
@@ -58,6 +60,8 @@ export default function Home() {
   const [isIncognito, setIsIncognito] = useState(false);
   const [isGhostTyping, setIsGhostTyping] = useState(false);
   const { updateProfile, silentRead, experiments } = useSettingsStore();
+
+
 
   // 🧪 Experiment: Neon Mode
   useEffect(() => {
@@ -220,6 +224,33 @@ export default function Home() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Socket Integration
+  const { socket, isConnected } = useSocket();
+
+  // Join Chat Room
+  useEffect(() => {
+    if (socket && activeChatId) {
+      socket.emit('join_chat', activeChatId);
+    }
+  }, [socket, activeChatId]);
+
+  // Listen for Messages
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('receive_message', (data: Message) => {
+      // Only append if it's the current chat to avoid pollution
+      setMessages((prev) => {
+        if (prev.some(m => m.id === data.id)) return prev;
+        return [...prev, data];
+      });
+    });
+
+    return () => {
+      socket.off('receive_message');
+    };
+  }, [socket, activeChatId]);
 
   // Load Chats on Mount
   useEffect(() => {
