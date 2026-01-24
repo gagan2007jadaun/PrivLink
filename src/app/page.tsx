@@ -644,6 +644,31 @@ export default function Home() {
     setMessages((prev) => [...prev, newMessage]);
     setReplyingTo(null); // Clear reply state
 
+    // UPDATE SIDEBAR ("You: ...")
+    const updatedChats = chats.map(c => {
+      if (c.id === activeChatId) {
+        let preview = content;
+        if (type === 'image') preview = '📷 Photo';
+        if (type === 'video') preview = '📹 Video';
+        if (type === 'audio') preview = '🎤 Audio';
+
+        return {
+          ...c,
+          lastMessage: `You: ${preview}`,
+          time: 'Just now',
+          unreadCount: 0
+        };
+      }
+      return c;
+    });
+
+    // Sort active chat to top
+    updatedChats.sort((a, b) => a.id === activeChatId ? -1 : b.id === activeChatId ? 1 : 0);
+
+    setChats(updatedChats);
+    localStorage.setItem("privlink_chats", JSON.stringify(updatedChats));
+
+
     if (!isOnline) {
       const updatedQueue = [...messageQueue, newMessage];
       setMessageQueue(updatedQueue);
