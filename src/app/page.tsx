@@ -325,8 +325,16 @@ export default function Home() {
       localStorage.setItem("privlink_chats", JSON.stringify(optimizedChats));
     } catch (e) {
       console.error("Critical: Failed to save chats to localStorage", e);
-      // Fallback: Notify user or attempt to clear old backgrounds? 
-      // For now, we log to prevent secondary crashes.
+      if ((e as any).name === 'QuotaExceededError') {
+        // Debounce alert or just log, but here we alert once
+        if (!document.querySelector('.quota-alert')) {
+          const div = document.createElement('div');
+          div.className = 'quota-alert fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-[9999]';
+          div.innerText = '⚠️ Storage Full. Changes not saved.';
+          document.body.appendChild(div);
+          setTimeout(() => div.remove(), 3000);
+        }
+      }
     }
   };
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
