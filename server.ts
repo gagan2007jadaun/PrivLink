@@ -1,7 +1,9 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { parse } from 'url';
+import express, { Request, Response } from 'express';
 import next from 'next';
 import { Server, Socket } from "socket.io";
+import { createServer } from 'http';
+import { parse } from 'url';
+import backendRoutes from './src/backend';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -11,21 +13,10 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-    const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-        try {
-            // Be sure to pass `true` as the second argument to `url.parse`.
-            // This tells it to parse the query portion of the URL.
-            const parsedUrl = parse(req.url!, true);
-            const { pathname, query } = parsedUrl;
+    const expressApp = express();
+    const server = createServer(expressApp);
 
-            await handle(req, res, parsedUrl);
-        } catch (err) {
-            console.error('Error occurred handling', req.url, err);
-            res.statusCode = 500;
-            res.end('internal server error');
-        }
-    });
-
+    // Socket.io Setup
     const io = new Server(server, {
         path: '/api/socket/io',
         addTrailingSlash: false,
@@ -40,8 +31,6 @@ app.prepare().then(() => {
         });
 
         socket.on('send_message', (data: any) => {
-            // Broadcast to specific room (excluding sender if needed, but usually include)
-            // For now, we broadcast to everyone in room including sender for simplicity or sync
             if (data.chatId) {
                 io.to(data.chatId).emit('receive_message', data);
             }
@@ -59,8 +48,19 @@ app.prepare().then(() => {
         });
     });
 
-    server.listen(port, (err?: Error) => {
-        if (err) throw err;
+    // Middleware
+    expressApp.use(express.json());
+
+    // API Routes
+    expressApp.use('/api', backendRoutes);
+
+    // Next.js Handler (Catch-all)
+    expressApp.all(/(.*)/, (req: Request, res: Response) => {
+        const parsedUrl = parse(req.url, true);
+        return handle(req, res, parsedUrl);
+    });
+
+    server.listen(port, () => {
         console.log(`> Ready on http://${hostname}:${port}`);
         console.log(`> Socket.io ready on /api/socket/io`);
     });

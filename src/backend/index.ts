@@ -1,7 +1,9 @@
-// Backend Entry Point
-// Export your controllers, services, and middlewares from here or use this as a central router.
+import { Router } from 'express';
+import testRoutes from './routes/testRoutes';
 
-export const backendInfo = {
-    version: "1.0.0",
-    status: "initialized"
-};
+const router = Router();
+
+// Mount routes
+router.use('/v1', testRoutes);
+
+export default router;
