@@ -6,7 +6,7 @@ export const getMessages = async (req: Request, res: Response) => {
     try {
         const { chatId } = req.params;
         const messages = await prisma.message.findMany({
-            where: { chatId },
+            where: { chatId: chatId as string },
             orderBy: { createdAt: 'asc' },
             include: { sender: true }
         });
