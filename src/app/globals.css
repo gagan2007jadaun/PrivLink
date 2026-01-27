@@ -119,7 +119,7 @@
 html,
 body {
   height: 100%;
-  overflow: hidden;
+  /* overflow: hidden; -- Removed to allow Landing Page scrolling */
   overflow-anchor: none;
   /* Prevent scrolling on body, handle inside app */
 }
