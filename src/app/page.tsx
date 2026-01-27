@@ -35,7 +35,7 @@ export default function LandingPage() {
           <a href="#about" className="hover:text-white transition-colors">About</a>
         </div>
         <Link
-          href="/chat"
+          href="/auth"
           className="group relative px-5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-full text-sm font-medium transition-all hover:bg-zinc-800 hover:border-zinc-700 hover:shadow-lg hover:shadow-indigo-500/10 overflow-hidden"
         >
           <span className="relative z-10 bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent group-hover:to-white transition-all">
@@ -79,7 +79,7 @@ export default function LandingPage() {
         {/* CTA Buttons */}
         <div className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 delay-300 transform ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <Link
-            href="/chat"
+            href="/auth"
             className="w-full sm:w-auto px-8 py-4 bg-white text-black rounded-xl font-bold text-lg hover:bg-zinc-200 hover:scale-105 transition-all duration-300 shadow-xl shadow-white/5 active:scale-95"
           >
             Start Chatting Now
