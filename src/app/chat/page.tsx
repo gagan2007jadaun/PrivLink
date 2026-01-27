@@ -252,78 +252,48 @@ export default function Home() {
     };
   }, [socket, activeChatId]);
 
-  // Load Chats on Mount
+  // Load Chats from API
   useEffect(() => {
-    const storedChats = localStorage.getItem("privlink_chats");
-    if (storedChats) {
+    const fetchChats = async () => {
       try {
-        const parsed = JSON.parse(storedChats) as Chat[];
+        const res = await fetch('/api/chats?userId=' + (sessionStorage.getItem("alias") || "anon"));
+        if (!res.ok) throw new Error("Failed to load chats");
+        const data = await res.json();
 
-        // Restore background data from individual keys
-        const chatsWithBg = parsed.map(chat => {
-          const bgKey = `chat-bg-${chat.id}`;
-          const storedBg = localStorage.getItem(bgKey);
-          if (storedBg) {
-            try {
-              return { ...chat, chatBackground: JSON.parse(storedBg) };
-            } catch (e) {
-              console.error(`Failed to parse background for chat ${chat.id}`, e);
-            }
-          }
-          return chat;
-        });
-
-        setChats(chatsWithBg);
-        if (chatsWithBg.length > 0) setActiveChatId(chatsWithBg[0].id);
+        if (data && data.length > 0) {
+          setChats(data);
+          setActiveChatId(data[0].id);
+        } else {
+          // Auto-create default chat if none exist
+          const createRes = await fetch('/api/chats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'General', isGroup: true })
+          });
+          const newChat = await createRes.json();
+          setChats([newChat]);
+          setActiveChatId(newChat.id);
+        }
       } catch (e) {
-        console.error("Failed to parse chats", e);
+        console.error("API Error (Chats):", e);
+        // Fallback to mock for smooth failure
         setChats(mockChats);
         setActiveChatId(mockChats[0].id);
       }
-    } else {
-      setChats(mockChats);
-      setActiveChatId(mockChats[0].id);
-      try {
-        localStorage.setItem("privlink_chats", JSON.stringify(mockChats));
-      } catch (e) { console.error("Initial save failed", e); }
-    }
+    };
+
+    fetchChats();
   }, []);
 
   // Network Status & Queue Processing
   useEffect(() => {
     // 1. Initial State
     setIsOnline(navigator.onLine);
-    const storedQueue = localStorage.getItem('privlink_message_queue');
-    if (storedQueue) {
-      try {
-        setMessageQueue(JSON.parse(storedQueue));
-      } catch (e) { console.error(e); }
-    }
 
     // 2. Listeners
     const handleOnline = () => {
       setIsOnline(true);
-      // Process Queue
-      const currentQueue = JSON.parse(localStorage.getItem('privlink_message_queue') || '[]');
-      if (currentQueue.length > 0) {
-        console.log("Restored connection. Sending queue:", currentQueue.length);
-
-        // Simulate sequential sending
-        currentQueue.forEach((msg: Message, i: number) => {
-          setTimeout(() => {
-            setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'sent' } : m));
-
-            // Trigger delivery simulation (Simplified)
-            setTimeout(() => {
-              setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m));
-            }, 1500);
-          }, i * 300);
-        });
-
-        // Clear Queue
-        setMessageQueue([]);
-        localStorage.removeItem('privlink_message_queue');
-      }
+      // Queue processing removed for ephemeral mode
     };
 
     const handleOffline = () => setIsOnline(false);
@@ -339,34 +309,7 @@ export default function Home() {
 
   const saveChats = (updatedChats: Chat[]) => {
     setChats(updatedChats);
-
-    // Strip large base64 data for main storage to avoid QuotaExceededError
-    const optimizedChats = updatedChats.map(chat => {
-      if (chat.chatBackground?.type === 'image' && chat.chatBackground.value.startsWith('data:')) {
-        // We only save the metadata, the actual base64 is already in its own key via RightPanel.tsx
-        return {
-          ...chat,
-          chatBackground: { ...chat.chatBackground, value: "[DECOUPLED_DATA_URL]" }
-        };
-      }
-      return chat;
-    });
-
-    try {
-      localStorage.setItem("privlink_chats", JSON.stringify(optimizedChats));
-    } catch (e) {
-      console.error("Critical: Failed to save chats to localStorage", e);
-      if ((e as any).name === 'QuotaExceededError') {
-        // Debounce alert or just log, but here we alert once
-        if (!document.querySelector('.quota-alert')) {
-          const div = document.createElement('div');
-          div.className = 'quota-alert fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-[9999]';
-          div.innerText = '⚠️ Storage Full. Changes not saved.';
-          document.body.appendChild(div);
-          setTimeout(() => div.remove(), 3000);
-        }
-      }
-    }
+    // Persistence removed
   };
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
   const [isScrolledHeader, setIsScrolledHeader] = useState(false); // Header calm-down state
@@ -663,23 +606,23 @@ export default function Home() {
     }
   }, [activeChatId, isScrolledBottom]);
 
-  // Load messages when active chat changes
+  // Load messages from API when active chat changes
   useEffect(() => {
     if (!activeChatId) return;
 
-    const storageKey = `privlink_messages_${activeChatId}`;
-    const stored = localStorage.getItem(storageKey);
-
-    if (stored) {
+    const fetchMessages = async () => {
       try {
-        setMessages(JSON.parse(stored));
+        const res = await fetch(`/api/messages/${activeChatId}`);
+        if (!res.ok) throw new Error("Failed to load messages");
+        const data = await res.json();
+        setMessages(data);
       } catch (e) {
-        console.error("Failed to parse messages", e);
-        setMessages(mockMessages[activeChatId] || []);
+        console.error("API Error (Messages):", e);
+        setMessages([]);
       }
-    } else {
-      setMessages(mockMessages[activeChatId] || []);
-    }
+    };
+
+    fetchMessages();
   }, [activeChatId]);
 
   const scrollToBottom = () => {
@@ -753,15 +696,19 @@ export default function Home() {
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);
 
-    // Save to LocalStorage
-    try {
-      localStorage.setItem(`privlink_messages_${activeChatId}`, JSON.stringify(updatedMessages));
-    } catch (e) {
-      console.error("Failed to save messages:", e);
-      if ((e as any).name === 'QuotaExceededError') {
-        alert("⚠️ Storage Limit Reached! Old messages may be lost. Please clear some chats settings.");
-      }
-    }
+    // Save to Database
+    fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content,
+        chatId: activeChatId,
+        senderId: sessionStorage.getItem("alias") || "Anonymous", // Sending Alias as ID for our lazy controller
+        type,
+        mediaUrl: thumbnailUrl
+      })
+    }).catch(err => console.error("Failed to save message to DB", err));
+
 
     setReplyingTo(null); // Clear reply state
 
@@ -788,13 +735,7 @@ export default function Home() {
     updatedChats.sort((a, b) => a.id === activeChatId ? -1 : b.id === activeChatId ? 1 : 0);
 
     setChats(updatedChats);
-    if (!isIncognito) {
-      try {
-        localStorage.setItem("privlink_chats", JSON.stringify(updatedChats));
-      } catch (e) {
-        console.error("Failed to save chats:", e);
-      }
-    }
+    // Chat persistence removed
 
 
     if (!isOnline) {
