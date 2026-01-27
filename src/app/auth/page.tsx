@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 type AuthMode = 'signin' | 'signup';
 
@@ -95,8 +96,8 @@ export default function AuthPage() {
                     <div className="p-8">
                         {/* Header */}
                         <div className="text-center mb-8">
-                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/20 mb-4 shadow-lg shadow-indigo-500/5">
-                                <span className="font-bold text-indigo-400 text-lg">P</span>
+                            <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
+                                <Image src="/logo.png" alt="PrivLink Logo" width={64} height={64} className="object-contain" />
                             </div>
                             <h1 className="text-xl font-semibold tracking-tight text-white">PrivLink ID</h1>
                         </div>

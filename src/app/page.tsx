@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function LandingPage() {
@@ -24,9 +25,7 @@ export default function LandingPage() {
       {/* Navbar */}
       <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <span className="font-bold text-white text-lg">P</span>
-          </div>
+          <Image src="/logo.png" alt="PrivLink Logo" width={32} height={32} className="w-8 h-8 object-contain" />
           <span className="font-bold text-xl tracking-tight">PrivLink</span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
