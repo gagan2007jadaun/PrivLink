@@ -81,9 +81,11 @@ export default function ChatHeader({
     // Scroll Awareness & Micro-Motion Styles
     const containerStyle = {
         backgroundColor: 'var(--header-bg)',
+        backdropFilter: 'var(--glass-blur)',
+        WebkitBackdropFilter: 'var(--glass-blur)', // Safari support
         borderBottom: `1px solid var(--header-border)`,
         boxShadow: isScrolled ? '0 1px 2px rgba(0,0,0,0.02)' : 'var(--header-shadow)', // Calm down shadow on scroll
-        opacity: isScrolled ? 0.96 : 1, // Calm down opacity
+        zIndex: 40,
     };
 
     return (

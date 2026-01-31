@@ -836,7 +836,7 @@ export default function Home() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans">
+    <div className="flex h-screen w-full overflow-hidden bg-transparent text-zinc-900 dark:text-zinc-100 font-sans">
       {/* Left Sidebar */}
       <Sidebar
         chats={chats}
@@ -864,10 +864,7 @@ export default function Home() {
             }
           }}
           style={{
-            backgroundColor:
-              activeChat.driftLevel === 'high' ? '#F4F4F5' : // Cold
-                activeChat.driftLevel === 'medium' ? '#FAFAFA' : // Neutral
-                  '#fdfbf7' // Warm tint (Cream)
+            backgroundColor: 'transparent' // Let the wallpaper/global background handle it
           }}
         >
           {/* Dynamic Wallpaper Layer (Z-0) */}

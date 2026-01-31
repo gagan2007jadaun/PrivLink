@@ -271,7 +271,7 @@ export default function MessageInput({
     const isRecording = isRecordingAudio || isRecordingVideo;
 
     return (
-        <div className={`chat-input relative px-3 py-2 border rounded-[24px] m-[10px] shadow-[0_6px_16px_rgba(0,0,0,0.18)] transition-colors duration-300 ${isIncognito ? 'bg-zinc-800 border-zinc-700' : 'bg-white/65 backdrop-blur-xl dark:bg-zinc-900/75 border-white/25 dark:border-white/10'}`}>
+        <div className={`chat-input relative px-3 py-2 border rounded-[24px] m-[10px] shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] transition-colors duration-300 ${isIncognito ? 'bg-zinc-800 border-zinc-700' : 'bg-white/40 backdrop-blur-xl dark:bg-black/40 border-white/20 dark:border-white/10'}`}>
             {/* Reply Bar */}
             {replyingTo && (
                 <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-zinc-100 p-2 dark:bg-zinc-800/80 animate-fade-in-up">

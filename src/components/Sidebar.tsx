@@ -68,7 +68,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
     };
 
     return (
-        <aside className="hidden w-80 flex-col border-r border-zinc-100 bg-white/50 backdrop-blur-xl dark:border-zinc-800/50 dark:bg-zinc-900/50 md:flex md:m-2 md:rounded-2xl md:border md:h-[calc(100vh-16px)] overflow-hidden shadow-sm">
+        <aside className="hidden w-80 flex-col border-r border-white/20 bg-white/40 backdrop-blur-xl dark:border-white/10 dark:bg-black/40 md:flex md:m-3 md:rounded-3xl md:border md:h-[calc(100vh-24px)] overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]">
             {/* Header */}
             <div className="flex flex-col gap-4 p-4 pb-2">
                 <div className="flex items-center justify-between px-1">
@@ -98,7 +98,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                             placeholder="Search messages..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full rounded-xl border-none bg-zinc-100 py-2 pl-9 pr-4 text-sm font-medium text-zinc-900 transition-all placeholder:text-zinc-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:bg-zinc-800 md:text-sm"
+                            className="w-full rounded-xl border-none bg-black/5 py-2 pl-9 pr-4 text-sm font-medium text-zinc-900 transition-all placeholder:text-zinc-500 focus:bg-white/50 focus:ring-2 focus:ring-indigo-500/20 dark:bg-white/10 dark:text-zinc-100 dark:focus:bg-black/40 md:text-sm"
                         />
                     </div>
                     {/* Search Filters */}
@@ -138,7 +138,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
             <div className="flex items-center gap-2 overflow-x-auto overflow-y-hidden no-scrollbar px-2 pb-2">
                 <button
                     onClick={() => setActiveFilter(FILTER_ALL)}
-                    className={`whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-bold transition-all ${activeFilter === FILTER_ALL ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md transform scale-105' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 bg-white/50 dark:bg-zinc-800/50'}`}
+                    className={`whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-bold transition-all ${activeFilter === FILTER_ALL ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-md transform scale-105' : 'text-zinc-600 hover:bg-white/50 dark:text-zinc-300 dark:hover:bg-white/10 bg-white/20 dark:bg-white/5'}`}
                 >
                     All
                 </button>
@@ -183,8 +183,8 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
             </div>
 
             {/* Footer CTA */}
-            <div className="flex gap-2 border-t border-zinc-200 p-4 dark:border-zinc-800">
-                <Link href="/settings" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 shadow-sm transition-all hover:bg-zinc-50 hover:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700">
+            <div className="flex gap-2 border-t border-white/10 p-4 dark:border-white/5">
+                <Link href="/settings" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/50 text-zinc-500 shadow-sm transition-all hover:bg-white hover:text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400 dark:hover:bg-white/10">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
