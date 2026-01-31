@@ -133,19 +133,7 @@ export default function RightPanel({ chat, messages = [], onUpdateChat, onImageC
                         </div>
                     </div>
 
-                    {/* Curiosity Index */}
-                    <div className="mt-2 flex w-full items-center justify-between rounded-xl bg-zinc-50 px-4 py-3 dark:bg-zinc-800/50">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Curiosity</span>
-                        <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-                                <div
-                                    className="h-full bg-indigo-500 transition-all duration-500"
-                                    style={{ width: `${chat.mutualCuriosity || 0}%` }}
-                                />
-                            </div>
-                            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{chat.mutualCuriosity || 0}%</span>
-                        </div>
-                    </div>
+
 
                     {/* Tab Navigation */}
                     <div className="mt-6 flex w-full gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">

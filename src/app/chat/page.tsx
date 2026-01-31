@@ -550,18 +550,12 @@ export default function Home() {
       // Map 10 chars -> 10 weight, 200 chars -> 100 weight
       const computedWeight = Math.min(100, Math.max(10, Math.round((avgLen / 150) * 100)));
 
-      // 5. Mutual Curiosity (Question Frequency)
-      const questionCount = messages.filter(m => (m.content || "").includes('?')).length;
-      // Heuristic: 20% questions = 100 score. (1 in 5)
-      const computedCuriosity = Math.min(100, Math.round((questionCount / (messages.length || 1)) * 500));
-
       return {
         ...chat,
         gravity: computedGravity,
         persona: computedPersona,
         energyBalance: computedEnergy,
-        conversationWeight: computedWeight,
-        mutualCuriosity: computedCuriosity
+        conversationWeight: computedWeight
       };
     }
 
