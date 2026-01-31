@@ -50,15 +50,15 @@ export default function MessageBubble({
     onRetry,
 }: MessageBubbleProps) {
     return (
-        <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
-            <div className={`relative max-w-[70%] sm:max-w-[65%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+        <div className={`flex w-full ${isMe ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
+            <div className={`relative max-w-[70%] sm:max-w-[65%] ${isMe ? 'items-start' : 'items-end'} flex flex-col gap-1`}>
 
                 {/* Main Bubble */}
                 <div
                     className={`relative px-5 py-3 text-sm overflow-visible transition-all duration-300
           ${isMe
-                            ? 'rounded-[26px] rounded-tr-lg bg-linear-to-tr from-indigo-500 via-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 selection:bg-indigo-800 selection:text-indigo-100'
-                            : 'rounded-[26px] rounded-tl-lg bg-white/90 backdrop-blur-sm text-zinc-900 shadow-md shadow-zinc-200/50 dark:bg-zinc-800/90 dark:text-zinc-100 dark:shadow-zinc-900/50'
+                            ? 'rounded-[26px] rounded-tl-lg bg-linear-to-tr from-indigo-500 via-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 selection:bg-indigo-800 selection:text-indigo-100'
+                            : 'rounded-[26px] rounded-tr-lg bg-white/90 backdrop-blur-sm text-zinc-900 shadow-md shadow-zinc-200/50 dark:bg-zinc-800/90 dark:text-zinc-100 dark:shadow-zinc-900/50'
                         }
           ${type !== 'text' ? 'p-1.5' : ''}
           ${confidenceScore !== undefined ? (confidenceScore < 70 ? 'border-b-[3px] border-dotted border-white/40' : 'border-b-[3px] border-solid border-white/20') : ''}
@@ -115,7 +115,7 @@ export default function MessageBubble({
                     )}
 
                     {/* Timestamp & Status */}
-                    <div className={`mt-1 flex items-center justify-end gap-1.5`}>
+                    <div className={`mt-1 flex items-center ${isMe ? 'justify-start' : 'justify-end'} gap-1.5`}>
                         <span className={`text-[10px] opacity-45 ${isMe ? 'text-indigo-100' : 'text-zinc-400 dark:text-zinc-500'}`}>
                             {timestamp}
                         </span>
@@ -172,7 +172,7 @@ export default function MessageBubble({
 
                 {/* Reactions */}
                 {reactions.length > 0 && (
-                    <div className={`flex items-center gap-1 ${isMe ? 'justify-end pr-1' : 'justify-start pl-1'} -mt-3 relative z-10`}>
+                    <div className={`flex items-center gap-1 ${isMe ? 'justify-start pl-1' : 'justify-end pr-1'} -mt-3 relative z-10`}>
                         {reactions.map((r, i) => (
                             <div key={i} className="flex items-center gap-1 rounded-full border border-white bg-zinc-50 px-1.5 py-0.5 text-[10px] shadow-sm dark:border-zinc-900 dark:bg-zinc-800">
                                 <span>{r.emoji}</span>

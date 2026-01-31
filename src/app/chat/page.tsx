@@ -617,7 +617,20 @@ export default function Home() {
         const res = await fetch(`/api/messages/${activeChatId}`);
         if (!res.ok) throw new Error("Failed to load messages");
         const data = await res.json();
-        setMessages(data);
+
+        const currentUser = sessionStorage.getItem("alias");
+        const processed = data.map((m: any) => ({
+          ...m,
+          // Map DB fields to UI fields if needed, or ensuring compatibility
+          id: m.id,
+          content: m.content,
+          type: m.type || 'text',
+          timestamp: m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : m.timestamp,
+          isMe: m.sender?.username === currentUser || m.senderId === currentUser,
+          status: 'read' // db messages are historically read
+        }));
+
+        setMessages(processed);
       } catch (e) {
         console.error("API Error (Messages):", e);
         setMessages([]);
@@ -947,7 +960,7 @@ export default function Home() {
                   <div
                     key={msg.id}
                     data-message-id={msg.id}
-                    className={`flex w-full ${msg.isMe ? 'justify-end' : 'justify-start'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
+                    className={`flex w-full ${msg.isMe ? 'justify-start' : 'justify-end'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       handleReply(msg);
