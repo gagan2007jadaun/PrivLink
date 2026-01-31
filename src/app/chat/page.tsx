@@ -276,9 +276,8 @@ export default function Home() {
         }
       } catch (e) {
         console.error("API Error (Chats):", e);
-        // Fallback to mock for smooth failure
-        setChats(mockChats);
-        setActiveChatId(mockChats[0].id);
+        setChats([]);
+        setActiveChatId("");
       }
     };
 
