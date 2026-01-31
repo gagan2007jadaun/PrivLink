@@ -33,7 +33,7 @@ export default function ChatListItem({
       ${isActive ? 'bg-indigo-500/10 dark:bg-indigo-500/20 backdrop-blur-sm' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
     >
       {/* Avatar */}
-      < div className="relative h-12 w-12 flex-shrink-0" >
+      <div className="relative h-12 w-12 flex-shrink-0">
         <div className={`h-full w-full rounded-full p-0.5 ${isActive ? 'bg-indigo-500' : 'bg-transparent'}`}>
           {avatarUrl ? (
             <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover bg-white" />
@@ -55,7 +55,7 @@ export default function ChatListItem({
             <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-950" />
           )
         }
-      </div >
+      </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between">
@@ -109,6 +109,6 @@ export default function ChatListItem({
           </svg>
         </button>
       </div>
-    </div >
+    </div>
   );
 }
