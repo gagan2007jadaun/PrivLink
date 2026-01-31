@@ -167,13 +167,20 @@ export default function Home() {
         username: alias.toLowerCase().replace(/\s+/g, '_'),
       });
       // Clear it so it doesn't overwrite if the user later changes it manually and refreshes
-      sessionStorage.removeItem("alias");
+      // sessionStorage.removeItem("alias"); // KEEP ALIAS for persistence logic (isMe checks, api calls)
     }
   }, [updateProfile]);
 
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState("");
   const [userPrefs, setUserPrefs] = useState<any>({});
+
+  // Persist Active Chat
+  useEffect(() => {
+    if (activeChatId) {
+      localStorage.setItem("privlink_last_chat_id", activeChatId);
+    }
+  }, [activeChatId]);
 
   useEffect(() => {
     const stored = localStorage.getItem("userPrefs");
@@ -262,7 +269,12 @@ export default function Home() {
 
         if (data && data.length > 0) {
           setChats(data);
-          setActiveChatId(data[0].id);
+          const savedActiveId = localStorage.getItem("privlink_last_chat_id");
+          if (savedActiveId && data.some((c: any) => c.id === savedActiveId)) {
+            setActiveChatId(savedActiveId);
+          } else {
+            setActiveChatId(data[0].id);
+          }
         } else {
           // Auto-create default chat if none exist
           const createRes = await fetch('/api/chats', {

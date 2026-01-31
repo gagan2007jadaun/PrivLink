@@ -7,6 +7,7 @@ interface AudioBubbleProps {
 }
 
 const AudioBubble: React.FC<AudioBubbleProps> = ({ src, duration, isMe }) => {
+    if (!src) return null;
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);

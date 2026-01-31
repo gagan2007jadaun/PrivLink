@@ -7,6 +7,8 @@ interface VideoBubbleProps {
 }
 
 const VideoBubble: React.FC<VideoBubbleProps> = ({ src, thumbnailUrl, duration }) => {
+    // Safety check: if no src is provided, don't render the video element to avoid runtime error
+    if (!src) return null;
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(true); // "Auto-mute video in chat"
