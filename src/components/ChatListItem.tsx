@@ -30,10 +30,10 @@ export default function ChatListItem({
   return (
     <div
       className={`group relative flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-all duration-200 
-      ${isActive ? 'bg-indigo-50 dark:bg-zinc-800/50' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+      ${isActive ? 'bg-indigo-500/10 dark:bg-indigo-500/20 backdrop-blur-sm' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
     >
       {/* Avatar */}
-      <div className="relative h-12 w-12 flex-shrink-0">
+      < div className="relative h-12 w-12 flex-shrink-0" >
         <div className={`h-full w-full rounded-full p-0.5 ${isActive ? 'bg-indigo-500' : 'bg-transparent'}`}>
           {avatarUrl ? (
             <img src={avatarUrl} alt={name} className="h-full w-full rounded-full object-cover bg-white" />
@@ -43,15 +43,19 @@ export default function ChatListItem({
             </div>
           )}
         </div>
-        {isLocked && (
-          <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 border-2 border-white dark:border-zinc-950 text-[10px]" title="Locked">
-            🔐
-          </div>
-        )}
-        {isOnline && !isLocked && (
-          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-950" />
-        )}
-      </div>
+        {
+          isLocked && (
+            <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 border-2 border-white dark:border-zinc-950 text-[10px]" title="Locked">
+              🔐
+            </div>
+          )
+        }
+        {
+          isOnline && !isLocked && (
+            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-zinc-950" />
+          )
+        }
+      </div >
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between">
@@ -105,6 +109,6 @@ export default function ChatListItem({
           </svg>
         </button>
       </div>
-    </div>
+    </div >
   );
 }

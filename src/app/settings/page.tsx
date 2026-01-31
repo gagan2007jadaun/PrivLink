@@ -63,7 +63,7 @@ export default function Settings() {
     }
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans">
+        <div className="flex h-screen w-full overflow-hidden bg-transparent text-zinc-900 dark:text-zinc-100 font-sans">
             {/* Resuable Sidebar with mock functionality for settings page */}
             <Sidebar
                 chats={mockChats}
@@ -72,7 +72,7 @@ export default function Settings() {
             />
 
             {/* Settings Content */}
-            <main className="flex flex-1 flex-col min-w-0 bg-white/50 dark:bg-zinc-900/50">
+            <main className="flex flex-1 flex-col min-w-0 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-sm">
 
                 {/* Header */}
                 <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 bg-white/50 px-6 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50">

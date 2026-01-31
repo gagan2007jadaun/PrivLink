@@ -76,8 +76,8 @@ export default function CreateGroupOrTree({ onClose, onCreate }: CreateGroupOrTr
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+            <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-zinc-900/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50">
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-2">
                         <h2 className="text-xl font-bold text-white">Create New</h2>
