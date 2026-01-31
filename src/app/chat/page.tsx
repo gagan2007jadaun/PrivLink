@@ -519,8 +519,17 @@ export default function Home() {
       // 2. Persona (Time of Day - Last few messages)
       // Parse time string "10:23 AM"
       const times = messages.filter(m => !m.isMe).map(m => {
-        const [time, modifier] = m.timestamp.split(' ');
-        if (!time || !modifier) return null;
+        if (!m.timestamp || typeof m.timestamp !== 'string') return null;
+        const parts = m.timestamp.split(' ');
+        // If format is not "HH:MM AM/PM", try standard date parsing
+        if (parts.length < 2) {
+          const date = new Date(m.timestamp);
+          if (!isNaN(date.getTime())) {
+            return date.getHours();
+          }
+          return null;
+        }
+        const [time, modifier] = parts;
         let [hours, mins] = time.split(':').map(Number);
         if (modifier === 'PM' && hours < 12) hours += 12;
         if (modifier === 'AM' && hours === 12) hours = 0;

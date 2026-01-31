@@ -216,14 +216,14 @@ export default function ChatHeader({
                 {/* Incognito Toggle */}
                 <button
                     onClick={onToggleIncognito}
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${isIncognito ? 'bg-zinc-800 text-white shadow-inner ring-1 ring-white/10' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                    className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors border border-white/5 backdrop-blur-sm ${isIncognito ? 'bg-zinc-800 text-white shadow-inner ring-1 ring-white/10' : 'bg-white/5 hover:bg-white/15 dark:bg-black/10 dark:hover:bg-black/20'}`}
                     title={isIncognito ? "Disable Incognito Mode" : "Enable Incognito Mode"}
                 >
                     <span className="text-lg">🕵️‍♂️</span>
                 </button>
 
                 {/* Search Button */}
-                <button className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 hover:text-indigo-600 dark:hover:bg-zinc-800">
+                <button className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors bg-white/5 hover:bg-white/15 dark:bg-black/10 dark:hover:bg-black/20 border border-white/5 backdrop-blur-sm hover:text-indigo-600">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -232,7 +232,7 @@ export default function ChatHeader({
                 {/* Bookmark Button */}
                 <button
                     onClick={handleBookmark}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 hover:text-yellow-500 dark:hover:bg-zinc-800"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors bg-white/5 hover:bg-white/15 dark:bg-black/10 dark:hover:bg-black/20 border border-white/5 backdrop-blur-sm hover:text-yellow-500"
                     title="Bookmark this moment"
                 >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -243,7 +243,7 @@ export default function ChatHeader({
                 <div className="mx-2 h-4 w-px bg-zinc-200 dark:bg-zinc-700" />
                 <button
                     onClick={onToggleRightPanel}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors bg-white/5 hover:bg-white/15 dark:bg-black/10 dark:hover:bg-black/20 border border-white/5 backdrop-blur-sm"
                 >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />

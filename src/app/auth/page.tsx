@@ -103,16 +103,16 @@ export default function AuthPage() {
                         </div>
 
                         {/* Tabs */}
-                        <div className="flex bg-zinc-900/50 p-1 rounded-xl mb-6 relative">
+                        <div className="flex bg-black/20 p-1 rounded-xl mb-6 relative border border-white/5 backdrop-blur-md">
                             <button
                                 onClick={() => { setMode('signin'); setError(""); }}
-                                className={`flex-1 text-xs font-medium py-2 rounded-lg transition-all ${mode === 'signin' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                className={`flex-1 text-xs font-medium py-2 rounded-lg transition-all ${mode === 'signin' ? 'bg-white/10 text-white shadow-sm backdrop-blur-md border border-white/10' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`}
                             >
                                 Sign In
                             </button>
                             <button
                                 onClick={() => { setMode('signup'); setError(""); }}
-                                className={`flex-1 text-xs font-medium py-2 rounded-lg transition-all ${mode === 'signup' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                className={`flex-1 text-xs font-medium py-2 rounded-lg transition-all ${mode === 'signup' ? 'bg-white/10 text-white shadow-sm backdrop-blur-md border border-white/10' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`}
                             >
                                 Sign Up
                             </button>

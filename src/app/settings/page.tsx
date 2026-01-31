@@ -77,7 +77,7 @@ export default function Settings() {
                 {/* Header */}
                 <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 bg-white/50 px-6 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/50">
                     <div className="flex items-center gap-3">
-                        <Link href="/chat" className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white">
+                        <Link href="/chat" className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-white/50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white backdrop-blur-md">
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
@@ -96,15 +96,15 @@ export default function Settings() {
                                 <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Profile</h2>
                                 <button
                                     onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
-                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${isEditing
+                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all backdrop-blur-md border border-white/10 ${isEditing
                                         ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-500/20'
-                                        : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                                        : 'bg-white/50 text-zinc-600 hover:bg-white dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:bg-zinc-700/50 shadow-sm'
                                         }`}
                                 >
                                     {isEditing ? 'Save Changes' : 'Edit Profile'}
                                 </button>
                             </div>
-                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                            <div className="rounded-2xl border border-white/20 bg-white/50 p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900/50 backdrop-blur-md">
                                 <div className="flex items-center gap-6">
                                     <div className="relative group">
                                         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-tr from-purple-400 to-indigo-500 text-3xl font-bold text-white ring-4 ring-zinc-50 dark:ring-zinc-800 overflow-hidden">
@@ -184,7 +184,7 @@ export default function Settings() {
                         {/* Account Security */}
                         <section>
                             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Account Security</h2>
-                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-6">
+                            <div className="rounded-2xl border border-white/20 bg-white/50 p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900/50 backdrop-blur-md space-y-6">
                                 {/* Email */}
                                 <div>
                                     <label className="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Recovery Email</label>
@@ -196,7 +196,7 @@ export default function Settings() {
                                             placeholder="your@email.com"
                                             className="flex-1 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:bg-zinc-900 transition-all"
                                         />
-                                        <button className="px-4 py-2 rounded-xl bg-zinc-100 text-zinc-600 font-medium text-sm hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors">
+                                        <button className="px-4 py-2 rounded-xl bg-white/50 text-zinc-600 font-medium text-sm hover:bg-white dark:bg-zinc-800/50 dark:text-zinc-300 dark:hover:bg-zinc-700/50 transition-colors backdrop-blur-md border border-white/10 shadow-sm">
                                             Verify
                                         </button>
                                     </div>
@@ -212,7 +212,7 @@ export default function Settings() {
                                             <div className="font-medium text-zinc-900 dark:text-white">Password</div>
                                             <div className="text-xs text-zinc-500 dark:text-zinc-400">Last changed 3 months ago</div>
                                         </div>
-                                        <button className="px-4 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors">
+                                        <button className="px-4 py-1.5 rounded-lg border border-zinc-200/50 bg-white/50 text-sm font-medium text-zinc-700 hover:bg-white dark:border-zinc-700/50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors backdrop-blur-md">
                                             Change
                                         </button>
                                     </div>
@@ -239,7 +239,7 @@ export default function Settings() {
                                     <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">Test potential new features. These may be unstable.</p>
                                 </div>
                             </div>
-                            <div className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white shadow-sm dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
+                            <div className="divide-y divide-zinc-100/20 rounded-2xl border border-white/20 bg-white/50 shadow-sm dark:divide-white/5 dark:border-white/10 dark:bg-zinc-900/50 backdrop-blur-md">
                                 <div className="flex items-center justify-between p-4">
                                     <div>
                                         <div className="font-medium text-zinc-900 dark:text-white">Neon Mode</div>
@@ -282,7 +282,7 @@ export default function Settings() {
                         {/* Danger Zone */}
                         <section>
                             <h2 className="mb-4 text-lg font-semibold text-red-600 dark:text-red-500">Danger Zone</h2>
-                            <div className="rounded-2xl border border-red-100 bg-red-50/50 p-6 dark:border-red-900/30 dark:bg-red-900/10 dark:text-white">
+                            <div className="rounded-2xl border border-red-200/30 bg-red-50/40 p-6 dark:border-red-900/30 dark:bg-red-950/20 backdrop-blur-md dark:text-white">
                                 <div className="flex items-center justify-between mb-6">
                                     <div>
                                         <div className="font-medium text-zinc-900 dark:text-white">Log Out</div>
@@ -290,7 +290,7 @@ export default function Settings() {
                                     </div>
                                     <button
                                         onClick={() => alert("Logging out... (Simulated)")}
-                                        className="px-4 py-1.5 rounded-lg border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors shadow-sm"
+                                        className="px-4 py-1.5 rounded-lg border border-zinc-200/50 bg-white/50 text-sm font-medium text-zinc-700 hover:bg-white dark:border-zinc-700/50 dark:bg-zinc-800/30 dark:text-zinc-300 dark:hover:bg-zinc-700/50 transition-colors shadow-sm backdrop-blur-md"
                                     >
                                         Log Out
                                     </button>
@@ -303,7 +303,7 @@ export default function Settings() {
                                     </div>
                                     <button
                                         onClick={() => confirm("Are you sure? This action cannot be undone.") && alert("Account deletion initiated (Simulated)")}
-                                        className="px-4 py-1.5 rounded-lg bg-red-600 text-sm font-medium text-white hover:bg-red-700 shadow-sm shadow-red-500/20 transition-colors"
+                                        className="px-4 py-1.5 rounded-lg bg-red-600/90 text-sm font-medium text-white hover:bg-red-700 hover:shadow-lg hover:shadow-red-500/30 transition-all shadow-md shadow-red-500/20 backdrop-blur-md"
                                     >
                                         Delete Account
                                     </button>
@@ -316,7 +316,7 @@ export default function Settings() {
                         {/* Appearance settings */}
                         <section>
                             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Appearance</h2>
-                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                            <div className="rounded-2xl border border-white/20 bg-white/50 p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900/50 backdrop-blur-md">
                                 <div className="grid grid-cols-3 gap-4">
                                     <button
                                         onClick={() => setTheme('light')}
@@ -350,7 +350,7 @@ export default function Settings() {
                         {/* Privacy Settings */}
                         <section>
                             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Privacy</h2>
-                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                            <div className="rounded-2xl border border-white/20 bg-white/50 p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900/50 backdrop-blur-md">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <div className="font-medium text-zinc-900 dark:text-white">Seen Silently Mode</div>
@@ -369,7 +369,7 @@ export default function Settings() {
                         {/* Encrypted Backup */}
                         <section>
                             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Security & Backup</h2>
-                            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                            <div className="rounded-2xl border border-white/20 bg-white/50 p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900/50 backdrop-blur-md">
                                 <BackupManager />
                             </div>
                         </section>
@@ -377,7 +377,7 @@ export default function Settings() {
                         {/* Notifications */}
                         <section>
                             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Notifications</h2>
-                            <div className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white shadow-sm dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
+                            <div className="divide-y divide-zinc-100/20 rounded-2xl border border-white/20 bg-white/50 shadow-sm dark:divide-white/5 dark:border-white/10 dark:bg-zinc-900/50 backdrop-blur-md">
                                 <NotificationToggle
                                     title="Direct Messages"
                                     desc="Receive notifications for direct messages"
@@ -464,7 +464,7 @@ function BackupManager() {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/50">
+            <div className="flex flex-col gap-3 rounded-xl bg-white/20 p-4 dark:bg-white/5 border border-white/10 backdrop-blur-sm">
                 <label className="text-xs font-semibold uppercase text-zinc-400">Set Backup Password</label>
                 <div className="flex gap-2">
                     <input

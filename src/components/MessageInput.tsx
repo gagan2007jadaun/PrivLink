@@ -274,7 +274,7 @@ export default function MessageInput({
         <div className={`chat-input relative px-3 py-2 border rounded-[24px] m-[10px] shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] transition-colors duration-300 ${isIncognito ? 'bg-zinc-800 border-zinc-700' : 'bg-white/40 backdrop-blur-xl dark:bg-black/40 border-white/20 dark:border-white/10'}`}>
             {/* Reply Bar */}
             {replyingTo && (
-                <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-zinc-100 p-2 dark:bg-zinc-800/80 animate-fade-in-up">
+                <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-white/40 dark:bg-zinc-800/40 backdrop-blur-md p-2 animate-fade-in-up">
                     <div className="flex flex-col overflow-hidden">
                         <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
                             Replying to {replyingTo.sender}
@@ -285,7 +285,7 @@ export default function MessageInput({
                     </div>
                     <button
                         onClick={onCancelReply}
-                        className="ml-2 rounded-full p-1 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                        className="ml-2 rounded-full p-1 text-zinc-500 hover:bg-white/20 dark:hover:bg-white/10 transition-colors"
                     >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -296,22 +296,22 @@ export default function MessageInput({
 
             {/* Font Toolbar */}
             {showFontToolbar && !isRecording && (
-                <div className="absolute -top-12 left-4 z-50 flex items-center gap-1 rounded-xl bg-white p-1 shadow-lg ring-1 ring-black/5 dark:bg-zinc-800 dark:ring-white/10 animate-fade-in-up">
+                <div className="absolute -top-12 left-4 z-50 flex items-center gap-1 rounded-xl bg-white/90 p-1 shadow-lg ring-1 ring-black/5 dark:bg-zinc-900/90 dark:ring-white/10 animate-fade-in-up backdrop-blur-xl">
                     <button
                         onClick={() => toggleStyle('bold')}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${messageStyle.bold ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800/50'}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${messageStyle.bold ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-white/10'}`}
                     >
                         B
                     </button>
                     <button
                         onClick={() => toggleStyle('italic')}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm italic font-serif transition-colors ${messageStyle.italic ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800/50'}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm italic font-serif transition-colors ${messageStyle.italic ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-white/10'}`}
                     >
                         I
                     </button>
                     <button
                         onClick={() => toggleStyle('underline')}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm underline transition-colors ${messageStyle.underline ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-800/50'}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm underline transition-colors ${messageStyle.underline ? 'bg-zinc-100 text-indigo-600 dark:bg-zinc-700 dark:text-indigo-400' : 'text-zinc-500 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-white/10'}`}
                     >
                         U
                     </button>
@@ -320,12 +320,12 @@ export default function MessageInput({
 
             {/* Attachment Menu */}
             {isAttachOpen && !isRecording && (
-                <div className="absolute bottom-20 left-4 z-50 flex flex-col min-w-[240px] gap-1 rounded-2xl bg-white/95 p-2 shadow-2xl backdrop-blur-md ring-1 ring-black/5 dark:bg-zinc-900/95 dark:ring-white/10 animate-fade-in-up origin-bottom-left">
+                <div className="absolute bottom-20 left-4 z-50 flex flex-col min-w-[240px] gap-1 rounded-2xl bg-white/80 p-2 shadow-2xl backdrop-blur-2xl ring-1 ring-black/5 dark:bg-zinc-900/80 dark:ring-white/10 animate-fade-in-up origin-bottom-left border border-white/20">
 
                     {/* Camera */}
                     <button
                         onClick={() => startRecording('video')}
-                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-white/50 dark:text-zinc-200 dark:hover:bg-white/10"
                     >
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100/80 text-red-600 dark:bg-red-900/40 dark:text-red-400">
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -341,7 +341,7 @@ export default function MessageInput({
                     {/* Gallery (Functional) */}
                     <button
                         onClick={() => document.getElementById('image-upload')?.click()}
-                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-white/50 dark:text-zinc-200 dark:hover:bg-white/10"
                     >
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100/80 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400">
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -371,7 +371,7 @@ export default function MessageInput({
                     {/* Document (Mock) */}
                     <button
                         onClick={() => alert("Document sharing coming soon!")}
-                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-white/50 dark:text-zinc-200 dark:hover:bg-white/10"
                     >
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100/80 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -387,7 +387,7 @@ export default function MessageInput({
                     {/* Poll (Mock) */}
                     <button
                         onClick={() => alert("Polls coming soon!")}
-                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-white/50 dark:text-zinc-200 dark:hover:bg-white/10"
                     >
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100/80 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -403,7 +403,7 @@ export default function MessageInput({
                     {/* Contact (Mock) */}
                     <button
                         onClick={() => alert("Contact sharing coming soon!")}
-                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-white/50 dark:text-zinc-200 dark:hover:bg-white/10"
                     >
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100/80 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -419,7 +419,7 @@ export default function MessageInput({
                     {/* Event (Mock) */}
                     <button
                         onClick={() => alert("Event creation coming soon!")}
-                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-white/50 dark:text-zinc-200 dark:hover:bg-white/10"
                     >
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100/80 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400">
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -438,7 +438,7 @@ export default function MessageInput({
                             setShowFontToolbar(!showFontToolbar);
                             setIsAttachOpen(false);
                         }}
-                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-white/50 dark:text-zinc-200 dark:hover:bg-white/10"
                     >
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100/80 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400">
                             <span className="text-sm font-serif font-bold">Aa</span>
@@ -480,7 +480,7 @@ export default function MessageInput({
                 </div>
             )}
 
-            <div className={`flex items-center gap-2 rounded-2xl bg-zinc-100 px-3 py-1.5 min-h-[38px] ring-1 ring-zinc-200 dark:bg-zinc-800/50 dark:ring-zinc-800 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white dark:focus-within:bg-zinc-800 ${isRecording ? 'ring-red-200 bg-red-50 dark:bg-red-900/20 dark:ring-red-900/50' : ''}`}>
+            <div className={`flex items-center gap-2 rounded-2xl bg-zinc-100/50 px-3 py-1.5 min-h-[38px] ring-1 ring-zinc-200 dark:bg-zinc-800/30 dark:ring-zinc-800 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white/80 dark:focus-within:bg-zinc-800/80 backdrop-blur-sm ${isRecording ? 'ring-red-200 bg-red-50/50 dark:bg-red-900/20 dark:ring-red-900/50' : ''}`}>
 
                 {/* Recording Indicator Overlay */}
                 {/* Recording Indicator Overlay */}
@@ -543,7 +543,7 @@ export default function MessageInput({
                             // Also close font toolbar if opening menu?
                             if (!isAttachOpen) setShowFontToolbar(false);
                         }}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ease-spring ${isAttachOpen ? 'rotate-45 bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-white' : 'text-zinc-500 hover:bg-zinc-200 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-zinc-700'}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ease-spring ${isAttachOpen ? 'rotate-45 bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-white' : 'text-zinc-500 hover:bg-white/20 hover:text-indigo-600 dark:text-zinc-400 dark:hover:bg-white/10'}`}
                         disabled={isRecording}
                     >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -592,7 +592,7 @@ export default function MessageInput({
                     <button
                         onClick={() => startRecording('audio')}
                         disabled={isRecording}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-red-500 dark:hover:bg-zinc-700 ${isRecording ? 'opacity-0' : ''}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-white/20 hover:text-red-500 dark:hover:bg-white/10 ${isRecording ? 'opacity-0' : ''}`}
                         title="Record Voice"
                     >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -605,7 +605,7 @@ export default function MessageInput({
                     <button
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                         disabled={isRecording}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${showEmojiPicker ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10' : 'text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700'} ${isRecording ? 'opacity-0' : ''}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${showEmojiPicker ? 'text-indigo-600 bg-indigo-50/50 dark:bg-indigo-500/10' : 'text-zinc-400 hover:bg-white/20 hover:text-zinc-600 dark:hover:bg-white/10'} ${isRecording ? 'opacity-0' : ''}`}
                     >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

@@ -136,14 +136,14 @@ export default function RightPanel({ chat, messages = [], onUpdateChat, onImageC
 
 
                     {/* Tab Navigation */}
-                    <div className="mt-6 flex w-full gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
+                    <div className="mt-6 flex w-full gap-1 rounded-xl bg-zinc-100/50 p-1 dark:bg-zinc-800/50 backdrop-blur-sm">
                         {(['media', 'docs', 'links', 'settings'] as const).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`flex-1 rounded-lg py-1.5 text-xs font-semibold capitalize transition-all ${activeTab === tab
-                                    ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
-                                    : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                                className={`flex-1 rounded-lg py-1.5 text-xs font-semibold capitalize transition-all border border-white/5 backdrop-blur-md ${activeTab === tab
+                                    ? 'bg-white text-zinc-900 shadow-sm dark:bg-white dark:text-zinc-900'
+                                    : 'text-zinc-500 hover:text-white bg-white/5 hover:bg-white/20 dark:text-zinc-400 dark:hover:bg-black/30'
                                     }`}
                             >
                                 {tab}
@@ -189,14 +189,14 @@ export default function RightPanel({ chat, messages = [], onUpdateChat, onImageC
                             {/* Relationship Mode */}
                             <div className="space-y-2">
                                 <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Relationship Mode</label>
-                                <div className="flex rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
+                                <div className="flex rounded-xl bg-white/20 p-1 dark:bg-black/20 border border-white/10 backdrop-blur-sm">
                                     {['work', 'personal', 'casual'].map((mode) => (
                                         <button
                                             key={mode}
                                             onClick={() => alert(`Set mode to ${mode} (Mock)`)}
-                                            className={`flex-1 rounded-lg py-1.5 text-xs font-medium capitalize transition-all ${(chat.relationshipMode || 'personal') === mode
-                                                ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
-                                                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                                            className={`flex-1 rounded-lg py-1.5 text-xs font-medium capitalize transition-all border border-white/5 backdrop-blur-md ${(chat.relationshipMode || 'personal') === mode
+                                                ? 'bg-white text-zinc-900 shadow-sm dark:bg-white dark:text-zinc-900'
+                                                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white bg-white/5 hover:bg-white/20'
                                                 }`}
                                         >
                                             {mode}
@@ -215,7 +215,7 @@ export default function RightPanel({ chat, messages = [], onUpdateChat, onImageC
                                         placeholder="Public Name (Default)"
                                         value={chat.selfAlias || ''}
                                         onChange={(e) => onUpdateChat?.({ ...chat, selfAlias: e.target.value })}
-                                        className="w-full rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                        className="w-full rounded-xl bg-white/20 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500/70 dark:bg-black/20 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 border border-white/10 backdrop-blur-sm"
                                     />
                                     <p className="text-[10px] text-zinc-400">This is how you appear in this specific conversation.</p>
                                 </div>
@@ -343,7 +343,7 @@ export default function RightPanel({ chat, messages = [], onUpdateChat, onImageC
                                                             if ((e as any).name === 'QuotaExceededError') alert("Storage full. Texture not saved.");
                                                         }
                                                     }}
-                                                    className={`h-10 w-full rounded-xl border-2 bg-center bg-no-repeat transition-all hover:border-indigo-500 overflow-hidden relative flex items-center justify-center ${chat.chatBackground?.value === t.value ? 'border-indigo-500 shadow-lg scale-105' : 'border-zinc-100 dark:border-zinc-800'}`}
+                                                    className={`h-10 w-full rounded-xl border-2 bg-center bg-no-repeat transition-all hover:border-indigo-500 overflow-hidden relative flex items-center justify-center ${chat.chatBackground?.value === t.value ? 'border-indigo-500 shadow-lg scale-105' : 'border-zinc-100 dark:border-zinc-800 opacity-80 hover:opacity-100'}`}
                                                     style={{ backgroundImage: `url(${t.value})`, backgroundSize: '64px' }}
                                                 >
                                                     <span className="relative z-10 bg-black/20 backdrop-blur-[1px] px-1 rounded">{t.id}</span>
@@ -414,7 +414,7 @@ export default function RightPanel({ chat, messages = [], onUpdateChat, onImageC
                             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                 <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">Chat Rules</h4>
                                 <div className="space-y-3">
-                                    <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800">
+                                    <div className="flex items-center justify-between rounded-xl bg-white/50 p-3 border border-white/10 dark:bg-zinc-900/30 backdrop-blur-sm shadow-sm">
                                         <span className="font-medium text-zinc-900 dark:text-white text-sm">Allow Forwarding</span>
                                         <button
                                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${chat.permissions?.allowForward ? 'bg-indigo-600' : 'bg-red-500'}`}
@@ -427,7 +427,7 @@ export default function RightPanel({ chat, messages = [], onUpdateChat, onImageC
                             </div>
 
                             <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                                <button className="w-full flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/30 transition-colors">
+                                <button className="w-full flex items-center justify-center gap-2 rounded-xl border border-red-200/50 bg-red-50/50 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100/80 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors backdrop-blur-sm">
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                     </svg>
