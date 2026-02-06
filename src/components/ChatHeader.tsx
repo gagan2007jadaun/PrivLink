@@ -118,7 +118,10 @@ export default function ChatHeader({
                 <div className="relative cursor-pointer" onClick={handleInterestClick}>
                     <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white shadow-md ring-2 ring-white dark:ring-zinc-900 transition-transform hover:scale-105 ${isIncognito ? 'bg-zinc-800' : 'bg-linear-to-tr from-purple-400 to-indigo-500'}`}>
                         {isIncognito ? (
-                            <span className="text-xl">🕵️‍♂️</span>
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2a9 9 0 00-9 9v11h18V11a9 9 0 00-9-9zm0 2.25c2.485 0 4.5 2.015 4.5 4.5s-2.015 4.5-4.5 4.5-4.5-2.015-4.5-4.5 2.015-4.5 4.5-4.5zm0 13.5c-3.728 0-6.75-2.25-6.75-5.25h13.5c0 3-3.022 5.25-6.75 5.25z" />
+                                <path d="M12 11c-2.485 0-4.5-1.12-4.5-2.5S9.515 6 12 6s4.5 1.12 4.5 2.5-2.015 2.5-4.5 2.5z" opacity="0.4" />
+                            </svg>
                         ) : (
                             showTrend ? (
                                 <span className="text-lg">
@@ -219,7 +222,9 @@ export default function ChatHeader({
                     className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors border border-white/5 backdrop-blur-sm ${isIncognito ? 'bg-zinc-800 text-white shadow-inner ring-1 ring-white/10' : 'bg-white/5 hover:bg-white/15 dark:bg-black/10 dark:hover:bg-black/20'}`}
                     title={isIncognito ? "Disable Incognito Mode" : "Enable Incognito Mode"}
                 >
-                    <span className="text-lg">🕵️‍♂️</span>
+                    <svg className={`h-5 w-5 ${isIncognito ? 'text-white' : 'text-zinc-500 dark:text-zinc-400'}`} fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C7.03 2 3 6.03 3 11v11h18V11c0-4.97-4.03-9-9-9zm0 2.25c2.485 0 4.5 2.015 4.5 4.5s-2.015 4.5-4.5 4.5-4.5-2.015-4.5-4.5 2.015-4.5 4.5-4.5zM5.25 17.75c0-3 3.022-5.25 6.75-5.25s6.75 2.25 6.75 5.25H5.25z" />
+                    </svg>
                 </button>
 
                 {/* Search Button */}
