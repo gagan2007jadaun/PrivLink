@@ -271,7 +271,7 @@ export default function MessageInput({
     const isRecording = isRecordingAudio || isRecordingVideo;
 
     return (
-        <div className={`chat-input relative px-3 py-2 border rounded-[24px] m-[10px] shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] transition-colors duration-300 ${isIncognito ? 'bg-zinc-800 border-zinc-700' : 'bg-white/40 backdrop-blur-xl dark:bg-black/40 border-white/20 dark:border-white/10'}`}>
+        <div className={`chat-input relative px-3 py-2 rounded-[24px] m-[10px] shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] transition-colors duration-300 ${isIncognito ? 'bg-zinc-800' : 'bg-white/40 backdrop-blur-xl dark:bg-black/40'}`}>
             {/* Reply Bar */}
             {replyingTo && (
                 <div className="mb-2 flex items-center justify-between rounded-lg border-l-4 border-indigo-500 bg-white/40 dark:bg-zinc-800/40 backdrop-blur-md p-2 animate-fade-in-up">
@@ -480,7 +480,7 @@ export default function MessageInput({
                 </div>
             )}
 
-            <div className={`flex items-center gap-2 rounded-2xl bg-zinc-100/50 px-3 py-1.5 min-h-[38px] ring-1 ring-zinc-200 dark:bg-zinc-800/30 dark:ring-zinc-800 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white/80 dark:focus-within:bg-zinc-800/80 backdrop-blur-sm ${isRecording ? 'ring-red-200 bg-red-50/50 dark:bg-red-900/20 dark:ring-red-900/50' : ''}`}>
+            <div className={`flex items-center gap-2 rounded-2xl bg-zinc-100/50 px-3 py-1.5 min-h-[38px] dark:bg-zinc-800/30 transition-all focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:bg-white/80 dark:focus-within:bg-zinc-800/80 backdrop-blur-sm ${isRecording ? 'ring-red-200 bg-red-50/50 dark:bg-red-900/20 dark:ring-red-900/50' : ''}`}>
 
                 {/* Recording Indicator Overlay */}
                 {/* Recording Indicator Overlay */}
