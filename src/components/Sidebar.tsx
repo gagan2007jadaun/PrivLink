@@ -25,9 +25,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
     const FILTER_ALL = 'All Chats';
     const FILTER_ARCHIVED = 'Archived';
 
-    // Search Filters
-    type SearchType = 'text' | 'media' | 'links';
-    const [searchType, setSearchType] = useState<SearchType>('text');
+
     const [searchQuery, setSearchQuery] = useState("");
 
     const [activeFilter, setActiveFilter] = useState(FILTER_ALL);
@@ -51,18 +49,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
             );
         }
 
-        // 3. Search Type (Heuristics on Last Message)
-        if (searchType === 'media') {
-            const mediaKeywords = ['photo', 'video', 'image', 'audio', 'gif', 'sticker'];
-            filtered = filtered.filter(chat =>
-                mediaKeywords.some(keyword => chat.lastMessage.toLowerCase().includes(keyword))
-            );
-        } else if (searchType === 'links') {
-            filtered = filtered.filter(chat =>
-                chat.lastMessage.toLowerCase().includes('http') ||
-                chat.lastMessage.toLowerCase().includes('www.')
-            );
-        }
+
 
         return filtered;
     };
@@ -101,36 +88,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onCreateCha
                             className="w-full rounded-xl border-none bg-black/5 py-2 pl-9 pr-4 text-sm font-medium text-zinc-900 transition-all placeholder:text-zinc-500 focus:bg-white/50 focus:ring-2 focus:ring-indigo-500/20 dark:bg-white/10 dark:text-zinc-100 dark:focus:bg-black/40 md:text-sm"
                         />
                     </div>
-                    {/* Search Filters */}
-                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                        {(['text', 'media', 'links'] as const).map((type) => (
-                            <button
-                                key={type}
-                                onClick={() => setSearchType(type)}
-                                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-all ${searchType === type
-                                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm'
-                                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
-                                    }`}
-                            >
-                                {type === 'text' && (
-                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                                    </svg>
-                                )}
-                                {type === 'media' && (
-                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                    </svg>
-                                )}
-                                {type === 'links' && (
-                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                    </svg>
-                                )}
-                                {type}
-                            </button>
-                        ))}
-                    </div>
+
                 </div>
             </div>
 
