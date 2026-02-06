@@ -877,7 +877,7 @@ export default function Home() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-transparent text-zinc-900 dark:text-zinc-100 font-sans">
+    <div className={`app-layout ${!showRightPanel ? 'no-right-panel' : ''} bg-transparent text-zinc-900 dark:text-zinc-100 font-sans`}>
       {/* Left Sidebar */}
       <Sidebar
         chats={chats}
@@ -894,11 +894,7 @@ export default function Home() {
           <p>Select a conversation to start chatting.</p>
         </div>
       ) : (
-        <main
-          className={`flex flex-1 flex-col min-w-0 relative transition-colors duration-[120000ms] ease-linear
-            ${activeChat.permissions?.allowScreenshot === false ? 'select-none decoration-clone' : ''}
-            md:rounded-[18px] md:m-2 md:overflow-hidden shadow-sm
-          `}
+        <main className="chat-container relative transition-colors duration-[120000ms] ease-linear shadow-sm"
           onContextMenu={(e) => {
             if (activeChat.permissions?.allowSaveMedia === false) {
               e.preventDefault();
@@ -943,7 +939,7 @@ export default function Home() {
             }}
           />
 
-          <div className="relative z-10 w-full">
+          <div className="relative z-10 w-full chat-header">
             <ChatHeader
               onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
               name={activeChat.name}
@@ -966,9 +962,9 @@ export default function Home() {
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="chat-center relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar"
+            className="messages-wrapper no-scrollbar"
           >
-            <div className="mx-auto max-w-3xl space-y-6">
+            <div className="messages">
 
               {/* Date Divider */}
               <div className="flex items-center justify-center">
@@ -986,7 +982,7 @@ export default function Home() {
                   <div
                     key={msg.id}
                     data-message-id={msg.id}
-                    className={`flex w-full ${msg.isMe ? 'justify-start' : 'justify-end'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
+                    className={`msg-row ${msg.isMe ? 'outgoing' : 'incoming'} ${msg.isConsecutive ? 'mt-1' : 'mt-4'}`}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       handleReply(msg);
@@ -1033,6 +1029,7 @@ export default function Home() {
       )}
 
       {/* Right Sidebar */}
+      {/* Controlled by CSS grid layout - always rendered but hidden by 0 width if not active, or conditional if we prefer unmounting */}
       {showRightPanel && activeChat && (
         <RightPanel
           chat={activeChat}
