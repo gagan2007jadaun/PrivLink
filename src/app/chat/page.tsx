@@ -268,7 +268,21 @@ export default function Home() {
         const data = await res.json();
 
         if (data && data.length > 0) {
-          setChats(data);
+          // Hydrate with local backgrounds
+          const hydratedChats = data.map((chat: any) => {
+            const storedBg = localStorage.getItem(`chat-bg-${chat.id}`);
+            if (storedBg) {
+              try {
+                return { ...chat, chatBackground: JSON.parse(storedBg) };
+              } catch (e) {
+                console.error("Failed to parse bg", e);
+                return chat;
+              }
+            }
+            return chat;
+          });
+
+          setChats(hydratedChats);
           const savedActiveId = localStorage.getItem("privlink_last_chat_id");
           if (savedActiveId && data.some((c: any) => c.id === savedActiveId)) {
             setActiveChatId(savedActiveId);
