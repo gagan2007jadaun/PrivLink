@@ -34,3 +34,24 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deployment Note: Custom Server & WebSockets
+
+This project uses a custom server (`server.ts`) to handle WebSockets (Socket.io). 
+
+**IMPORTANT:** 
+- **Vercel & Serverless**: This custom server configuration **will not work** on Vercel standard serverless functions because they do not support long-running processes like WebSockets.
+- **Micro-VM / VPS**: You should deploy this application to a platform that supports persistent servers, such as:
+  - Railway
+  - Render (Web Service)
+  - DO App Platform
+  - Heroku
+  - Any VPS (AWS EC2, DigitalOcean Droplet, etc.)
+
+### Production Start
+The `start` script has been configured to run the custom server:
+```bash
+npm run build
+npm start
+```
+

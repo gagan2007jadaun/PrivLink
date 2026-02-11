@@ -1,3 +1,0 @@
-src/backend/controllers/messageController.ts(9,22): error TS2322: Type 'string | string[]' is not assignable to type 'string | StringFilter<"Message"> | undefined'.
-  Type 'string[]' is not assignable to type 'string | StringFilter<"Message"> | undefined'.
-src/lib/prisma.ts(9,5): error TS2353: Object literal may only specify known properties, and 'datasources' does not exist in type 'Subset<PrismaClientOptions, PrismaClientOptions>'.
