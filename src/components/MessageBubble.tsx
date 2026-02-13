@@ -32,6 +32,7 @@ interface MessageBubbleProps {
     onImageClick?: (url: string) => void;
     onRetry?: () => void;
     onReaction?: (emoji: string) => void;
+    expiresAt?: string | Date;
 }
 
 export default function MessageBubble({
@@ -54,6 +55,7 @@ export default function MessageBubble({
     fileSize,
     onRetry,
     onReaction,
+    expiresAt,
 }: MessageBubbleProps) {
     const [showReactionPicker, setShowReactionPicker] = React.useState(false);
     const reactionPickerRef = React.useRef<HTMLDivElement>(null);
@@ -251,7 +253,16 @@ export default function MessageBubble({
                         {/* Heatmap Indicator */}
                         {heatScore > 50 && (
                             <div className="absolute -top-2 -right-2 flex items-center justify-center rounded-full bg-orange-100 p-1 shadow-sm ring-1 ring-white dark:bg-zinc-800 dark:ring-zinc-900" title="High Interest Message">
-                                <span className="text-xs">🔥</span>
+                                <span className="text-[10px] opacity-70">
+                                    {timestamp}
+                                </span>
+                                {expiresAt && (
+                                    <span title={`Expires: ${new Date(expiresAt).toLocaleTimeString()}`}>
+                                        <svg className="w-3 h-3 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </span>
+                                )}
                             </div>
                         )}
                     </div>

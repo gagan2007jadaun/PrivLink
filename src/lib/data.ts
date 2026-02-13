@@ -14,6 +14,7 @@ export interface Message {
     status?: 'sent' | 'delivered' | 'read' | 'queued' | 'sending' | 'failed';
     deliveredAt?: string;
     readAt?: string;
+    expiresAt?: string | Date; // ISO String or Date
     heatScore?: number; // 0-100, calculated from dwell time / length
     confidenceScore?: number; // 0-100, calculated from typing metrics
     isUnsentIntent?: boolean; // If true, displayed only to sender as a draft/unsent nuance
@@ -52,6 +53,7 @@ export interface Chat {
     // Psychological & Analytical Features
     gravity?: 'balanced' | 'one-sided-me' | 'one-sided-them'; // Conversation balance
     boundaryMode?: boolean; // If true, hides typing indicators/read receipts strictly
+    disappearingDuration?: number; // Duration in seconds (0 = off)
     conversationWeight?: number; // 0-100, depth/seriousness of the chat
     mutualCuriosity?: number; // 0-100, based on question frequency
     trustTrend?: 'rising' | 'falling' | 'stable'; // Trust recovery indicator (Internal logic)

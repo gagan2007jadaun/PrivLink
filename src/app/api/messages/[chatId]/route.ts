@@ -7,7 +7,13 @@ export async function GET(req: Request, props: { params: Promise<{ chatId: strin
     try {
         const { chatId } = params;
         const messages = await prisma.message.findMany({
-            where: { chatId },
+            where: {
+                chatId,
+                OR: [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } }
+                ]
+            },
             orderBy: { createdAt: 'asc' },
             include: { sender: true }
         });

@@ -15,6 +15,8 @@ interface ChatHeaderProps {
     isIncognito?: boolean;
     onToggleIncognito?: () => void;
     isTyping?: boolean;
+    disappearingDuration?: number;
+    onSetDisappearingDuration?: (duration: number) => void;
 }
 
 export default function ChatHeader({
@@ -31,11 +33,25 @@ export default function ChatHeader({
     isScrolled = false,
     isIncognito = false,
     onToggleIncognito,
-    isTyping = false
+    isTyping = false,
+    disappearingDuration = 0,
+    onSetDisappearingDuration
 }: ChatHeaderProps) {
     const [isActive, setIsActive] = useState(false);
     const [showTrend, setShowTrend] = useState(false);
     const [showBookmarkToast, setShowBookmarkToast] = useState(false);
+    const [showDisappearingMenu, setShowDisappearingMenu] = useState(false);
+    const disappearingMenuRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (disappearingMenuRef.current && !disappearingMenuRef.current.contains(event.target as Node)) {
+                setShowDisappearingMenu(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     // Micro-Motion: Trigger active bounce on chat change key (name used as proxy)
     useEffect(() => {
@@ -226,6 +242,46 @@ export default function ChatHeader({
                         <path d="M12 2C7.03 2 3 6.03 3 11v11h18V11c0-4.97-4.03-9-9-9zm0 2.25c2.485 0 4.5 2.015 4.5 4.5s-2.015 4.5-4.5 4.5-4.5-2.015-4.5-4.5 2.015-4.5 4.5-4.5zM5.25 17.75c0-3 3.022-5.25 6.75-5.25s6.75 2.25 6.75 5.25H5.25z" />
                     </svg>
                 </button>
+
+                {/* Disappearing Messages Toggle */}
+                <div className="relative" ref={disappearingMenuRef}>
+                    <button
+                        onClick={() => setShowDisappearingMenu(!showDisappearingMenu)}
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors border border-white/5 backdrop-blur-sm ${disappearingDuration > 0 ? 'bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-500/50' : 'bg-white/5 hover:bg-white/15 dark:bg-black/10 dark:hover:bg-black/20 text-zinc-500 dark:text-zinc-400'}`}
+                        title="Disappearing Messages"
+                    >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                    {showDisappearingMenu && (
+                        <div className="absolute top-full right-0 mt-2 w-48 rounded-xl bg-white p-2 shadow-xl ring-1 ring-black/5 dark:bg-zinc-900 dark:ring-white/10 z-50">
+                            <h3 className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">Disappearing Timer</h3>
+                            {[
+                                { label: 'Off', value: 0 },
+                                { label: '1 Minute', value: 60 },
+                                { label: '1 Hour', value: 3600 },
+                                { label: '24 Hours', value: 86400 }
+                            ].map((option) => (
+                                <button
+                                    key={option.value}
+                                    onClick={() => {
+                                        onSetDisappearingDuration?.(option.value);
+                                        setShowDisappearingMenu(false);
+                                    }}
+                                    className={`flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm transition-colors ${disappearingDuration === option.value ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300' : 'text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800'}`}
+                                >
+                                    {option.label}
+                                    {disappearingDuration === option.value && (
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 {/* Search Button */}
                 <button className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors bg-white/5 hover:bg-white/15 dark:bg-black/10 dark:hover:bg-black/20 border border-white/5 backdrop-blur-sm hover:text-indigo-600">

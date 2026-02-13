@@ -24,13 +24,26 @@ export async function POST(req: Request) {
             }
         }
 
+        // Fetch chat settings
+        const chat = await prisma.chat.findUnique({
+            where: { id: chatId },
+            select: { disappearingDuration: true }
+        });
+
+        if (!chat) {
+            return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
+        }
+
         const message = await prisma.message.create({
             data: {
                 content,
                 chatId,
                 senderId: user.id,
                 type,
-                mediaUrl
+                mediaUrl,
+                expiresAt: chat.disappearingDuration && chat.disappearingDuration > 0
+                    ? new Date(Date.now() + chat.disappearingDuration * 1000)
+                    : null
             },
             include: {
                 sender: true
