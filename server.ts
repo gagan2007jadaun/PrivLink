@@ -37,9 +37,21 @@ app.prepare().then(() => {
             console.log('Message relayed:', data.content);
         });
 
-        socket.on('typing', (data: any) => {
+        socket.on('typing_start', (data: any) => {
             if (data.chatId) {
-                socket.to(data.chatId).emit('typing', data);
+                socket.to(data.chatId).emit('user_typing', data);
+            }
+        });
+
+        socket.on('typing_stop', (data: any) => {
+            if (data.chatId) {
+                socket.to(data.chatId).emit('user_stop_typing', data);
+            }
+        });
+
+        socket.on('add_reaction', (data: any) => {
+            if (data.chatId) {
+                io.to(data.chatId).emit('reaction_added', data);
             }
         });
 

@@ -7,11 +7,13 @@ import { generateThumbnail } from '@/lib/mediaUtils';
 interface MessageInputProps {
     onSendMessage?: (
         content: string,
-        type: 'text' | 'audio' | 'video' | 'image',
+        type: 'text' | 'audio' | 'video' | 'image' | 'file',
         duration?: number,
         confidenceScore?: number,
         thumbnailUrl?: string,
-        style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }
+        style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string },
+        fileName?: string,
+        fileSize?: string
     ) => void;
     boundaryMode?: boolean;
     recentMessages?: string[];
@@ -19,6 +21,7 @@ interface MessageInputProps {
     replyingTo?: { sender: string; text: string; mediaType?: string } | null;
     onCancelReply?: () => void;
     isIncognito?: boolean;
+    onTyping?: (isTyping: boolean) => void;
 }
 
 export default function MessageInput({
@@ -28,13 +31,15 @@ export default function MessageInput({
     selfAlias,
     replyingTo,
     onCancelReply,
-    isIncognito = false
+    isIncognito = false,
+    onTyping
 }: MessageInputProps) {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [message, setMessage] = useState("");
     const [isEcho, setIsEcho] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Premium Attachment Menu State
     const [isAttachOpen, setIsAttachOpen] = useState(false);
@@ -243,9 +248,10 @@ export default function MessageInput({
             onSendMessage(message, 'text', undefined, scoreToSend, undefined, activeStyles);
             setMessage("");
             metrics.resetMetrics();
-            // Reset styles after send? Maybe keep them. User preference. Let's keep them for now or reset.
-            // Resetting feels cleaner for new message.
-            // setMessageStyle({ bold: false, italic: false, underline: false });
+
+            // Stop typing immediately
+            if (onTyping) onTyping(false);
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         }
     };
 
@@ -260,8 +266,26 @@ export default function MessageInput({
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (isRecordingAudio || isRecordingVideo) return;
-        setMessage(e.target.value);
-        metrics.handleChange(e.target.value);
+        const msg = e.target.value;
+        setMessage(msg);
+        metrics.handleChange(msg);
+
+        // Typing Indicator Logic
+        if (onTyping) {
+            if (msg.trim().length > 0) {
+                onTyping(true);
+
+                // Clear existing timeout
+                if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+                // Set new timeout to stop typing after inactivity
+                typingTimeoutRef.current = setTimeout(() => {
+                    onTyping(false);
+                }, 2000);
+            } else {
+                onTyping(false);
+            }
+        }
     };
 
     const toggleStyle = (style: 'bold' | 'italic' | 'underline') => {
@@ -368,9 +392,9 @@ export default function MessageInput({
                         }}
                     />
 
-                    {/* Document (Mock) */}
+                    {/* Document (Real) */}
                     <button
-                        onClick={() => alert("Document sharing coming soon!")}
+                        onClick={() => document.getElementById('doc-upload')?.click()}
                         className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-white/50 dark:text-zinc-200 dark:hover:bg-white/10"
                     >
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100/80 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
@@ -383,6 +407,21 @@ export default function MessageInput({
                             <span className="text-[10px] text-zinc-400 dark:text-zinc-500">Share files</span>
                         </div>
                     </button>
+                    <input
+                        id="doc-upload"
+                        type="file"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip"
+                        className="hidden"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file && onSendMessage) {
+                                const url = URL.createObjectURL(file);
+                                const size = (file.size / (1024 * 1024)).toFixed(2) + " MB";
+                                onSendMessage(url, 'file', undefined, undefined, undefined, undefined, file.name, size);
+                                setIsAttachOpen(false);
+                            }
+                        }}
+                    />
 
                     {/* Poll (Mock) */}
                     <button

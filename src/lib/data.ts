@@ -1,9 +1,12 @@
 export interface Message {
     id: string;
-    type: 'text' | 'audio' | 'video' | 'image';
+    type: 'text' | 'audio' | 'video' | 'image' | 'file';
     content: string; // Text content or File URL
+    fileName?: string; // For file messages
+    fileSize?: string; // e.g. "2.4 MB"
     timestamp: string;
     isMe: boolean;
+    senderId?: string; // ID of the sender
     duration?: number; // In seconds, for audio/video
     thumbnailUrl?: string; // For video messages
     reactions?: { emoji: string; count: number }[];

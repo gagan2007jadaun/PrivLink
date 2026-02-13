@@ -3,8 +3,10 @@ import AudioBubble from './media/AudioBubble';
 import VideoBubble from './media/VideoBubble';
 
 interface MessageBubbleProps {
-    type: 'text' | 'audio' | 'video' | 'image';
+    type: 'text' | 'audio' | 'video' | 'image' | 'file';
     content: string;
+    fileName?: string;
+    fileSize?: string;
     timestamp: string;
     isMe?: boolean;
     duration?: number;
@@ -29,6 +31,7 @@ interface MessageBubbleProps {
     onReplyClick?: (messageId: string) => void;
     onImageClick?: (url: string) => void;
     onRetry?: () => void;
+    onReaction?: (emoji: string) => void;
 }
 
 export default function MessageBubble({
@@ -47,8 +50,23 @@ export default function MessageBubble({
     replyTo,
     onReplyClick,
     onImageClick,
+    fileName,
+    fileSize,
     onRetry,
+    onReaction,
 }: MessageBubbleProps) {
+    const [showReactionPicker, setShowReactionPicker] = React.useState(false);
+    const reactionPickerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (reactionPickerRef.current && !reactionPickerRef.current.contains(event.target as Node)) {
+                setShowReactionPicker(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
     return (
         <div className={`flex w-full ${isMe ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
             <div className={`relative max-w-[70%] sm:max-w-[65%] ${isMe ? 'items-start' : 'items-end'} flex flex-col gap-1`}>
@@ -104,6 +122,25 @@ export default function MessageBubble({
                         <AudioBubble src={content} duration={duration} isMe={isMe} />
                     )}
 
+                    {type === 'file' && (
+                        <div className={`flex items-center gap-3 rounded-xl p-3 ${isMe ? 'bg-indigo-600/20' : 'bg-zinc-100 dark:bg-zinc-800'}`}>
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-200 dark:bg-zinc-700">
+                                <svg className="h-6 w-6 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <div className="flex flex-col overflow-hidden max-w-[150px]">
+                                <span className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200" title={fileName || "Document"}>{fileName || "Document"}</span>
+                                <span className="text-xs text-zinc-500">{fileSize || "Unknown Size"}</span>
+                            </div>
+                            <a href={content} download={fileName || "download"} className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white transition-colors hover:bg-indigo-600" onClick={(e) => e.stopPropagation()}>
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            </a>
+                        </div>
+                    )}
+
                     {type === 'text' && content && (
                         <p className={`leading-relaxed ${confidenceScore !== undefined && confidenceScore < 80 ? 'opacity-90' : ''} 
                         ${propsStyle?.bold ? 'font-bold' : ''} 
@@ -119,6 +156,38 @@ export default function MessageBubble({
                         <span className={`text-[10px] opacity-45 ${isMe ? 'text-indigo-100' : 'text-zinc-400 dark:text-zinc-500'}`}>
                             {timestamp}
                         </span>
+
+                        {/* Reaction Button (Hover only or specific action) */}
+                        {!isMe && (
+                            <div className="relative group">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowReactionPicker(!showReactionPicker); }}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                                >
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
+                                {showReactionPicker && (
+                                    <div ref={reactionPickerRef} className="absolute bottom-full left-0 mb-2 flex gap-1 rounded-full bg-white p-1 shadow-lg ring-1 ring-black/5 dark:bg-zinc-800 dark:ring-white/10 z-10">
+                                        {['👍', '❤️', '😂', '😮', '😢', '🔥'].map(emoji => (
+                                            <button
+                                                key={emoji}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onReaction?.(emoji);
+                                                    setShowReactionPicker(false);
+                                                }}
+                                                className="h-8 w-8 rounded-full text-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {isMe && (
                             <div className="flex items-center" title={status}>
                                 {status === 'sending' && (

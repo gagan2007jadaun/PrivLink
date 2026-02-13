@@ -252,12 +252,64 @@ export default function Home() {
         if (prev.some(m => m.id === data.id)) return prev;
         return [...prev, data];
       });
+      // Clear typing indicator for sender
+      setTypingUsers(prev => {
+        const next = new Set(prev);
+        next.delete(data.senderId || 'Unknown'); // Use ID or Name
+        return next;
+      });
+    });
+
+    socket.on('user_typing', (data: { username: string }) => {
+      setTypingUsers(prev => {
+        const next = new Set(prev);
+        next.add(data.username);
+        return next;
+      });
+    });
+
+    socket.on('user_stop_typing', (data: { username: string }) => {
+      setTypingUsers(prev => {
+        const next = new Set(prev);
+        next.delete(data.username);
+        return next;
+      });
+    });
+
+    socket.on('reaction_added', (data: { messageId: string, emoji: string }) => {
+      setMessages(prev => prev.map(msg => {
+        if (msg.id === data.messageId) {
+          const existingReaction = msg.reactions?.find(r => r.emoji === data.emoji);
+          const newReactions = existingReaction
+            ? msg.reactions?.map(r => r.emoji === data.emoji ? { ...r, count: r.count + 1 } : r)
+            : [...(msg.reactions || []), { emoji: data.emoji, count: 1 }];
+          return { ...msg, reactions: newReactions };
+        }
+        return msg;
+      }));
     });
 
     return () => {
       socket.off('receive_message');
+      socket.off('user_typing');
+      socket.off('user_stop_typing');
+      socket.off('reaction_added');
     };
   }, [socket, activeChatId]);
+
+  // Typing Logic
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+
+  const handleTyping = (isTyping: boolean) => {
+    if (!socket || !activeChatId) return;
+
+    const username = sessionStorage.getItem("alias") || "Anonymous";
+    if (isTyping) {
+      socket.emit('typing_start', { chatId: activeChatId, username });
+    } else {
+      socket.emit('typing_stop', { chatId: activeChatId, username });
+    }
+  };
 
   // Load Chats from API
   useEffect(() => {
@@ -709,7 +761,25 @@ export default function Home() {
     handleSendMessage(msg.content, msg.type, msg.duration, msg.confidenceScore, msg.thumbnailUrl, msg.style);
   };
 
-  const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }) => {
+  const handleReaction = (messageId: string, emoji: string) => {
+    if (!socket || !activeChatId) return;
+
+    // Optimistic Update
+    setMessages(prev => prev.map(msg => {
+      if (msg.id === messageId) {
+        const existingReaction = msg.reactions?.find(r => r.emoji === emoji);
+        const newReactions = existingReaction
+          ? msg.reactions?.map(r => r.emoji === emoji ? { ...r, count: r.count + 1 } : r)
+          : [...(msg.reactions || []), { emoji, count: 1 }];
+        return { ...msg, reactions: newReactions };
+      }
+      return msg;
+    }));
+
+    socket.emit('add_reaction', { chatId: activeChatId, messageId, emoji });
+  };
+
+  const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image' | 'file', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }, fileName?: string, fileSize?: string) => {
     if (!activeChat) return;
 
     // 🧪 Experiment: Play Sound
@@ -726,6 +796,8 @@ export default function Home() {
       isConsecutive: messages.length > 0 && messages[messages.length - 1].isMe,
       status: isOnline ? 'sent' : 'queued',
       confidenceScore: confidenceScore,
+      fileName: fileName,
+      fileSize: fileSize,
       style: style,
       replyTo: replyingTo ? {
         messageId: replyingTo.id,
@@ -746,7 +818,9 @@ export default function Home() {
         chatId: activeChatId,
         senderId: sessionStorage.getItem("alias") || "Anonymous", // Sending Alias as ID for our lazy controller
         type,
-        mediaUrl: thumbnailUrl
+        mediaUrl: thumbnailUrl,
+        fileName,
+        fileSize
       })
     }).catch(err => console.error("Failed to save message to DB", err));
 
@@ -999,6 +1073,8 @@ export default function Home() {
                       isMe={msg.isMe}
                       duration={msg.duration}
                       thumbnailUrl={msg.thumbnailUrl}
+                      fileName={msg.fileName}
+                      fileSize={msg.fileSize}
                       reactions={msg.reactions}
                       isConsecutive={msg.isConsecutive}
                       status={msg.status}
@@ -1009,11 +1085,28 @@ export default function Home() {
                       onReplyClick={scrollToMessage}
                       onImageClick={(url) => setSelectedImage(url)}
                       onRetry={() => handleRetry(msg.id)}
+                      onReaction={(emoji) => handleReaction(msg.id, emoji)}
                     />
                   </div>
                 ))
               )}
               <div ref={messagesEndRef} />
+
+              {/* Typing Indicator */}
+              {(typingUsers.size > 0 || isGhostTyping) && (
+                <div className="ml-4 flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-500 animate-pulse">
+                  <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span>
+                    {typingUsers.size > 0
+                      ? `${Array.from(typingUsers).join(', ')} is typing...`
+                      : 'Someone is typing...'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1027,6 +1120,7 @@ export default function Home() {
               selfAlias={activeChat.selfAlias}
               replyingTo={replyingTo}
               onCancelReply={cancelReply}
+              onTyping={handleTyping}
             />
           </div>
         </main>
