@@ -245,9 +245,19 @@ body.neon-mode .chat-input textarea {
   border-color: rgba(0, 255, 255, 0.4);
 }
 
-body.neon-mode h1,
-body.neon-mode h2,
 body.neon-mode h3 {
   text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
   color: #fff !important;
+}
+
+/* User Requested Fix for Media Containers */
+.media-container {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  /* Bohot halka border */
+  padding: 0;
+  /* Extra space khatam karne ke liye */
+  outline: none;
+  /* Selection border hatane ke liye */
+  box-shadow: none;
+  /* Extra glow/highlight hatane ke liye */
 }
