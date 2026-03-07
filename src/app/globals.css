@@ -2,26 +2,27 @@
 
 :root,
 [data-theme="light"] {
-  /* Rich Gradient Background */
-  --background: #ffffff;
-  /* Fallback */
-  --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  --foreground: 240 10% 3.9%;
+  /* Frosted Snow Background */
+  --background: #F4F8F9;
+  --background-gradient: none;
+  --foreground: #18181b;
 
   /* Glassmorphism Tokens */
-  --glass-bg: rgba(255, 255, 255, 0.25);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  --glass-blur: blur(12px);
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --glass-blur: blur(16px);
 
   /* User Requested Light Mode Tokens */
-  --header-bg: rgba(255, 255, 255, 0.6);
+  --header-bg: rgba(244, 248, 249, 0.8);
   /* Translucent */
-  --header-border: rgba(255, 255, 255, 0.3);
-  --header-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --header-border: rgba(0, 0, 0, 0.05);
+  --header-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
   /* Softer shadow */
-  --subtitle-text: #6F6F6F;
-  --title-text: #1F1F1F;
+  --sidebar-bg: #F4F8F9;
+  --panel-bg: #ffffff;
+  --subtitle-text: #616161;
+  --title-text: #18181b;
   --interest-high: #2ECC71;
   --interest-mid: #E1B12C;
   --interest-low: #C96A5B;
@@ -114,6 +115,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-sidebar: var(--sidebar-bg);
+  --color-panel: var(--panel-bg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -123,21 +126,20 @@
 /* Support class-based dark mode (updated to data-theme) */
 /* Support class-based dark mode (updated to data-theme) */
 [data-theme="dark"] {
-  --background: #0a0a0a;
-  /* Fallback */
-  /* Deep Blue/Purple Night Mesh */
-  --background-gradient: radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
-    radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+  /* Evergreen Background */
+  --background: #1F3A34;
+  --background-gradient: none;
   --foreground: #ededed;
 
   /* Glassmorphism Tokens Dark */
-  --glass-bg: rgba(20, 20, 25, 0.4);
+  --glass-bg: rgba(31, 58, 52, 0.5);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 
-  --header-bg: rgba(20, 20, 25, 0.4);
+  --header-bg: rgba(31, 58, 52, 0.8);
   --header-border: rgba(255, 255, 255, 0.05);
+  --sidebar-bg: #1A312C;
+  --panel-bg: #1F3A34;
 }
 
 html,

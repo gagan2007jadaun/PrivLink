@@ -1016,7 +1016,7 @@ export default function Home() {
 
       {/* Main Chat Area */}
       {!activeChat ? (
-        <div className="flex flex-1 items-center justify-center bg-zinc-50 dark:bg-black text-zinc-400">
+        <div className="flex flex-1 items-center justify-center bg-background text-zinc-400">
           <p>Select a conversation to start chatting.</p>
         </div>
       ) : (
@@ -1057,7 +1057,7 @@ export default function Home() {
                 opacity: (activeChat.chatBackground?.intensity ?? userPrefs.chatBackground?.intensity ?? (activeChat.chatBackground?.type === 'texture' || userPrefs.chatBackground?.type === 'texture' ? 0.15 : 0.45)),
               }}
             />
-            <div className="absolute inset-0 bg-white/55 dark:bg-black/20 mix-blend-overlay"></div>
+            <div className="absolute inset-0 bg-white/20 dark:bg-black/30 mix-blend-overlay"></div>
           </div>
 
           {/* Atmosphere/Weight Vignette */}
