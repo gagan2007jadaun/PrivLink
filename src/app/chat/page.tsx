@@ -5,6 +5,7 @@ import ChatHeader from "@/components/ChatHeader";
 import MessageBubble from "@/components/MessageBubble";
 import MessageInput from "@/components/MessageInput";
 import RightPanel from "@/components/RightPanel";
+import AppNavigation from "@/components/AppNavigation";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { mockChats, mockMessages, Message, Chat } from "@/lib/data";
 
@@ -1004,15 +1005,18 @@ export default function Home() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-transparent text-zinc-900 dark:text-zinc-100 font-sans">
-      {/* Left Sidebar */}
-      <Sidebar
-        chats={chats}
-        activeChatId={activeChatId}
-        onSelectChat={handleChatSelect}
-        onCreateChat={handleCreateChat}
-        onArchiveChat={handleArchiveChat}
-        onDeleteChat={handleDeleteChat}
-      />
+      {/* Unified Left Navigation Panel */}
+      <div className="hidden md:flex md:my-3 md:ml-3 md:h-[calc(100vh-24px)] rounded-[24px] overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] border border-white/20 dark:border-white/10 z-20 shrink-0 bg-[#1c1b2a]/90 backdrop-blur-2xl">
+        <AppNavigation />
+        <Sidebar
+          chats={chats}
+          activeChatId={activeChatId}
+          onSelectChat={handleChatSelect}
+          onCreateChat={handleCreateChat}
+          onArchiveChat={handleArchiveChat}
+          onDeleteChat={handleDeleteChat}
+        />
+      </div>
 
       {/* Main Chat Area */}
       {!activeChat ? (

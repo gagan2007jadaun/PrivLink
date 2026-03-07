@@ -1,0 +1,59 @@
+[00:00:03.165] Server  LOG      ✓ Ready in 2.3s
+[00:00:11.381] Server  LOG      ○ Compiling / ...
+[00:00:17.185] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:21.324] Browser WARN    Image with src "/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:45.694] Server  LOG      ○ Compiling /chat ...
+[00:00:48.749] Browser LOG     Window blurred
+[00:00:48.749] Browser WARN    Visibility hidden - Possible capture event
+[00:00:48.749] Browser WARN    High Probability Screenshot/Capture detected
+[00:00:55.731] Browser LOG     Window blurred
+[00:00:56.473] Browser WARN    Visibility hidden - Possible capture event
+[00:00:56.473] Browser WARN    High Probability Screenshot/Capture detected
+[00:01:32.464] Browser LOG     Window blurred
+[00:01:32.464] Browser WARN    Visibility hidden - Possible capture event
+[00:01:32.464] Browser WARN    High Probability Screenshot/Capture detected
+[00:01:58.887] Browser LOG     Window blurred
+[00:01:59.463] Browser WARN    Visibility hidden - Possible capture event
+[00:01:59.464] Browser WARN    High Probability Screenshot/Capture detected
+[00:02:11.099] Server  LOG      ✓ Compiled in 344ms
+[00:02:21.171] Browser LOG     Window blurred
+[00:02:21.468] Browser WARN    Visibility hidden - Possible capture event
+[00:02:21.468] Browser WARN    High Probability Screenshot/Capture detected
+[00:03:06.030] Browser LOG     Window blurred
+[00:03:06.463] Browser WARN    Visibility hidden - Possible capture event
+[00:03:06.463] Browser WARN    High Probability Screenshot/Capture detected
+[00:03:16.545] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:09:14.462] Browser LOG     Window blurred
+[00:09:14.462] Browser WARN    Visibility hidden - Possible capture event
+[00:09:14.462] Browser WARN    High Probability Screenshot/Capture detected
+[00:09:24.471] Browser LOG     Window blurred
+[00:09:24.471] Browser WARN    Visibility hidden - Possible capture event
+[00:09:24.471] Browser WARN    High Probability Screenshot/Capture detected
+[00:09:43.112] Server  LOG      ✓ Compiled in 202ms
+[00:09:47.380] Server  LOG      ✓ Compiled in 871ms
+[00:09:52.247] Server  LOG      ✓ Compiled in 3.7s
+[00:11:01.508] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:19.659] Browser LOG     Window blurred
+[00:11:20.459] Browser WARN    Visibility hidden - Possible capture event
+[00:11:20.460] Browser WARN    High Probability Screenshot/Capture detected
+[00:11:24.007] Browser LOG     Window blurred
+[00:11:25.469] Browser WARN    Visibility hidden - Possible capture event
+[00:11:49.476] Browser LOG     Window blurred
+[00:11:49.476] Browser WARN    Visibility hidden - Possible capture event
+[00:11:49.476] Browser WARN    High Probability Screenshot/Capture detected
+[00:13:40.680] Server  LOG      ✓ Compiled in 1750ms
+[00:13:42.192] Server  LOG      ✓ Compiled in 930ms
+[00:13:43.337] Server  LOG      ✓ Compiled in 172ms
+[00:16:23.868] Browser LOG     Window blurred
+[00:16:24.464] Browser WARN    Visibility hidden - Possible capture event
+[00:16:24.464] Browser WARN    High Probability Screenshot/Capture detected
+[00:16:58.460] Browser LOG     Window blurred
+[00:16:58.460] Browser WARN    Visibility hidden - Possible capture event
+[00:16:58.460] Browser WARN    High Probability Screenshot/Capture detected
+[00:17:05.736] Browser LOG     Window blurred
+[00:17:07.471] Browser WARN    Visibility hidden - Possible capture event
+[00:17:10.193] Server  LOG      ✓ Compiled in 634ms
+[00:21:46.835] Browser LOG     Window blurred
+[00:22:32.957] Browser LOG     Window blurred
+[00:22:33.471] Browser WARN    Visibility hidden - Possible capture event
+[00:22:33.471] Browser WARN    High Probability Screenshot/Capture detected
