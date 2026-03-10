@@ -1,9 +1,6 @@
 {
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
-  "/api/chats/route": "/api/chats",
-  "/api/messages/[chatId]/route": "/api/messages/[chatId]",
-  "/api/messages/route": "/api/messages",
   "/auth/page": "/auth",
   "/chat/page": "/chat",
   "/favicon.ico/route": "/favicon.ico",

@@ -19,16 +19,7 @@
     "afterFiles": [],
     "fallback": []
   },
-  "dynamicRoutes": [
-    {
-      "page": "/api/messages/[chatId]",
-      "regex": "^/api/messages/([^/]+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPchatId": "nxtPchatId"
-      },
-      "namedRegex": "^/api/messages/(?<nxtPchatId>[^/]+?)(?:/)?$"
-    }
-  ],
+  "dynamicRoutes": [],
   "staticRoutes": [
     {
       "page": "/",
@@ -47,18 +38,6 @@
       "regex": "^/_not\\-found(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/_not\\-found(?:/)?$"
-    },
-    {
-      "page": "/api/chats",
-      "regex": "^/api/chats(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/api/chats(?:/)?$"
-    },
-    {
-      "page": "/api/messages",
-      "regex": "^/api/messages(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/api/messages(?:/)?$"
     },
     {
       "page": "/auth",
