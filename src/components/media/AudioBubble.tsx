@@ -173,7 +173,7 @@ const AudioBubble: React.FC<AudioBubbleProps> = ({ src, duration, isMe }) => {
         if (audioRef.current) audioRef.current.currentTime = 0;
     };
 
-    const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!audioRef.current || !duration) return;
         const rect = canvasRef.current!.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -225,11 +225,10 @@ const AudioBubble: React.FC<AudioBubbleProps> = ({ src, duration, isMe }) => {
                 </button>
 
                 {/* Waveform Canvas */}
-                <div className="flex-1 h-8 relative group cursor-pointer">
+                <div className="flex-1 h-8 relative group cursor-pointer" onClick={handleCanvasClick}>
                     <canvas
                         ref={canvasRef}
                         className="w-full h-full block"
-                        onClick={handleCanvasClick}
                     />
                     {/* Hover Line (CSS-only or JS managed, CSS easier for simple implementation) */}
                     <div className="absolute top-0 bottom-0 w-[1px] bg-red-400 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" style={{ left: '0%' /* Would need mouse tracking for precise line helper */ }} />
