@@ -1,0 +1,32 @@
+[00:00:03.176] Server  LOG      ✓ Ready in 2.4s
+[00:00:11.479] Server  LOG      ○ Compiling / ...
+[00:00:15.757] Server  WARN     ⚠ Cross origin request detected from 10.228.150.192 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[00:00:15.903] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:39.540] Server  LOG      ✓ Compiled in 187ms
+[00:02:59.099] Browser WARN    Image with src "/logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:03:38.750] Server  LOG      ○ Compiling /chat ...
+[00:03:41.533] Browser LOG     Initializing mock socket
+[00:03:41.533] Browser LOG     Cleaning up mock socket
+[00:03:41.533] Browser LOG     Initializing mock socket
+[00:03:41.533] Browser LOG     Mock socket emitted: join_chat 1
+[00:03:41.533] Browser LOG     Mock socket listening for: receive_message
+[00:03:41.533] Browser LOG     Mock socket listening for: user_typing
+[00:03:41.533] Browser LOG     Mock socket listening for: user_stop_typing
+[00:03:41.533] Browser LOG     Mock socket listening for: reaction_added
+[00:03:50.308] Browser LOG     Cleaning up mock socket
+[00:03:50.308] Browser LOG     Mock socket stopped listening for: receive_message
+[00:03:50.308] Browser LOG     Mock socket stopped listening for: user_typing
+[00:03:50.309] Browser LOG     Mock socket stopped listening for: user_stop_typing
+[00:03:50.309] Browser LOG     Mock socket stopped listening for: reaction_added
+[00:04:03.653] Browser LOG     Initializing mock socket
+[00:04:03.653] Browser LOG     Cleaning up mock socket
+[00:04:03.653] Browser LOG     Initializing mock socket
+[00:04:03.653] Browser LOG     Mock socket emitted: join_chat 1
+[00:04:03.653] Browser LOG     Mock socket listening for: receive_message
+[00:04:03.653] Browser LOG     Mock socket listening for: user_typing
+[00:04:03.653] Browser LOG     Mock socket listening for: user_stop_typing
+[00:04:03.653] Browser LOG     Mock socket listening for: reaction_added
+[00:04:06.820] Browser LOG     Window blurred
+[00:04:06.820] Browser WARN    Visibility hidden - Possible capture event
+[00:04:06.820] Browser WARN    High Probability Screenshot/Capture detected

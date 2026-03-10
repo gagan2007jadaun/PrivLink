@@ -5,6 +5,7 @@ import ChatHeader from "@/components/ChatHeader";
 import MessageBubble from "@/components/MessageBubble";
 import MessageInput from "@/components/MessageInput";
 import RightPanel from "@/components/RightPanel";
+import AppNavigation from "@/components/AppNavigation";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { mockChats, mockMessages, Message, Chat } from "@/lib/data";
 
@@ -311,13 +312,11 @@ export default function Home() {
     }
   };
 
-  // Load Chats from API
+  // Load Chats from Mock Data
   useEffect(() => {
-    const fetchChats = async () => {
+    const loadChats = () => {
       try {
-        const res = await fetch('/api/chats?userId=' + (sessionStorage.getItem("alias") || "anon"));
-        if (!res.ok) throw new Error("Failed to load chats");
-        const data = await res.json();
+        const data = mockChats;
 
         if (data && data.length > 0) {
           // Hydrate with local backgrounds
@@ -341,25 +340,15 @@ export default function Home() {
           } else {
             setActiveChatId(data[0].id);
           }
-        } else {
-          // Auto-create default chat if none exist
-          const createRes = await fetch('/api/chats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'General', isGroup: true })
-          });
-          const newChat = await createRes.json();
-          setChats([newChat]);
-          setActiveChatId(newChat.id);
         }
       } catch (e) {
-        console.error("API Error (Chats):", e);
+        console.error("Mock Data Error (Chats):", e);
         setChats([]);
         setActiveChatId("");
       }
     };
 
-    fetchChats();
+    loadChats();
   }, []);
 
   // Network Status & Queue Processing
@@ -686,36 +675,29 @@ export default function Home() {
     }
   }, [activeChatId, isScrolledBottom]);
 
-  // Load messages from API when active chat changes
+  // Load messages from Mock Data when active chat changes
   useEffect(() => {
     if (!activeChatId) return;
 
-    const fetchMessages = async () => {
+    const loadMessages = () => {
       try {
-        const res = await fetch(`/api/messages/${activeChatId}`);
-        if (!res.ok) throw new Error("Failed to load messages");
-        const data = await res.json();
-
+        const data = mockMessages[activeChatId] || [];
         const currentUser = sessionStorage.getItem("alias");
+
         const processed = data.map((m: any) => ({
           ...m,
-          // Map DB fields to UI fields if needed, or ensuring compatibility
-          id: m.id,
-          content: m.content,
-          type: m.type || 'text',
-          timestamp: m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : m.timestamp,
-          isMe: m.sender?.username === currentUser || m.senderId === currentUser,
-          status: 'read' // db messages are historically read
+          isMe: m.isMe || m.senderId === currentUser,
+          status: m.status || 'read'
         }));
 
         setMessages(processed);
       } catch (e) {
-        console.error("API Error (Messages):", e);
+        console.error("Mock Data Error (Messages):", e);
         setMessages([]);
       }
     };
 
-    fetchMessages();
+    loadMessages();
   }, [activeChatId]);
 
   const scrollToBottom = () => {
@@ -779,25 +761,11 @@ export default function Home() {
     socket.emit('add_reaction', { chatId: activeChatId, messageId, emoji });
   };
 
-  const handleSetDisappearingDuration = async (duration: number) => {
+  const handleSetDisappearingDuration = (duration: number) => {
     if (!activeChatId) return;
 
-    // Optimistic Update
-    const updatedChat = { ...activeChat, disappearingDuration: duration };
-    // @ts-ignore - setChats might expect full Chat object but we are updating activeChat derived state? 
-    // Wait, activeChat is derived from chats.find. We need to update chats state.
+    // Local Update Only
     setChats(prev => prev.map(c => c.id === activeChatId ? { ...c, disappearingDuration: duration } : c));
-
-    try {
-      await fetch(`/api/chats/${activeChatId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ disappearingDuration: duration })
-      });
-    } catch (e) {
-      console.error("Failed to update disappearing duration", e);
-      // Revert on error could be added here
-    }
   };
 
   const handleSendMessage = (content: string, type: 'text' | 'audio' | 'video' | 'image' | 'file', duration?: number, confidenceScore?: number, thumbnailUrl?: string, style?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: string }, fileName?: string, fileSize?: string) => {
@@ -830,51 +798,8 @@ export default function Home() {
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);
 
-    // Save to Database
-    const saveMessage = async () => {
-      let finalContent = content;
-      let finalMediaUrl = thumbnailUrl;
-
-      // If media type, upload to Cloudinary if it's a data or blob URL
-      if (type !== 'text' && (content.startsWith('data:') || content.startsWith('blob:'))) {
-        try {
-          // Convert data URL to Blob
-          const res = await fetch(content);
-          const blob = await res.blob();
-          const formData = new FormData();
-          formData.append('file', blob);
-
-          const uploadRes = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData
-          });
-
-          if (uploadRes.ok) {
-            const uploadData = await uploadRes.json();
-            finalContent = uploadData.secure_url;
-            finalMediaUrl = uploadData.secure_url; // For now use same, or thumbnails if generated by cloudinary
-          }
-        } catch (e) {
-          console.error("Cloudinary upload failed", e);
-        }
-      }
-
-      fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: finalContent,
-          chatId: activeChatId,
-          senderId: sessionStorage.getItem("alias") || "Anonymous",
-          type,
-          mediaUrl: finalMediaUrl,
-          fileName,
-          fileSize
-        })
-      }).catch(err => console.error("Failed to save message to DB", err));
-    };
-
-    saveMessage();
+    // Mock Persistence (Local state only)
+    console.log("Message sent (Mock):", newMessage);
 
 
     setReplyingTo(null); // Clear reply state
@@ -1004,15 +929,18 @@ export default function Home() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-transparent text-zinc-900 dark:text-zinc-100 font-sans">
-      {/* Left Sidebar */}
-      <Sidebar
-        chats={chats}
-        activeChatId={activeChatId}
-        onSelectChat={handleChatSelect}
-        onCreateChat={handleCreateChat}
-        onArchiveChat={handleArchiveChat}
-        onDeleteChat={handleDeleteChat}
-      />
+      {/* Unified Left Navigation Panel */}
+      <div className="hidden md:flex md:my-3 md:ml-3 md:h-[calc(100vh-24px)] rounded-[24px] overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] border border-white/20 dark:border-white/10 z-20 shrink-0 bg-[#1c1b2a]/90 backdrop-blur-2xl">
+        <AppNavigation />
+        <Sidebar
+          chats={chats}
+          activeChatId={activeChatId}
+          onSelectChat={handleChatSelect}
+          onCreateChat={handleCreateChat}
+          onArchiveChat={handleArchiveChat}
+          onDeleteChat={handleDeleteChat}
+        />
+      </div>
 
       {/* Main Chat Area */}
       {!activeChat ? (

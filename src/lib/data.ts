@@ -60,6 +60,8 @@ export interface Chat {
     interestTrend?: 'rising' | 'falling' | 'stable'; // New Display logic
     energyBalance?: number; // -100 to 100 (Negative = They talk more, Positive = I talk more)
     persona?: 'morning' | 'night' | 'balanced'; // Time-of-day personality
+    isGroup?: boolean; // Mock-only field for demo
+    type?: string;     // Mock-only field for demo
 
     // Permissions (Rules)
     permissions?: {
@@ -82,6 +84,49 @@ export interface Chat {
     };
 }
 
-export const mockChats: Chat[] = [];
+export const mockChats: Chat[] = [
+    {
+        id: "1",
+        name: "General",
+        lastMessage: "Welcome to PrivLink!",
+        time: "10:23 AM",
+        timestamp: new Date().toISOString(),
+        unreadCount: 0,
+        isOnline: true,
+        interestScore: 85,
+        isGroup: true as any, // Temporary mock extension
+    },
+    {
+        id: "2",
+        name: "Alice",
+        lastMessage: "Hey, did you see the new design?",
+        time: "昨天",
+        timestamp: new Date(Date.now() - 86400000).toISOString(),
+        unreadCount: 2,
+        isOnline: false,
+        interestScore: 92,
+    }
+];
 
-export const mockMessages: Record<string, Message[]> = {};
+export const mockMessages: Record<string, Message[]> = {
+    "1": [
+        {
+            id: "m1",
+            type: 'text',
+            content: "Welcome to PrivLink!",
+            timestamp: "10:23 AM",
+            isMe: false,
+            status: 'read'
+        }
+    ],
+    "2": [
+        {
+            id: "m2",
+            type: 'text',
+            content: "Hey, did you see the new design?",
+            timestamp: "昨天",
+            isMe: false,
+            status: 'delivered'
+        }
+    ]
+};

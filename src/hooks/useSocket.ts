@@ -6,25 +6,21 @@ export const useSocket = () => {
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        const socketInstance = io({
-            path: '/api/socket/io',
-            addTrailingSlash: false,
-        });
+        // Mock socket logic - does not attempt to connect to a real server
+        console.log("Initializing mock socket");
 
-        socketInstance.on('connect', () => {
-            console.log('Connected to backend socket');
-            setIsConnected(true);
-        });
+        const mockSocket = {
+            on: (event: string, callback: Function) => console.log(`Mock socket listening for: ${event}`),
+            off: (event: string) => console.log(`Mock socket stopped listening for: ${event}`),
+            emit: (event: string, data: any) => console.log(`Mock socket emitted: ${event}`, data),
+            disconnect: () => console.log("Mock socket disconnected"),
+        } as unknown as Socket;
 
-        socketInstance.on('disconnect', () => {
-            console.log('Disconnected from backend socket');
-            setIsConnected(false);
-        });
-
-        setSocket(socketInstance);
+        setSocket(mockSocket);
+        setIsConnected(true);
 
         return () => {
-            socketInstance.disconnect();
+            console.log("Cleaning up mock socket");
         };
     }, []);
 
